@@ -1,0 +1,13 @@
+package tta.project;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class GogobuyApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(GogobuyApplication.class, args);
+	}
+
+}
