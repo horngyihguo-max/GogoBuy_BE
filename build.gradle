@@ -22,6 +22,24 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	//sprint data jpa 
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// mysql connector
+	implementation 'com.mysql:mysql-connector-j'
+	
+	//資料驗證
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	
+	// openapi 線上文件
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+	
+	// cache
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	// caffeine cache
+	implementation 'com.github.ben-manes.caffeine:caffeine'
 }
 
 tasks.named('test') {
