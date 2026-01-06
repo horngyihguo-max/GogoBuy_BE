@@ -1,5 +1,5 @@
 
-#GogoBuy 後端
+# GogoBuy 後端
 
 這是一個基於 Java 21 與 Gradle 構建的 RESTful API 專案。
 
