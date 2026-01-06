@@ -9,9 +9,8 @@ version = '0.0.1-SNAPSHOT'
 description = 'gogobuy project'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+   sourceCompatibility = '21'
+   targetCompatibility = '21'
 }
 
 repositories {
@@ -20,6 +19,16 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	// spring data jpa
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	// mysql connector
+	implementation 'com.mysql:mysql-connector-j'
+	//在修改程式碼並儲存後，Devtools 會自動偵測變更並觸發應用程式的快速重啟
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	//資料驗證
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
