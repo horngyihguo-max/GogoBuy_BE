@@ -28,4 +28,19 @@ public class ValidMsg {
 	
 	public static final String ANSWERVOLIST_ERROR= " AnswerVoList error ";
 	
+	public static final String STORE_NAME_ENPTY= " 商店名是空的喵 ";
+	
+	public static final String PHONE_ENPTY= " 電話是空的喵 ";
+	
+	public static final String ADDRESS_ENPTY= " 地址是空的喵 ";
+	
+	public static final String CATEGORY_ENPTY= " 不知道是雜貨還是餐飲喵 ";
+	
+	public static final String TYPE_ENPTY= " 商家類型是空的喵 ";
+
+	public static final String FEE_DESCRIPTION_ENPTY= " 運費描述是空的喵 ";
+
+	
+	
+	
 }
