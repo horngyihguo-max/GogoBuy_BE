@@ -1,8 +1,7 @@
+
 # GogoBuy 後端
 
-「這是一個基於 Java 21 與 Gradle 構建的 RESTful API 專案。」
-
-## 於專案 Push 之前，請先確認自己分支（branch）是否正確
+這是一個基於 Java 21 與 Gradle 構建的 RESTful API 專案。
 
 ## 🛠 開發環境 (Prerequisites)
 
