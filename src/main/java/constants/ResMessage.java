@@ -4,12 +4,11 @@ public enum ResMessage {
 	
 	SUCCESS(200, "成功"), //
 	ERROR(500, "失敗"), //
+	LOGIN_ERROR(400, "帳號密碼輸入失敗"), //
+	USER_NOT_FOUND(400, "找不到此用戶"), //
 	DATE_ERROR(400, "開始時間設定失敗"), //
 	TYPE_ERROR(400, "選擇種類設定失敗"), //
-	OPTIONS_SIZE_ERROR(400, "選項數量設定失敗"), //
-	QUIZ_ID_MISMATCH(400,"Quiz_id 不匹配"),
-	QUIZ_NOTFUND(404,"Quiz 找不到"),	
-	QUESTION_NOTFUND(404,"Qusetion 找不到"),	
+	OPTIONS_SIZE_ERROR(400, "選項數量設定失敗"), // 
 	OPTIONS_NAME_MISMATCH(400,"OPTIONS_NAME_MISMATCH"),	
 	ANSWER_REQUIRED(400,"ANSWER_REQUIRED"),	
 	NOT_FOUND(404,"NOT_FOUND"),
