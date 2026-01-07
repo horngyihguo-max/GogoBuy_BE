@@ -3,18 +3,20 @@ package com.example.demo.service;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.UserDao;
+import com.example.demo.dto.UserInfoDto;
 import com.example.demo.entity.User;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
 
-@EnableScheduling
+import jakarta.transaction.Transactional;
+
 @Service
 public class UserService {
 
@@ -60,10 +62,28 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	單位:           秒 分 時 日 月 週
-//	@Scheduled(cron = "* * * * * *")
-//	public void test() {
-//		System.out.println(LocalDateTime.now());	
-//	}
+//	更新暱稱、大頭貼或統編
+	@Transactional(rollbackOn = Exception.class)
+	public BasicRes updateInfo(UserInfoDto dto, String id) {
+		User user = userDao.getUserById(id);
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+
+		if (StringUtils.hasText(dto.getNickname())) {
+			user.setNickname(dto.getNickname());
+		}
+		if (dto.getAvatarUrl() != null) {
+			user.setAvatarUrl(dto.getAvatarUrl());
+		}
+		if (dto.getCarrier() != null) {
+			user.setCarrier(dto.getCarrier());
+		}
+
+		userDao.save(user);
+		return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+	}
 
 }
