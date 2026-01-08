@@ -97,4 +97,8 @@ public class WishService {
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
+	public void wishTimesReset() {
+		wishDao.wishTimesReset(0, 499, 3);
+		wishDao.wishTimesReset(500, 999, 5);
+	}
 }

@@ -33,6 +33,12 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 	@Transactional
 	@Query(value = "update user set times_remaining = ?2 where id = ?1", nativeQuery = true)
 	public int setTimes(String id, int times);
+
+//	每月許願次數重新計算
+	@Modifying
+	@Transactional
+	@Query(value = "update user set times_remaining = ?3 where exp >= ?1 and exp <= ?2", nativeQuery = true)
+	public void wishTimesReset(int minExp, int maxExp, int times);
 	
 //	查詢該願望的follower
 	@Query(value = "select user_id, followers from wishes where id = ?", nativeQuery = true)
