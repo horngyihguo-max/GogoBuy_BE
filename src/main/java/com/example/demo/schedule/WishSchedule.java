@@ -1,4 +1,4 @@
-package com.example.demo.Schedule;
+package com.example.demo.schedule;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
