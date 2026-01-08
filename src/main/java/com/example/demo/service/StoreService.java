@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.constants.ResMessage;
-import com.example.demo.dao.StoresDao;
+import com.example.demo.dao.StoresCreateDao;
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.vo.FeeDescriptionVo;
@@ -28,7 +28,7 @@ public class StoreService {
 	private ObjectMapper mapper = new ObjectMapper();
 
 	@Autowired
-	private StoresDao StoresDao;
+	private StoresCreateDao storesCreateDao;
 
 	// 回滾
 	@Transactional(rollbackFor = Exception.class)
@@ -39,6 +39,11 @@ public class StoreService {
 		if (req.getPhone() == null || req.getPhone().length() > 10) {
 			return new BasicRes(ResMessage.PHONE_SIZE_ERROR.getCode(), //
 					ResMessage.PHONE_SIZE_ERROR.getMessage());
+		}
+		if (storesCreateDao.existsByPhone(req.getPhone())) {
+		    // 這裡建議在 ResMessage 裡面定義一個 STORE_ALREADY_EXISTS 
+		    return new BasicRes(ResMessage.STORE_EXISTS.getCode(), //
+					ResMessage.STORE_EXISTS.getMessage());
 		}
 //	  	category類型驗證
 		if (!(req.getCategory().equals("fast") || req.getCategory().equals("slow"))) {
@@ -145,61 +150,45 @@ public class StoreService {
 
 //		傳店家表取店家ID
 		String feeStr = mapper.writeValueAsString(req.getFee_description());
-		StoresDao.addStore(req.getStoresname(), req.getPhone(), req.getAddress(), //
+		storesCreateDao.addStore(req.getStoresname(), req.getPhone(), req.getAddress(), //
 				req.getCategory(), req.getType(), req.getMemo(), //
 				req.getImage(), feeStr, req.isPublish(), req.getCreatedBy());
 
-		int storeId = StoresDao.getLastInsertId();
+		int storeId = storesCreateDao.getLastInsertId();
 
 //		填入營業時間
 		for (StoreOperatingHoursVo vo : operatingHoursvoList) {
-			StoresDao.addOperatingHours(storeId, vo.getWeek(), vo.getOpenTime(), vo.getCloseTime());
+			storesCreateDao.addOperatingHours(storeId, vo.getWeek(), vo.getOpenTime(), vo.getCloseTime());
 		}
 
 //		填入菜單品項 
 		for (MenuVo vo : menuVoList) {
 			String unusualStr = mapper.writeValueAsString(vo.getUnusual());
-			StoresDao.addMenu(storeId, vo.getCategoryId(), vo.getName(), vo.getDescription(), //
+			storesCreateDao.addMenu(storeId, vo.getCategoryId(), vo.getName(), vo.getDescription(), //
 					vo.getBasePrice(), vo.getImage(), true, unusualStr);
 		}
 
 //		填入商品類別群組
 		for (MenuCategoriesVo vo : MenuCategoriesVoList) {
 			String priceLevelListStr = mapper.writeValueAsString(vo.getPriceLevel());
-			StoresDao.addCategory(storeId, vo.getName(), priceLevelListStr);
+			storesCreateDao.addCategory(storeId, vo.getName(), priceLevelListStr);
 		}
 
 //		填入選項群組
 		for (ProductOptionGroupsVo vo : ProductOptionGroupsVoList) {
-			StoresDao.addOptionGroups(storeId, vo.getName(), vo.isRequired(), vo.getMaxSelection());
+			storesCreateDao.addOptionGroups(storeId, vo.getName(), vo.isRequired(), vo.getMaxSelection());
 			// 取得「該群組」剛產生的 ID
-			int groupId = StoresDao.getLastInsertId();
+			int groupId = storesCreateDao.getLastInsertId();
 
 			// 取得該群組下的所有選項並寫入
 			List<ProductOptionItemsVo> itemVoList = vo.getItems(); // 假設 Vo 裡有這個 list
 			if (itemVoList != null) {
 				for (ProductOptionItemsVo itemVo : itemVoList) {
 					// 使用剛拿到的 groupId
-					StoresDao.addOptionItems(groupId, itemVo.getName(), itemVo.getExtraPrice());
+					storesCreateDao.addOptionItems(groupId, itemVo.getName(), itemVo.getExtraPrice());
 				}
 			}
 		}
-
-////		各項料價錢檢查
-//		List<ProductOptionItemsVo> ProductOptionItemsVoList = req.getProductOptionItemsVoList();
-//		for (ProductOptionItemsVo vo : ProductOptionItemsVoList) {
-//			if (vo.getName() == null || vo.getName().trim().isEmpty()) {
-//				throw new Exception("選項名稱不可為空 (例如：半糖、L杯)");
-//			}
-//			if (vo.getExtraPrice() < 0 && vo.getExtraPrice() != null) {
-//				throw new Exception("選項 [" + vo.getName() + "] 不可為負數");
-//			}
-//		}
-
-////		填入選項項目
-//		for (ProductOptionItemsVo vo : ProductOptionItemsVoList) {
-//			StoresDao.addOptionItems(vo.getGroupId(), vo.getName(), vo.getExtraPrice());
-//		}
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());

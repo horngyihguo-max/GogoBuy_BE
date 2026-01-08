@@ -9,6 +9,7 @@ public enum ResMessage {
 	PASSWORD_ERROR(400, "密碼錯誤"),
 	PHONE_SIZE_ERROR(400,"電話長度錯誤"),
 	CATEGORY_ERROR(400,"大類型的類型錯誤(不存在)"),
+	STORE_EXISTS(400,"店家(電話)已存在"),
 	USER_NOT_FOUND(404, "找不到此用戶");
 	
 	

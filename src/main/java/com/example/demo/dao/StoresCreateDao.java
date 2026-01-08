@@ -10,8 +10,10 @@ import com.example.demo.entity.Stores;
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface StoresDao extends JpaRepository<Stores, Integer> {
+public interface StoresCreateDao extends JpaRepository<Stores, Integer> {
 
+	boolean existsByPhone(String phone);
+	
 //	新增店家
 	@Modifying
 	@Transactional
