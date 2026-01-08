@@ -1,5 +1,7 @@
 package com.example.demo.vo;
 
+import java.util.List;
+
 public class MenuVo {
 
 private int id;
@@ -19,7 +21,7 @@ private int id;
 	
 	private boolean available;
 	
-	private String unusual;
+	private List<String> unusual;
 
 	public int getId() {
 		return id;
@@ -85,11 +87,13 @@ private int id;
 		this.available = available;
 	}
 
-	public String getUnusual() {
+	
+
+	public List<String> getUnusual() {
 		return unusual;
 	}
 
-	public void setUnusual(String unusual) {
+	public void setUnusual(List<String> unusual) {
 		this.unusual = unusual;
 	}
 
@@ -98,7 +102,7 @@ private int id;
 	}
 
 	public MenuVo(int id, int storesId, int categoryId, String name, String description, int basePrice, String image,
-			boolean available, String unusual) {
+			boolean available, List<String> unusual) {
 		super();
 		this.id = id;
 		this.storesId = storesId;
@@ -110,6 +114,8 @@ private int id;
 		this.available = available;
 		this.unusual = unusual;
 	}
+
+	
 	
 	
 }

@@ -35,7 +35,7 @@ public class Stores {
 	private String image;
 
 	@Column(name = "fee_description")
-	private String fee_description;
+	private String feeDescription;
 
 	@Column(name = "is_deleted")
 	private boolean deleted;
@@ -113,12 +113,12 @@ public class Stores {
 		this.image = image;
 	}
 
-	public String getFee_description() {
-		return fee_description;
+	public String getFeeDescription() {
+		return feeDescription;
 	}
 
-	public void setFee_description(String fee_description) {
-		this.fee_description = fee_description;
+	public void setFeeDescription(String feeDescription) {
+		this.feeDescription = feeDescription;
 	}
 
 	public boolean isDeleted() {

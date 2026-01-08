@@ -1,5 +1,7 @@
 package com.example.demo.vo;
 
+import java.util.List;
+
 public class ProductOptionGroupsVo {
 	
 	private int id;
@@ -10,7 +12,9 @@ public class ProductOptionGroupsVo {
 	
 	private boolean required;
 	
-	private int maxelection;
+	private int maxSelection;
+	
+	private List<ProductOptionItemsVo> items;
 
 	public int getId() {
 		return id;
@@ -44,13 +48,23 @@ public class ProductOptionGroupsVo {
 		this.required = required;
 	}
 
-	public int getMaxelection() {
-		return maxelection;
+	public int getMaxSelection() {
+		return maxSelection;
 	}
 
-	public void setMaxelection(int maxelection) {
-		this.maxelection = maxelection;
+	public void setMaxSelection(int maxSelection) {
+		this.maxSelection = maxSelection;
 	}
+
+	public List<ProductOptionItemsVo> getItems() {
+		return items;
+	}
+
+	public void setItems(List<ProductOptionItemsVo> items) {
+		this.items = items;
+	}
+
+	
 
 	
 }

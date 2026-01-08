@@ -20,7 +20,13 @@ public class StoresController {
 	private StoreService storeService;
 
 	@PostMapping("gogobuy/store/create")
-	public BasicRes create(@Valid @RequestBody StoresReq req) throws Exception {
-		return storeService.create(req);
+	public BasicRes create(@Valid @RequestBody StoresReq req) {
+	    try {
+	        return storeService.create(req);
+	    } catch (Exception e) {
+	        // 捕捉 Service 丟出的 throw new Exception("...")
+	        // 回傳自定義的錯誤代碼（例如 400）與 Exception 的 Message
+	        return new BasicRes(400, e.getMessage());
+	    }
 	}
 }

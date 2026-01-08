@@ -39,6 +39,8 @@ public class StoresReq {
 
 	private boolean publish;
 	
+	private String createdBy;
+	
 	@Valid
 	private List<StoreOperatingHoursVo>operatingHoursVoList;
 	@Valid
@@ -162,6 +164,14 @@ public class StoresReq {
 
 	public void setProductOptionItemsVoList(List<ProductOptionItemsVo> productOptionItemsVoList) {
 		ProductOptionItemsVoList = productOptionItemsVoList;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
 	}
 
 	

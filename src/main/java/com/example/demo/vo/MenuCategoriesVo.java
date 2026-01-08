@@ -6,7 +6,7 @@ public class MenuCategoriesVo {
 	
 	private int id;
 	
-	private int store;
+	private int storeId;
 	
 	private String name;
 	
@@ -16,10 +16,10 @@ public class MenuCategoriesVo {
 		super();
 	}
 
-	public MenuCategoriesVo(int id, int store, String name, List<PriceLevelVo> priceLevel) {
+	public MenuCategoriesVo(int id, int storeId, String name, List<PriceLevelVo> priceLevel) {
 		super();
 		this.id = id;
-		this.store = store;
+		this.storeId = storeId;
 		this.name = name;
 		this.priceLevel = priceLevel;
 	}
@@ -32,12 +32,12 @@ public class MenuCategoriesVo {
 		this.id = id;
 	}
 
-	public int getStore() {
-		return store;
+	public int getStoreId() {
+		return storeId;
 	}
 
-	public void setStore(int store) {
-		this.store = store;
+	public void setStoreId(int storeId) {
+		this.storeId = storeId;
 	}
 
 	public String getName() {
@@ -55,6 +55,8 @@ public class MenuCategoriesVo {
 	public void setPriceLevel(List<PriceLevelVo> priceLevel) {
 		this.priceLevel = priceLevel;
 	}
+
+
 
  
 }

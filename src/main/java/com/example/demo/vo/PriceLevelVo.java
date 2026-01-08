@@ -2,16 +2,16 @@ package com.example.demo.vo;
 
 public class PriceLevelVo {
 
-	private double km;
+	private String name;
 	
 	private int price;
 
-	public double getKm() {
-		return km;
+	public String getName() {
+		return name;
 	}
 
-	public void setKm(double km) {
-		this.km = km;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public int getPrice() {
@@ -21,6 +21,9 @@ public class PriceLevelVo {
 	public void setPrice(int price) {
 		this.price = price;
 	}
+
+	
+	}
 	
 	
-}
+
