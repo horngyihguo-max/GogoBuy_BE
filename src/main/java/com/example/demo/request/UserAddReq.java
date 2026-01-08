@@ -11,6 +11,7 @@ public class UserAddReq {
 	@NotBlank(message = ValidationMsg.EMAIL_ERROR)
 	private String email;
 
+	@Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,16}$", message = ValidationMsg.PASSWORD_ERROR)
 	@NotBlank(message = ValidationMsg.PASSWORD_ERROR)
 	private String password;
 

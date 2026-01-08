@@ -14,5 +14,11 @@ public class ValidationMsg {
 	public static final String CATEGORY_EMPTY = " 不知道是雜貨還是餐飲 ";
 	public static final String TYPE_EMPTY = " 商家類型是空的 ";
 	public static final String FEE_DESCRIPTION_EMPTY = " 運費描述是空的 ";
+	
+	public static final String USER_ID_ERROR = " User ID 錯誤";
+	public static final String USER_ID_EMPTY = " User ID 為空";
+	public static final String TITLE_EMPTY = " 許願標題為空";
+	public static final String ANONYMOUS_EMPTY = " 匿名為空";
+	public static final String LOCATION_EMPTY = " 取貨點為空";
 
 }
