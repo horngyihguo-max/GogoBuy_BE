@@ -14,12 +14,19 @@ public interface UserDao extends JpaRepository<User, String> {
 //	新增用戶
 	@Transactional
 	@Modifying
-	@Query(value = "insert into user(id, email, password, nickname, phone, avatar_url) "//
-			+ " values (?1, ?2, ?3, ?4, ?5, ?6)", nativeQuery = true)
-	public int addUser(String id, String email, String password, String nickname, String phone, String avatarUrl);
+	@Query(value = "insert into user(id, email, password, nickname, phone) "//
+			+ " values (?1, ?2, ?3, ?4, ?5)", nativeQuery = true)
+	public int addUser(String id, String email, String password, String nickname, String phone);
 
 //	查詢用戶
 	@Query(value = "Select * from user where email = ?", nativeQuery = true)
 	public User getUser(String email);
+	
 
+//	新增Google用戶
+	@Transactional
+	@Modifying
+	@Query(value = "insert into user(id, email, password, nickname, phone,avatar_url) "//
+			+ " values (?1, ?2, ?3, ?4, ?5, ?6)", nativeQuery = true)
+	public int addGoogleUser(String id, String email, String password, String nickname, String phone , String avatarUrl);
 }

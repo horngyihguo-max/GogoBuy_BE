@@ -56,8 +56,8 @@ public class UserController {
 				ResMessage.SUCCESS.getMessage());
 	}
 	
-	@GetMapping("/")
-    public Map<String, Object> home(@AuthenticationPrincipal OAuth2User principal) {
+	@GetMapping("/gogobuy/OAlogin")
+    public Map<String, Object> loginGoogle(@AuthenticationPrincipal OAuth2User principal) {
         if (principal == null) {
             return Map.of(
             		"status", "未登入", 
@@ -68,23 +68,22 @@ public class UserController {
         String email = principal.getAttribute("email");
 
         // 2. 去資料庫查看看有沒有這個 Email
-        // 這裡建議你的 UserDao 要有一個 findByEmail 的方法
         User user = userDao.getUser(email);
 
         if (user != null) {
             // 資料庫已有此用戶
             return Map.of(
-                "status", "登入成功 (現有會員)",
-                "nickname", user.getNickname(), // 從資料庫拿暱稱
-                "email",user.getEmail(),
-                "avatarUrl", principal.getAttribute("picture")
-//                "password", principal.getAttribute("sub")
+                "status", "登入成功 "
+//                "nickname", user.getNickname(), // 從資料庫拿暱稱
+//                "email",user.getEmail(),
+//                "avatarUrl", principal.getAttribute("picture"),
+//         		 "password", principal.getAttribute("sub")
             );
         } else {
             // Google 驗證通過，但你的資料庫還沒這封 Email (新使用者
         // 登入成功後，你會在這裡看到你的 Google 資料
         return Map.of(
-            "status", "登入成功 (新會員)"
+            "status", "註冊成功"
 //            "nickname", principal.getAttribute("name"),
 //            "email", principal.getAttribute("email"),
 //           "avatarUrl", principal.getAttribute("picture"),
