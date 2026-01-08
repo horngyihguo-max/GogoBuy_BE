@@ -12,11 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.constants.ResMessage;
-import com.example.demo.dao.UserDao;
-import com.example.demo.entity.User;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.service.GoogelOAuth2Service;
 import com.example.demo.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -28,8 +27,9 @@ public class UserController {
 
 	@Autowired
 	private UserService userService;
+
 	@Autowired
-    private UserDao userDao;
+    private GoogelOAuth2Service googelOAuth2Service;
 
 	@PostMapping("gogobuy/addUser")
 	public BasicRes create(@Valid @RequestBody UserAddReq req) throws Exception {
@@ -56,39 +56,10 @@ public class UserController {
 				ResMessage.SUCCESS.getMessage());
 	}
 	
-	@GetMapping("/gogobuy/OAlogin")
-    public Map<String, Object> loginGoogle(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) {
-            return Map.of(
-            		"status", "未登入", 
-            		"message", "請先去 /login 登入"
-            		);
-        }
-     // 1. 從 Google 資料中取得 Email
-        String email = principal.getAttribute("email");
-
-        // 2. 去資料庫查看看有沒有這個 Email
-        User user = userDao.getUser(email);
-
-        if (user != null) {
-            // 資料庫已有此用戶
-            return Map.of(
-                "status", "登入成功 "
-//                "nickname", user.getNickname(), // 從資料庫拿暱稱
-//                "email",user.getEmail(),
-//                "avatarUrl", principal.getAttribute("picture"),
-//         		 "password", principal.getAttribute("sub")
-            );
-        } else {
-            // Google 驗證通過，但你的資料庫還沒這封 Email (新使用者
-        // 登入成功後，你會在這裡看到你的 Google 資料
-        return Map.of(
-            "status", "註冊成功"
-//            "nickname", principal.getAttribute("name"),
-//            "email", principal.getAttribute("email"),
-//           "avatarUrl", principal.getAttribute("picture"),
-//           "password", principal.getAttribute("sub")
-        );
-	}
-}
+	//Google授權登入
+	@GetMapping("/gogobuy/OALogin")
+    public Map<String, Object> getGoogleUser(@AuthenticationPrincipal OAuth2User principal) {
+        return googelOAuth2Service.loginGoogle(principal);
+    }
+	
 }
