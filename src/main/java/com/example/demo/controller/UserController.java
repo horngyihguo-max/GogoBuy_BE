@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dto.UserInfoDto;
+import com.example.demo.dto.UserPasswordDto;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
@@ -27,7 +28,7 @@ public class UserController {
 	private UserService userService;
 
 //	新增帳戶
-	@PostMapping("gogobuy/user/add")
+	@PostMapping("gogobuy/user/registration")
 	public BasicRes create(@Valid @RequestBody UserAddReq req) throws Exception {
 		return userService.addUser(req);
 	}
@@ -43,9 +44,22 @@ public class UserController {
 		return res;
 	}
 
+//	修改大頭貼、暱稱、載具
 	@PatchMapping("gogobuy/user/profile")
 	public BasicRes updateInfo(@RequestBody UserInfoDto dto, @RequestParam("id") String id) {
 		return userService.updateInfo(dto, id);
+	}
+
+//	修改密碼
+	@PostMapping("gogobuy/user/password")
+	public BasicRes changePassword(@RequestBody UserPasswordDto dto, @RequestParam("id") String id) {
+		return userService.updatePassword(id, dto);
+	}
+
+//	串接電話
+	@PostMapping("gogobuy/user/phone")
+	public BasicRes userPhone(@RequestBody String phone, @RequestParam("id") String id) {
+		return userService.userPhone(phone, id);
 	}
 
 //	登出

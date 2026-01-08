@@ -26,5 +26,23 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Query(value = "Select * from user where id = ?", nativeQuery = true)
 	public User getUserById(String id);
 
-	
+//	更改使用者個人資訊(暱稱、大頭貼、統編)
+	@Modifying
+	@Transactional
+	@Query(value = "update user SET nickname = ?1, avatar_url = ?2, carrier = ?3 WHERE id = ?4", nativeQuery = true)
+	public int updateProfile(String nickname, String avatarUrl, //
+			String carrier, String id);
+
+//	更改密碼
+	@Transactional
+	@Modifying
+	@Query(value = "update user SET password = ?2 where id = ?1", nativeQuery = true)
+	public int userPassword(String id, String password);
+
+//	串接電話
+	@Transactional
+	@Modifying
+	@Query(value = "update user SET phone = ?2 where id = ?1", nativeQuery = true)
+	public int userPhone(String id, String phone);
+
 }

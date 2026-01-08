@@ -7,7 +7,10 @@ public enum ResMessage {
 	LOGIN_ERROR(400, "登入失敗"),
 	REGISTRATION_ERROR(400, "註冊失敗"),
 	PASSWORD_ERROR(400, "密碼錯誤"),
+	SAME_PASSWORD_ERROR(400, "新密碼與舊密碼相同"),
+	PHONE_ERROR(400, "請輸入手機號碼"),
 	USER_NOT_FOUND(404, "找不到此用戶");
+	
 	
 	private int code;
 

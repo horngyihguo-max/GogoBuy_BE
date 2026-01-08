@@ -10,9 +10,16 @@ description = 'Demo project for Spring Boot'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
+
+/* java{
+	sourceCompatibility = '17'
+	targetCompatibility = '17'
+}
+*/
+
 
 repositories {
 	mavenCentral()
@@ -35,6 +42,9 @@ dependencies {
 	
 	// openapi 線上文件  加完之後執行專案即可打開 http://localhost:8080/swagger-ui/index.html
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+
+	// google 登入
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.5.9'
 
 	// cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
