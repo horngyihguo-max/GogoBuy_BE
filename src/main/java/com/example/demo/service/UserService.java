@@ -29,7 +29,8 @@ public class UserService {
 		String password = req.getPassword();
 		String name = req.getNickname();
 		String phone = req.getPhone();
-		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone);
+		String avatarUrl = req.getAvatarUrl();
+		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone, avatarUrl);
 		if (res == 1) {
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
 					ResMessage.SUCCESS.getMessage());
