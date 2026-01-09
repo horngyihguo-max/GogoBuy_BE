@@ -19,9 +19,12 @@ import jakarta.transaction.Transactional;
 
 @Repository
 public interface WishDao extends JpaRepository<Wishes, Integer>{
-////	全部願望
-//	@Query(value = "select * from wishes where is_deleted = false", nativeQuery = true)
-//	public List<AllWishRes> allWish();
+//	全部願望
+	@Query(value = "select * from wishes where is_deleted = false", nativeQuery = true)
+	public List<Wishes> allWish();
+	//抓匿名人類
+	@Query(value = "select nickname from user where id = ?", nativeQuery = true)
+	public String getNickname(String userId);
 	
 //	新增願望
 	@Modifying
