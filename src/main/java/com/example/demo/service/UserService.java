@@ -5,6 +5,8 @@ import java.util.Random;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -26,8 +28,8 @@ public class UserService {
 	@Autowired
 	private UserDao userDao;
 
-//	@Autowired
-//	private JavaMailSender mailSender;
+	@Autowired
+	private JavaMailSender mailSender;
 
 	/**
 	 * Redis發送修改email驗證碼功能 暫時用不到
@@ -152,9 +154,18 @@ public class UserService {
 		user.setOtpExpiry(LocalDateTime.now().plusMinutes(5)); // 設定 5 分鐘後過期
 		userDao.save(user);
 
-//先使用一般console測試
+		SimpleMailMessage message = new SimpleMailMessage();
+
+		// 建議這裡也從 properties 讀取，或直接寫死你的發信帳號
+		message.setFrom("GogobuyAdmin@gmail.com");
+		message.setTo(email);
+		message.setSubject("[GoGoBuy] 修改帳號驗證碼");
+		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 5 分鐘後失效，請盡速完成操作。");
+
 		try {
 			System.out.println("OTP碼:" + otpCode);
+			// 這是真正執行發送的動作
+			mailSender.send(message);
 			return new BasicRes(ResMessage.EMAIL_SUCCESS.getCode(), //
 					ResMessage.EMAIL_SUCCESS.getMessage());
 		} catch (Exception e) {

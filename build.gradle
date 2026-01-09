@@ -8,18 +8,17 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
 
-java {
+/* java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
+*/
 
-/* java{
+java{
 	sourceCompatibility = '17'
 	targetCompatibility = '17'
 }
-*/
-
 
 repositories {
 	mavenCentral()
@@ -45,6 +44,13 @@ dependencies {
 
 	// google 登入
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.5.9'
+
+	//Redis 暫時用不到
+    //implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    
+    //送出認證信
+        implementation 'org.springframework.boot:spring-boot-starter-mail'
+	
 
 	// cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
