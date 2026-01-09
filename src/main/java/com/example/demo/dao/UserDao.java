@@ -20,7 +20,7 @@ public interface UserDao extends JpaRepository<User, String> {
 
 //	透過 Email 查詢用戶
 	@Query(value = "Select * from user where email = ?", nativeQuery = true)
-	public User getUser(String email);
+	public User getUserByEmail(String email);
 
 //	透過 ID 查詢用戶
 	@Query(value = "Select * from user where id = ?", nativeQuery = true)
@@ -45,4 +45,7 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Query(value = "update user SET phone = ?2 where id = ?1", nativeQuery = true)
 	public int userPhone(String id, String phone);
 
+//	透過 ID 查詢用戶
+	@Query(value = "SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", nativeQuery = true)
+	public int existsByEmail(String email);
 }

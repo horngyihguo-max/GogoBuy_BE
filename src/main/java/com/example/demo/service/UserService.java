@@ -1,5 +1,7 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
+import java.util.Random;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,15 @@ public class UserService {
 	@Autowired
 	private UserDao userDao;
 
+//	@Autowired
+//	private JavaMailSender mailSender;
+
+	/**
+	 * Redis發送修改email驗證碼功能 暫時用不到
+	 * 
+	 * @Autowired private StringRedisTemplate redisTemplate;
+	 */
+
 	private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 	public BasicRes addUser(UserAddReq req) {
@@ -32,6 +43,7 @@ public class UserService {
 		String password = req.getPassword();
 		String name = req.getNickname();
 		String phone = req.getPhone();
+//		String avatarUrl = req.getAvatarUrl();
 		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone);
 		if (res == 1) {
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
@@ -46,7 +58,7 @@ public class UserService {
 		String email = req.getEmail();
 		String password = req.getPassword();
 
-		User user = userDao.getUser(email);
+		User user = userDao.getUserByEmail(email);
 
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
@@ -106,7 +118,7 @@ public class UserService {
 
 //		加密新密碼
 		String encodePassword = encoder.encode(dto.getNewPassword());
-		user.setPassword(encodePassword);
+		userDao.userPassword(id, encodePassword);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
@@ -123,8 +135,96 @@ public class UserService {
 			return new BasicRes(ResMessage.PHONE_ERROR.getCode(), //
 					ResMessage.PHONE_ERROR.getMessage());
 		}
-		user.setPhone(phone);
+		userDao.userPhone(id, phone);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
+
+//	發送OTP code 並修改Email
+	@Transactional
+	public BasicRes sendOtpWithoutRedis(String email, String id) {
+		// 1. 生成 6 位數驗證碼
+		String otpCode = String.format("%06d", new Random().nextInt(1000000));
+
+		// 2. 找到使用者並更新 OTP 資訊
+		User user = userDao.getUserById(id);
+		user.setOtpCode(otpCode);
+		user.setOtpExpiry(LocalDateTime.now().plusMinutes(5)); // 設定 5 分鐘後過期
+		userDao.save(user);
+
+//先使用一般console測試
+		try {
+			System.out.println("OTP碼:" + otpCode);
+			return new BasicRes(ResMessage.EMAIL_SUCCESS.getCode(), //
+					ResMessage.EMAIL_SUCCESS.getMessage());
+		} catch (Exception e) {
+			return new BasicRes(ResMessage.EMAIL_ERROR.getCode(), //
+					ResMessage.EMAIL_ERROR.getMessage());
+		}
+	}
+
+	@Transactional
+	public BasicRes verifyAndUpdateEmail(String newEmail, String inputCode, String id) {
+		User user = userDao.getUserById(id);
+
+		// 1. 檢查驗證碼是否為空
+		if (user.getOtpCode() == null || user.getOtpExpiry() == null) {
+			return new BasicRes(ResMessage.OTP_EMPTY.getCode(), //
+					ResMessage.OTP_EMPTY.getMessage());
+		}
+
+		// 2. 檢查是否過期
+		if (LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+			return new BasicRes(ResMessage.OTP_EXPIRED.getCode(), //
+					ResMessage.OTP_EXPIRED.getMessage());
+		}
+
+		// 3. 比對驗證碼
+		if (!user.getOtpCode().equals(inputCode)) {
+			return new BasicRes(ResMessage.OTP_ERROR.getCode(), //
+					ResMessage.OTP_ERROR.getMessage());
+		}
+
+		// 檢查新信箱是否已被他人佔用
+		if (userDao.existsByEmail(newEmail) > 0) { // 假設你 userDao 有這個方法
+			return new BasicRes(ResMessage.EMAIL_EXITS.getCode(), ResMessage.EMAIL_EXITS.getMessage());
+		}
+
+		// 4. 驗證通過，執行更新並清空 OTP 資訊
+		user.setEmail(newEmail);
+		user.setOtpCode(null); // 清除驗證碼，防止重複使用
+		user.setOtpExpiry(null);
+		userDao.save(user);
+
+		return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+	}
+
+	/*
+	 * Redis功能區塊 暫時用不到 // 驗證並更新 Email
+	 * 
+	 * @Transactional(rollbackOn = Exception.class) public BasicRes
+	 * verifyAndUpdateEmail(UserAccountDto dto, String id) { User user =
+	 * userDao.getUserById(id); String redisKey = "OTP:EMAIL_CHANGE:" + id; String
+	 * storedCode = redisTemplate.opsForValue().get(redisKey);
+	 * 
+	 * // 1. 檢查驗證碼是否存在 if (storedCode == null) { return new
+	 * BasicRes(ResMessage.OTP_EXPIRED.getCode(), //
+	 * ResMessage.OTP_EXPIRED.getMessage()); }
+	 * 
+	 * // 2. 比對驗證碼 if (!storedCode.equals(dto.getOtpCode())) { return new
+	 * BasicRes(ResMessage.OTP_ERROR.getCode(), //
+	 * ResMessage.OTP_ERROR.getMessage()); }
+	 * 
+	 * // 3. 檢查 Email 是否重複 if (user.getEmail() == (dto.getNewEmail())) { return new
+	 * BasicRes(ResMessage.EMAIL_EXITS.getCode(), //
+	 * ResMessage.EMAIL_EXITS.getMessage()); }
+	 * 
+	 * // 4. 更新 user.setEmail(dto.getNewEmail()); userDao.save(user);
+	 * 
+	 * // 5. 更新成功，刪除驗證碼 redisTemplate.delete(redisKey);
+	 * 
+	 * return new BasicRes(ResMessage.SUCCESS.getCode(), //
+	 * ResMessage.SUCCESS.getMessage()); }
+	 */
 }
