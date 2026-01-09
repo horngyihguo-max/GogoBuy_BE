@@ -12,11 +12,17 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.entity.Wishes;
 import com.example.demo.request.WishReq;
+import com.example.demo.response.AllWishRes;
+import com.example.demo.vo.WishVo;
 
 import jakarta.transaction.Transactional;
 
 @Repository
 public interface WishDao extends JpaRepository<Wishes, Integer>{
+////	全部願望
+//	@Query(value = "select * from wishes where is_deleted = false", nativeQuery = true)
+//	public List<AllWishRes> allWish();
+	
 //	新增願望
 	@Modifying
 	@Transactional
@@ -41,7 +47,7 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 	public void wishTimesReset(int minExp, int maxExp, int times);
 	
 //	查詢該願望的follower
-	@Query(value = "select user_id, followers from wishes where id = ?", nativeQuery = true)
+	@Query(value = "select user_id, followers, is_deleted from wishes where id = ?", nativeQuery = true)
 	public List<Object[]> getfollowers(int id);
 //	許願followers更新
 	@Modifying
@@ -49,9 +55,17 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 	@Query(value = "update wishes set followers = ?2 where id = ?1", nativeQuery = true)
 	public void setfollowers(int id, String newFollowersStr);
 	
-//	刪除願望
+//	個人刪除願望
 	@Modifying
 	@Transactional
 	@Query(value = "update wishes set is_deleted = true where id = ?1 and user_id = ?2", nativeQuery = true)
 	public int delWish(int id, String userId);
+	
+//	超過3個月
+	@Query(value = "select user_id from wishes where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW()", nativeQuery = true)
+	public List<String> checkOverTime();
+	@Modifying
+	@Transactional
+	@Query(value = "update wishes set is_deleted = true where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW()", nativeQuery = true)
+	public int delOverTime();
 }

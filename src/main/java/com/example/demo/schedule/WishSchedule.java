@@ -17,4 +17,9 @@ public class WishSchedule {
     public void wishTimesReset() {
         wishService.wishTimesReset();
     }
+	
+//	@Scheduled(cron = "0 0 0 * * ?")
+//	public String overThreeMonth() {
+//		wishService.
+//	}
 }

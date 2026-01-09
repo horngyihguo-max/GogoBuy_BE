@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,7 +15,10 @@ import org.springframework.stereotype.Service;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.WishDao;
 import com.example.demo.request.WishReq;
+import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.WishOverTimeRes;
+import com.example.demo.vo.WishVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +30,11 @@ public class WishService {
 	
 	@Autowired
 	private WishDao wishDao;
+	
+//	public AllWishRes allWish() {
+//		List<AllWishRes> all=wishDao.allWish();
+//		return new AllWishRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), all.getId());
+//	}
 	
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes addWish(WishReq req) {
@@ -54,39 +63,36 @@ public class WishService {
 	        return new BasicRes(ResMessage.WISH_ID_NOT_FOUND.getCode(), ResMessage.WISH_ID_NOT_FOUND.getMessage());
 	    }
 		Object[] data=wishData.get(0);
+		String wishUser=data[0].toString();
+		String followersStr=(data[1] != null) ? data[1].toString() : null;
+		boolean deleted=((Number)data[2]).intValue()==1;
+		if (deleted) {
+	        return new BasicRes(ResMessage.WISH_ID_NOT_FOUND.getCode(), ResMessage.WISH_ID_NOT_FOUND.getMessage());
+	    }
 		//許願者不可跟願
-		String wishUser=String.valueOf(data[0]);
 		if(userId.equals(wishUser)) {
 			return new BasicRes(ResMessage.WISH_USER_CAN_NOT_FOLLOW.getCode(), ResMessage.WISH_USER_CAN_NOT_FOLLOW.getMessage());
 		}
-		//字串轉陣列
-		Object rawFollowers = data[1];  //目前為字串"null"
-		List<String> followers = new ArrayList<>();
-		if (rawFollowers != null) {
-		    String followerStr = String.valueOf(rawFollowers);
-		    // 確保不是 "null" 字串且格式正確 {}
-		    if (!followerStr.equalsIgnoreCase("null") && followerStr.length() > 2) {
-		        // 去大括號
-		        String content = followerStr.substring(1, followerStr.length() - 1);
-		        // 過濾掉空字串，避免 split 產生空元素
-		        String[] splitData = content.split(",");
-		        for (String s : splitData) {
-		            if (s != null && !s.trim().isEmpty()) {
-		                followers.add(s.trim());
-		            }
-		        }
-		    }
+		//物件轉陣列
+		List<String> followersList=new ArrayList<>();
+		if(followersStr != null && !followersStr.trim().isEmpty()) {
+			String[] splitData = followersStr.split(",");  //過濾字串
+	        for (String s : splitData) {
+	            if (s != null && !s.trim().isEmpty()) {
+	                followersList.add(s.trim());
+	            }
+	        }
 		}
 		// 檢查是否已經跟隨過
-		if (followers.contains(userId)) {
-			followers.remove(userId);
+		if (followersList.contains(userId)) {
+			followersList.remove(userId);
 		}else {
-			followers.add(userId);
+			followersList.add(userId);
 		}
 
 	    // 轉回字串存回 DB
-	    String newFollowersStr = "{" + String.join(",", followers) + "}";
-		wishDao.setfollowers(id, newFollowersStr);
+		String saveStr = String.join(",", followersList);
+		wishDao.setfollowers(id, saveStr);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 	
@@ -97,8 +103,17 @@ public class WishService {
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
+	
 	public void wishTimesReset() {
 		wishDao.wishTimesReset(0, 499, 3);
 		wishDao.wishTimesReset(500, 999, 5);
 	}
+	
+//	public WishOverTimeRes wishOverThreeMonth() {
+//		List<String> userList=wishDao.checkOverTime();
+//		int wishAmount=wishDao.delOverTime();
+//		if(wishAmount!=userList.size()) {
+//			throw e;
+//		}
+//	}
 }
