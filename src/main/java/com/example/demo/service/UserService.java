@@ -221,7 +221,7 @@ public class UserService {
 	 *  0/5 0 12 * 1 ?  1 月每天中午 12 點，每 5 秒
      */
 //	每小時進行一次清理
-    @Scheduled(cron = "*0 0 * * * ?")
+    @Scheduled(cron = "0 0 * * * ?")
     @Transactional
     public void cleanupExpiredOtp() {
         System.out.println("開始清理過期驗證碼...");
