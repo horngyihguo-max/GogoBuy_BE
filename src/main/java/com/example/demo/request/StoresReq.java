@@ -19,10 +19,10 @@ public class StoresReq {
 	@NotBlank(message = ValidationMsg.STORE_NAME_EMPTY)
 	private String storesname;
 
-	@NotBlank(message = ValidationMsg.PHONE_EMPTY)
+//	@NotBlank(message = ValidationMsg.PHONE_EMPTY)
 	private String phone;
 	
-	@NotBlank(message = ValidationMsg.ADDRESS_EMPTY)
+//	@NotBlank(message = ValidationMsg.ADDRESS_EMPTY)
 	private String address;
 
 	@NotBlank(message = ValidationMsg.CATEGORY_EMPTY)
