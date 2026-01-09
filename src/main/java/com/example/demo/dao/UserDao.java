@@ -1,8 +1,11 @@
 package com.example.demo.dao;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,4 +51,9 @@ public interface UserDao extends JpaRepository<User, String> {
 //	透過 ID 查詢用戶
 	@Query(value = "SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", nativeQuery = true)
 	public int existsByEmail(String email);
+
+//	刪除殘餘的OTP碼欄位資料
+	@Modifying
+	@Query(value = "UPDATE user set otp_code = NULL, otp_expiry = NULL WHERE otp_expiry < ?", nativeQuery = true)
+	int clearExpiredOtp(@Param("now") LocalDateTime now);
 }

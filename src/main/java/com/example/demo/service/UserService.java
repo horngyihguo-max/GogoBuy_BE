@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -210,6 +211,26 @@ public class UserService {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
+	
+	/**
+     * 定時清理過期的 OTP。
+     * cron 表達式說明：秒 分 時 日 月 週
+     * "0 0 3 * * ?"    代表每天凌晨 3 點執行
+     *  0 0 12 * * ?    每天中午 12 點
+	 *  0 0 12 1 * ?    每個月 1 號中午 12 點
+	 *  0/5 0 12 * 1 ?  1 月每天中午 12 點，每 5 秒
+     */
+//	每小時進行一次清理
+    @Scheduled(cron = "*0 0 * * * ?")
+    @Transactional
+    public void cleanupExpiredOtp() {
+        System.out.println("開始清理過期驗證碼...");
+        
+        // 找到所有已過期且還有 code 的使用者，並清空欄位
+        int updatedRows = userDao.clearExpiredOtp(LocalDateTime.now());
+        
+        System.out.println("清理完成，共影響了 " + updatedRows + " 筆資料。");
+    }
 
 	/*
 	 * Redis功能區塊 暫時用不到 // 驗證並更新 Email

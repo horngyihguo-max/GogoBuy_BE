@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(exclude = { SecurityAutoConfiguration.class })
-@EnableScheduling // <--- 必須加上這一行
+@EnableScheduling 
 public class GogobuyApplication {
 
 	public static void main(String[] args) {
