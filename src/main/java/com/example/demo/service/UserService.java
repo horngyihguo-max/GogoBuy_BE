@@ -156,7 +156,7 @@ public class UserService {
 
 		SimpleMailMessage message = new SimpleMailMessage();
 
-		// 建議這裡也從 properties 讀取，或直接寫死你的發信帳號
+		// 從 properties 讀取，或直接寫死發信帳號
 		message.setFrom("GogobuyAdmin@gmail.com");
 		message.setTo(email);
 		message.setSubject("[GoGoBuy] 修改帳號驗證碼");
@@ -164,7 +164,7 @@ public class UserService {
 
 		try {
 			System.out.println("OTP碼:" + otpCode);
-			// 這是真正執行發送的動作
+			// 執行發送
 			mailSender.send(message);
 			return new BasicRes(ResMessage.EMAIL_SUCCESS.getCode(), //
 					ResMessage.EMAIL_SUCCESS.getMessage());
@@ -197,7 +197,7 @@ public class UserService {
 		}
 
 		// 檢查新信箱是否已被他人佔用
-		if (userDao.existsByEmail(newEmail) > 0) { // 假設你 userDao 有這個方法
+		if (userDao.existsByEmail(newEmail) > 0) { 
 			return new BasicRes(ResMessage.EMAIL_EXITS.getCode(), ResMessage.EMAIL_EXITS.getMessage());
 		}
 
