@@ -1,39 +1,66 @@
 package com.example.demo.vo;
 
+import java.time.LocalDate;
 import java.util.List;
 
+import jakarta.persistence.Column;
+
 public class WishVo {
-	private String userId;
-	private String followers;
-	private boolean deleted;
+	private int id;
+	private String user_id;
+	private String nickname;
+	private String title;
+	private List<String> followers;
+	private String type;
+	private LocalDate buildDate;
+	private String location;
 	
-	
-	public String getUserId() {
-		return userId;
+	public int getId() {
+		return id;
 	}
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public void setId(int id) {
+		this.id = id;
 	}
-	public String getFollowers() {
+	public String getUser_id() {
+		return user_id;
+	}
+	public void setUser_id(String user_id) {
+		this.user_id = user_id;
+	}
+	public String getNickname() {
+		return nickname;
+	}
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	public List<String> getFollowers() {
 		return followers;
 	}
-	public void setFollowers(String followers) {
+	public void setFollowers(List<String> followers) {
 		this.followers = followers;
 	}
-	public boolean isDeleted() {
-		return deleted;
+	public String getType() {
+		return type;
 	}
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
+	public void setType(String type) {
+		this.type = type;
 	}
-	
-	public WishVo() {
-		super();
+	public LocalDate getBuildDate() {
+		return buildDate;
 	}
-	public WishVo(String userId, String followers, boolean deleted) {
-		super();
-		this.userId = userId;
-		this.followers = followers;
-		this.deleted = deleted;
+	public void setBuildDate(LocalDate buildDate) {
+		this.buildDate = buildDate;
+	}
+	public String getLocation() {
+		return location;
+	}
+	public void setLocation(String location) {
+		this.location = location;
 	}
 }

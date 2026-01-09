@@ -12,6 +12,7 @@ import com.example.demo.request.UserAddReq;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.DelWishRes;
 import com.example.demo.service.WishService;
 
 import jakarta.validation.Valid;
@@ -22,10 +23,10 @@ public class WishController {
 	@Autowired
 	private WishService wishService;
 	
-//	@GetMapping("gogobuy/all_wishes")
-//	public AllWishRes allWish() {
-//		return wishService.allWish();
-//	}
+	@GetMapping("gogobuy/all_wishes")
+	public AllWishRes allWish() {
+		return wishService.allWish();
+	}
 	
 	@PostMapping("gogobuy/add_wishes")
 	public BasicRes create(@Valid @RequestBody WishReq req) {
@@ -38,7 +39,7 @@ public class WishController {
 	}
 	
 	@PostMapping("gogobuy/delete")
-	public BasicRes delete(@RequestParam("id") int id, @RequestParam("userId") String userId) {
+	public DelWishRes delete(@RequestParam("id") int id, @RequestParam("userId") String userId) {
 		return wishService.delWish(id, userId);
 	}
 }

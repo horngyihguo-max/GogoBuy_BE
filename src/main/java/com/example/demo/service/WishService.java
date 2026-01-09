@@ -14,9 +14,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.WishDao;
+import com.example.demo.entity.Wishes;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.DelWishRes;
 import com.example.demo.response.WishOverTimeRes;
 import com.example.demo.vo.WishVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,10 +33,33 @@ public class WishService {
 	@Autowired
 	private WishDao wishDao;
 	
-//	public AllWishRes allWish() {
-//		List<AllWishRes> all=wishDao.allWish();
-//		return new AllWishRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), all.getId());
-//	}
+	public AllWishRes allWish() {
+		List<Wishes> data=wishDao.allWish();
+		List<WishVo> returnData=new ArrayList<>();
+		for(Wishes w:data) {
+			WishVo vo=new WishVo();
+			vo.setId(w.getId());
+			vo.setUser_id(w.getUser_id());
+			vo.setTitle(w.getTitle());
+			vo.setType(w.getType());
+			vo.setBuildDate(w.getBuildDate());
+			vo.setLocation(w.getLocation());
+			if(w.isAnonymous()) {
+				vo.setNickname(wishDao.getNickname(w.getUser_id()));
+			}else {
+				vo.setNickname(null);
+			}
+			if (w.getFollowers() != null && !w.getFollowers().isBlank()) {
+	            vo.setFollowers(
+	                Arrays.asList(w.getFollowers().split(","))
+	            );
+	        }else {
+	        		vo.setFollowers(Collections.emptyList());
+	        }
+			returnData.add(vo);
+		}
+		return new AllWishRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), returnData);
+	}
 	
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes addWish(WishReq req) {
@@ -96,12 +121,21 @@ public class WishService {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 	
-	public BasicRes delWish(int id, String userId) {
+	public DelWishRes delWish(int id, String userId) {
+		List<Object[]> wishData=wishDao.getfollowers(id);
+		if (wishData.isEmpty()) {
+	        return new DelWishRes(ResMessage.WISH_ID_NOT_FOUND.getCode(), ResMessage.WISH_ID_NOT_FOUND.getMessage());
+	    }
+		Object[] data=wishData.get(0);
+		String wishUser=data[0].toString();
+		List<String> followersList = (data[1] != null) 
+			    ? new ArrayList<>(Arrays.asList(((String) data[1]).split(","))) 
+			    : new ArrayList<>();
 		int result=wishDao.delWish(id, userId);
 		if(result<=0) {
-			return new BasicRes(ResMessage.WISH_DELETE_ERROR.getCode(), ResMessage.WISH_DELETE_ERROR.getMessage());
+			return new DelWishRes(ResMessage.WISH_DELETE_ERROR.getCode(), ResMessage.WISH_DELETE_ERROR.getMessage());
 		}
-		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
+		return new DelWishRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), followersList);
 	}
 	
 	public void wishTimesReset() {
