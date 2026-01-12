@@ -68,6 +68,7 @@ public class UserService {
 	public LoginRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
+	
 
 		User user = userDao.getUserByEmail(email);
 
@@ -83,7 +84,9 @@ public class UserService {
 		}
 
 		return new LoginRes(ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage(), user.getId());
+				ResMessage.SUCCESS.getMessage(), user.getId(), //
+				user.getNickname(), user.getPhone(), user.getAvatarUrl(), //
+				user.getExp(), user.getCarrier(), user.getTimesRemaining());
 	}
 
 	/*

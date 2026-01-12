@@ -29,7 +29,7 @@ public class WishController {
 	}
 	
 	@PostMapping("gogobuy/add_wishes")
-	public BasicRes create(@Valid @RequestBody WishReq req) {
+	public BasicRes create(@Valid @RequestBody WishReq req) throws Exception {
 		return wishService.addWish(req);
 	}
 	
