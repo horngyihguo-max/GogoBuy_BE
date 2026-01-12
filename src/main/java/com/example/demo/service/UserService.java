@@ -83,7 +83,9 @@ public class UserService {
 		}
 
 		return new LoginRes(ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage(), user.getId());
+				ResMessage.SUCCESS.getMessage(), user.getId(), //
+				user.getNickname(), user.getPhone(), user.getAvatarUrl(), //
+				user.getExp(), user.getCarrier(), user.getTimesRemaining());
 	}
 
 	/*

@@ -30,6 +30,28 @@ public class User {
 	@Column(name = "password")
 	private String password;
 
+	@Column(name = "exp")
+	private int exp;
+
+	@Column(name = "times_remaining")
+	private int timesRemaining;
+
+	public int getTimesRemaining() {
+		return timesRemaining;
+	}
+
+	public void setTimesRemaining(int timesRemaining) {
+		this.timesRemaining = timesRemaining;
+	}
+
+	public int getExp() {
+		return exp;
+	}
+
+	public void setExp(int exp) {
+		this.exp = exp;
+	}
+
 	@Column(name = "carrier")
 	private String carrier;
 
