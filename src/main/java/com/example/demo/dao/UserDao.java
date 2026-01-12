@@ -48,7 +48,19 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Query(value = "update user SET phone = ?2 where id = ?1", nativeQuery = true)
 	public int userPhone(String id, String phone);
 
-//	透過 ID 查詢用戶
+//	OTP驗證碼
+	@Transactional
+	@Modifying
+	@Query(value = "update user SET otp_code = ?2, otp_expiry=?3 where id = ?1", nativeQuery = true)
+	public int sendOTP(String id, String otpCode, LocalDateTime otpExpiry);
+
+//	修改信箱
+	@Transactional
+	@Modifying
+	@Query(value = "update user SET email= ?2, otp_code = NULL, otp_expiry= NULL where id = ?1", nativeQuery = true)
+	public int updateEmail(String id, String email);
+
+//	檢查是否有相同Email存在
 	@Query(value = "SELECT EXISTS(SELECT 1 FROM user WHERE email = ?)", nativeQuery = true)
 	public int existsByEmail(String email);
 

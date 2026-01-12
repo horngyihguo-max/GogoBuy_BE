@@ -17,9 +17,11 @@ import com.example.demo.dao.UserDao;
 import com.example.demo.dto.UserInfoDto;
 import com.example.demo.dto.UserPasswordDto;
 import com.example.demo.entity.User;
+import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.LoginRes;
 
 import jakarta.transaction.Transactional;
 
@@ -40,6 +42,9 @@ public class UserService {
 
 	private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+	/*
+	 * 會員註冊
+	 */
 	public BasicRes addUser(UserAddReq req) {
 		String uniqueID = UUID.randomUUID().toString();
 		String email = req.getEmail();
@@ -57,28 +62,33 @@ public class UserService {
 		}
 	}
 
-	public BasicRes login(UserLoginReq req) {
+	/*
+	 * 登入
+	 */
+	public LoginRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
 
 		User user = userDao.getUserByEmail(email);
 
 		if (user == null) {
-			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+			return new LoginRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
 //		比對密碼:
 //		比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(password, user.getPassword())) {
-			return new BasicRes(ResMessage.PASSWORD_ERROR.getCode(), //
+			return new LoginRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
 		}
 
-		return new BasicRes(ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage());
+		return new LoginRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage(), user.getId());
 	}
 
-//	更新暱稱、大頭貼或載具
+	/*
+	 * 更新暱稱、大頭貼或載具
+	 */
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes updateInfo(UserInfoDto dto, String id) {
 		User user = userDao.getUserById(id);
@@ -98,7 +108,9 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	更新密碼
+	/*
+	 * 於會員中心更改密碼
+	 */
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes updatePassword(String id, UserPasswordDto dto) {
 		User user = userDao.getUserById(id);
@@ -126,7 +138,9 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	串接電話
+	/*
+	 * 串接電話
+	 */
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes userPhone(String phone, String id) {
 		User user = userDao.getUserById(id);
@@ -143,17 +157,16 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	發送OTP code 並修改Email
+	/*
+	 * 發送OTP code 至 Email
+	 */
 	@Transactional
-	public BasicRes sendOtpWithoutRedis(String email, String id) {
+	public BasicRes sendOTP(String email, String id) {
 		// 1. 生成 6 位數驗證碼
 		String otpCode = String.format("%06d", new Random().nextInt(1000000));
 
 		// 2. 找到使用者並更新 OTP 資訊
-		User user = userDao.getUserById(id);
-		user.setOtpCode(otpCode);
-		user.setOtpExpiry(LocalDateTime.now().plusMinutes(5)); // 設定 5 分鐘後過期
-		userDao.save(user);
+		userDao.sendOTP(id, otpCode, LocalDateTime.now().plusMinutes(10));
 
 		SimpleMailMessage message = new SimpleMailMessage();
 
@@ -161,7 +174,7 @@ public class UserService {
 		message.setFrom("GogobuyAdmin@gmail.com");
 		message.setTo(email);
 		message.setSubject("[GoGoBuy] 修改帳號驗證碼");
-		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 5 分鐘後失效，請盡速完成操作。");
+		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 10 分鐘後失效，請盡速完成操作。");
 
 		try {
 			System.out.println("OTP碼:" + otpCode);
@@ -175,6 +188,9 @@ public class UserService {
 		}
 	}
 
+	/*
+	 * 驗證OTP碼並更新Email
+	 */
 	@Transactional
 	public BasicRes verifyAndUpdateEmail(String newEmail, String inputCode, String id) {
 		User user = userDao.getUserById(id);
@@ -198,39 +214,74 @@ public class UserService {
 		}
 
 		// 檢查新信箱是否已被他人佔用
-		if (userDao.existsByEmail(newEmail) > 0) { 
+		if (userDao.existsByEmail(newEmail) > 0) {
 			return new BasicRes(ResMessage.EMAIL_EXITS.getCode(), ResMessage.EMAIL_EXITS.getMessage());
 		}
 
 		// 4. 驗證通過，執行更新並清空 OTP 資訊
-		user.setEmail(newEmail);
-		user.setOtpCode(null); // 清除驗證碼，防止重複使用
+		userDao.updateEmail(id, newEmail);
+
+		return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+	}
+
+	/*
+	 * 重設密碼 (忘記密碼)
+	 */
+	@Transactional(rollbackOn = Exception.class)
+	public BasicRes resetPassword(ResetPasswordReq req) {
+		User user = userDao.getUserByEmail(req.getEmail());
+//		檢查帳戶是否存在
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+
+		// 1. 檢查驗證碼是否為空
+		if (user.getOtpCode() == null || user.getOtpExpiry() == null) {
+			return new BasicRes(ResMessage.OTP_EMPTY.getCode(), //
+					ResMessage.OTP_EMPTY.getMessage());
+		}
+
+		// 2. 檢查驗證碼是否過期
+		if (LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+			return new BasicRes(ResMessage.OTP_EXPIRED.getCode(), //
+					ResMessage.OTP_EXPIRED.getMessage());
+		}
+
+		// 3. 比對驗證碼
+		if (!user.getOtpCode().equals(req.getOtpCode())) {
+			return new BasicRes(ResMessage.OTP_ERROR.getCode(), //
+					ResMessage.OTP_ERROR.getMessage());
+		}
+
+//		加密新密碼
+		String encodePassword = encoder.encode(req.getNewPassword());
+		userDao.userPassword(user.getId(), encodePassword);
+
+//		清空 OTP 防止重複使用
+		user.setOtpCode(null);
 		user.setOtpExpiry(null);
 		userDao.save(user);
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
-	
-	/**
-     * 定時清理過期的 OTP。
-     * cron 表達式說明：秒 分 時 日 月 週
-     * "0 0 3 * * ?"    代表每天凌晨 3 點執行
-     *  0 0 12 * * ?    每天中午 12 點
-	 *  0 0 12 1 * ?    每個月 1 號中午 12 點
-	 *  0/5 0 12 * 1 ?  1 月每天中午 12 點，每 5 秒
-     */
+
 //	每小時進行一次清理
-    @Scheduled(cron = "0 0 * * * ?")
-    @Transactional
-    public void cleanupExpiredOtp() {
-        System.out.println("開始清理過期驗證碼...");
-        
-        // 找到所有已過期且還有 code 的使用者，並清空欄位
-        int updatedRows = userDao.clearExpiredOtp(LocalDateTime.now());
-        
-        System.out.println("清理完成，共影響了 " + updatedRows + " 筆資料。");
-    }
+	@Scheduled(cron = "0 0 * * * ?")
+	@Transactional
+	/*
+	 * 每隔一小時清理資料庫的OTP驗證碼
+	 */
+	public void cleanupExpiredOtp() {
+		System.out.println("開始清理過期驗證碼...");
+
+		// 找到所有已過期且還有 code 的使用者，並清空欄位
+		int updatedRows = userDao.clearExpiredOtp(LocalDateTime.now());
+
+		System.out.println("清理完成，共影響了 " + updatedRows + " 筆資料。");
+	}
 
 	/*
 	 * Redis功能區塊 暫時用不到 // 驗證並更新 Email
