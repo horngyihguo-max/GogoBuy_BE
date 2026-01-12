@@ -20,6 +20,7 @@ import com.example.demo.dto.UserAccountDto;
 import com.example.demo.dto.UserInfoDto;
 import com.example.demo.dto.UserPasswordDto;
 import com.example.demo.entity.User;
+import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
@@ -41,6 +42,9 @@ public class UserController {
 	@Autowired
 	private UserDao userDao;
 
+	/*
+	 * 透過Google登入
+	 */
 	@GetMapping("/user/login/google")
 	public Map<String, Object> googleLogin(@AuthenticationPrincipal OAuth2User principal) {
 		if (principal == null) {
@@ -71,13 +75,17 @@ public class UserController {
 		}
 	}
 
-//	新增帳戶
+	/*
+	 * 註冊
+	 */
 	@PostMapping("gogobuy/user/registration")
 	public BasicRes create(@Valid @RequestBody UserAddReq req) throws Exception {
 		return userService.addUser(req);
 	}
 
-//	登入
+	/*
+	 * 登入
+	 */
 	@PostMapping("gogobuy/user/login")
 	public BasicRes login(@Valid @RequestBody UserLoginReq req, HttpSession session) throws Exception {
 		BasicRes res = userService.login(req);
@@ -88,20 +96,32 @@ public class UserController {
 		return res;
 	}
 
-//	修改大頭貼、暱稱、載具
-	@PatchMapping("gogobuy/user/profile")
+	/*
+	 * 修改大頭貼、暱稱、載具
+	 */
+	@PatchMapping("gogobuy/user/change-profile")
 	public BasicRes updateInfo(@RequestBody UserInfoDto dto, @RequestParam("id") String id) {
 		return userService.updateInfo(dto, id);
 	}
 
-//	修改密碼
-	@PostMapping("gogobuy/user/password")
+	/*
+	 * 會員中心修改密碼
+	 */
+	@PostMapping("gogobuy/user/change-password")
 	public BasicRes changePassword(@RequestBody UserPasswordDto dto, @RequestParam("id") String id) {
 		return userService.updatePassword(id, dto);
 	}
 
+	/*
+	 * 忘記密碼重設密碼
+	 */
+	@PutMapping("gogobuy/user/reset-password")
+	public BasicRes resetPassword(@RequestBody ResetPasswordReq req) {
+		return userService.resetPassword(req);
+	}
+
 //	串接電話
-	@PostMapping("gogobuy/user/phone")
+	@PostMapping("gogobuy/user/connect-phone")
 	public BasicRes userPhone(@RequestBody String phone, @RequestParam("id") String id) {
 		return userService.userPhone(phone, id);
 	}
@@ -123,7 +143,7 @@ public class UserController {
 //	發送OTP驗證碼
 	@PostMapping("gogobuy/user/send-otp")
 	public BasicRes sendOtpWithoutRedis(@RequestBody SendOtpRequest req, @RequestParam("id") String id) {
-		return userService.sendOtpWithoutRedis(req.email(), id);
+		return userService.sendOTP(req.email(), id);
 	}
 
 //	確認OTP驗證碼並更改email
