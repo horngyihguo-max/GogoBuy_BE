@@ -22,7 +22,7 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 //	全部願望
 	@Query(value = "select * from wishes where is_deleted = false", nativeQuery = true)
 	public List<Wishes> allWish();
-	//抓匿名人類
+	//抓非匿名人類
 	@Query(value = "select nickname from user where id = ?", nativeQuery = true)
 	public String getNickname(String userId);
 	
@@ -65,10 +65,10 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 	public int delWish(int id, String userId);
 	
 //	超過3個月
-	@Query(value = "select user_id from wishes where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW()", nativeQuery = true)
+	@Query(value = "select user_id from wishes where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
 	public List<String> checkOverTime();
 	@Modifying
 	@Transactional
-	@Query(value = "update wishes set is_deleted = true where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW()", nativeQuery = true)
+	@Query(value = "update wishes set is_deleted = true where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
 	public int delOverTime();
 }

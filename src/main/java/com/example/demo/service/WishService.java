@@ -62,7 +62,7 @@ public class WishService {
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
-	public BasicRes addWish(WishReq req) {
+	public BasicRes addWish(WishReq req) throws Exception{
 		int times=wishDao.getTimes(req.getUserId());
 		if(times<=0) {
 			return new BasicRes(ResMessage.OUT_OF_TIMES_REMAINING.getCode(), ResMessage.OUT_OF_TIMES_REMAINING.getMessage());
@@ -143,11 +143,18 @@ public class WishService {
 		wishDao.wishTimesReset(500, 999, 5);
 	}
 	
-//	public WishOverTimeRes wishOverThreeMonth() {
-//		List<String> userList=wishDao.checkOverTime();
-//		int wishAmount=wishDao.delOverTime();
-//		if(wishAmount!=userList.size()) {
-//			throw e;
-//		}
-//	}
+	@Transactional(rollbackOn = Exception.class)
+	public WishOverTimeRes wishOverThreeMonth() throws Exception{
+		List<String> userList=wishDao.checkOverTime();
+		try {
+			int wishAmount=wishDao.delOverTime();
+			if(wishAmount!=userList.size()) {
+				throw new RuntimeException("刪除數量不符");
+			}
+			return new WishOverTimeRes(ResMessage.SUCCESS.getCode(), //
+					ResMessage.SUCCESS.getMessage(), userList);
+		}catch(Exception e){
+			throw e;
+		}
+	}
 }
