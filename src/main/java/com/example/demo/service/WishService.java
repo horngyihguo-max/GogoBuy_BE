@@ -1,11 +1,14 @@
 package com.example.demo.service;
 
 import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,7 +22,6 @@ import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.DelWishRes;
-import com.example.demo.response.WishOverTimeRes;
 import com.example.demo.vo.WishVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -144,15 +146,27 @@ public class WishService {
 	}
 	
 	@Transactional(rollbackOn = Exception.class)
-	public WishOverTimeRes wishOverThreeMonth() throws Exception{
-		List<String> userList=wishDao.checkOverTime();
+	public BasicRes wishOverThreeMonth() throws Exception{
+		List<Wishes> wishesData=wishDao.checkOverTime();
 		try {
 			int wishAmount=wishDao.delOverTime();
-			if(wishAmount!=userList.size()) {
+			if(wishAmount!=wishesData.size()) {
 				throw new RuntimeException("刪除數量不符");
 			}
-			return new WishOverTimeRes(ResMessage.SUCCESS.getCode(), //
-					ResMessage.SUCCESS.getMessage(), userList);
+			Map<String, List<String>> titleFollower=new HashMap<>();
+			for(Wishes w:wishesData) {
+				wishDao.addMessage(w.getUser_id(), "你的願望已超過3個月嘍!!", "你的願望已超過3個月，願望未成功開團，請重新許願");
+				if(w.getFollowers()!=null) {
+					titleFollower.put(w.getTitle(), Arrays.asList(w.getFollowers().split(",")));
+				}
+			}
+			titleFollower.forEach((title, followers)->{
+				for(String follower:followers) {
+					wishDao.addMessage(follower, "願望已超過3個月", title+"願望已超過3個月，願望未成功開團，快去許願池找找相似的願望吧");
+				}
+			});
+			return new BasicRes(ResMessage.SUCCESS.getCode(), //
+					ResMessage.SUCCESS.getMessage());
 		}catch(Exception e){
 			throw e;
 		}
