@@ -20,16 +20,6 @@ public class UserAddReq {
 	@Pattern(regexp = "^09\\d{2}[\\s\\-]?\\d{3}[\\s\\-]?\\d{3}$", message = ValidationMsg.PHONE_ERROR)
 	@NotNull(message = ValidationMsg.PHONE_ERROR)
 	private String phone;
-	
-	private String avatarUrl;
-
-	public String getAvatarUrl() {
-		return avatarUrl;
-	}
-
-	public void setAvatarUrl(String avatarUrl) {
-		this.avatarUrl = avatarUrl;
-	}
 
 	public String getEmail() {
 		return email;

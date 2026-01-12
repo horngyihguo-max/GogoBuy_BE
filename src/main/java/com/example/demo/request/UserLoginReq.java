@@ -13,6 +13,7 @@ public class UserLoginReq {
 	@Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,16}$", message = ValidationMsg.PASSWORD_ERROR)
 	@NotBlank(message = ValidationMsg.PASSWORD_ERROR)
 	private String password;
+	
 
 	public String getEmail() {
 		return email;

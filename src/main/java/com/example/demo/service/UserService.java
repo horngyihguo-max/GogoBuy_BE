@@ -29,8 +29,7 @@ public class UserService {
 		String password = req.getPassword();
 		String name = req.getNickname();
 		String phone = req.getPhone();
-		String avatarUrl = req.getAvatarUrl();
-		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone, avatarUrl);
+		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone);
 		if (res == 1) {
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
 					ResMessage.SUCCESS.getMessage());
@@ -43,6 +42,7 @@ public class UserService {
 	public BasicRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
+	
 
 		User user = userDao.getUser(email);
 

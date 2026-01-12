@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ import com.example.demo.dao.UserDao;
 import com.example.demo.entity.User;
 
 @Service
-public class GoogelOAuth2Service extends DefaultOAuth2UserService {
+public class GoogleOAuth2Service extends DefaultOAuth2UserService {
 
 	@Autowired
 	private UserDao userDao;
@@ -30,42 +31,44 @@ public class GoogelOAuth2Service extends DefaultOAuth2UserService {
 		// 1. 抓取 Google 資料
 		OAuth2User oAuth2User = super.loadUser(userRequest);
 		String email = oAuth2User.getAttribute("email");
-		String name = oAuth2User.getAttribute("name");
+		String nickname = oAuth2User.getAttribute("name");
 		String avatarUrl = oAuth2User.getAttribute("picture");
 		String password = oAuth2User.getAttribute("sub");
-		String phone = "09xxxxxxxx";
+		String phone = "未提供電話";
 
 		// 2. 判斷是否需要自動註冊
 		if (userDao.getUser(email) == null) {
-			userDao.addGoogleUser(UUID.randomUUID().toString(), email, encoder.encode(password), name, phone,
+			userDao.addGoogleUser(UUID.randomUUID().toString(), email, encoder.encode(password), nickname, phone,
 					avatarUrl);
 		}
 		return oAuth2User;
 	}
 
-	public Map<String, Object> loginGoogle(@AuthenticationPrincipal OAuth2User principal) {
+	public Map<String, Object> loginGoogle( OAuth2User principal) {
+		
+		Map<String, Object> res = new HashMap<>();
+		
 		if (principal == null) {
 			return Map.of("status", "未登入");
 		}
 		// 1. 從 Google 資料中取得 Email
 		String email = principal.getAttribute("email");
+		String nickname = principal.getAttribute("name");
+        String avatarUrl = principal.getAttribute("picture");
 
 		// 2. 去資料庫查看看有沒有這個 Email
 		User user = userDao.getUser(email);
 
 		if (user != null) {
-			// 資料庫已有此用戶
-			return Map.of("status", "登入成功 "
-//	                "nickname", user.getNickname(), // 從資料庫拿暱稱
-//	                "email",user.getEmail(),
-//	                "avatarUrl", principal.getAttribute("picture"),
-//	         		 "password", principal.getAttribute("sub")
-			);
-		} else {
-			// Google 驗證通過，但資料庫沒有這個 Email (新使用者
-			return Map.of("status", "處理中"
-					//"message", "帳號同步中"
-					);
-		}
+            res.put("status", "success");
+            res.put("nickname", nickname != null ? nickname : user.getNickname()); 
+            res.put("email", email);
+//            res.put("sub", encoder.encode(password));
+            res.put("avatarUrl", avatarUrl);
+        } else {
+            res.put("status", "processing");
+            res.put("message", "帳號建立中，請稍後再試");
+        }
+        return res;
 	}
 }

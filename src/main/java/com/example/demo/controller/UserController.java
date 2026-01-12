@@ -15,7 +15,7 @@ import com.example.demo.constants.ResMessage;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.service.GoogelOAuth2Service;
+import com.example.demo.service.GoogleOAuth2Service;
 import com.example.demo.service.UserService;
 
 import jakarta.servlet.http.HttpSession;
@@ -29,7 +29,7 @@ public class UserController {
 	private UserService userService;
 
 	@Autowired
-    private GoogelOAuth2Service googelOAuth2Service;
+    private GoogleOAuth2Service googleOAuth2Service;
 
 	@PostMapping("gogobuy/addUser")
 	public BasicRes create(@Valid @RequestBody UserAddReq req) throws Exception {
@@ -55,11 +55,11 @@ public class UserController {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
-	
-	//Google授權登入
-	@GetMapping("/gogobuy/OALogin")
-    public Map<String, Object> getGoogleUser(@AuthenticationPrincipal OAuth2User principal) {
-        return googelOAuth2Service.loginGoogle(principal);
+	// http://localhost:8080/oauth2/authorization/google 授權網址
+	// 拿Google資料
+	@GetMapping("/oauth/user")
+    public Map<String, Object> getUser(@AuthenticationPrincipal OAuth2User principal) {
+        return googleOAuth2Service.loginGoogle(principal);
     }
 	
 }
