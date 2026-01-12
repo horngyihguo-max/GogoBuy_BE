@@ -68,7 +68,6 @@ public class UserService {
 	public LoginRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
-	
 
 		User user = userDao.getUserByEmail(email);
 
@@ -190,7 +189,7 @@ public class UserService {
 					ResMessage.EMAIL_ERROR.getMessage());
 		}
 	}
-	
+
 	/*
 	 * 透過 email 確認是否有該用戶 並發送OTP
 	 */
@@ -198,15 +197,22 @@ public class UserService {
 	public BasicRes sendOtpByEmail(String email) {
 		// 1. 生成 6 位數驗證碼
 		String otpCode = String.format("%06d", new Random().nextInt(1000000));
+		
+		User user = userDao.getUserByEmail(email);
+		
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
 
 		// 2. 找到使用者並更新 OTP 資訊
-		userDao.sendOtpByEmail(email, otpCode, LocalDateTime.now().plusMinutes(10));
-		
+		userDao.sendOtpByEmail(user.getEmail(), otpCode, LocalDateTime.now().plusMinutes(10));
+
 		SimpleMailMessage message = new SimpleMailMessage();
 
 		// 從 properties 讀取，或直接寫死發信帳號
 		message.setFrom("GogobuyAdmin@gmail.com");
-		message.setTo(email);
+		message.setTo(user.getEmail());
 		message.setSubject("[GoGoBuy] 修改密碼驗證碼");
 		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 10 分鐘後失效，請盡速完成操作。");
 
@@ -296,6 +302,7 @@ public class UserService {
 //		清空 OTP 防止重複使用
 		user.setOtpCode(null);
 		user.setOtpExpiry(null);
+		user.setPassword(encodePassword);
 		userDao.save(user);
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //

@@ -134,7 +134,7 @@ public class UserController {
 	 * 根據email發送OTP驗證碼
 	 */
 	@PostMapping("gogobuy/user/send-otp-email")
-	public BasicRes sendOtpByEmail(String email) {
+	public BasicRes sendOtpByEmail(@RequestBody String email) {
 		return userService.sendOtpByEmail(email);
 	}
 
