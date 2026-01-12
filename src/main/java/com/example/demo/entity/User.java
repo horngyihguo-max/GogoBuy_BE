@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -30,6 +32,28 @@ public class User {
 
 	@Column(name = "carrier")
 	private String carrier;
+
+	@Column(name = "otp_code")
+	private String otpCode;
+
+	@Column(name = "otp_expiry")
+	private LocalDateTime otpExpiry;
+
+	public String getOtpCode() {
+		return otpCode;
+	}
+
+	public void setOtpCode(String otpCode) {
+		this.otpCode = otpCode;
+	}
+
+	public LocalDateTime getOtpExpiry() {
+		return otpExpiry;
+	}
+
+	public void setOtpExpiry(LocalDateTime otpExpiry) {
+		this.otpExpiry = otpExpiry;
+	}
 
 	public String getId() {
 		return id;
