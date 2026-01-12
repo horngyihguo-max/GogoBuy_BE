@@ -90,13 +90,17 @@ public class UserController {
 		return userService.resetPassword(req);
 	}
 
-//	串接電話
+	/*
+	 * 串接電話
+	 */
 	@PostMapping("gogobuy/user/connect-phone")
 	public BasicRes userPhone(@RequestBody String phone, @RequestParam("id") String id) {
 		return userService.userPhone(phone, id);
 	}
 
-//	登出
+	/*
+	 * 登出
+	 */
 	@PostMapping("gogobuy/user/logout")
 	public BasicRes logout(HttpSession session) {
 //		讓session 失效
@@ -110,16 +114,28 @@ public class UserController {
 	public record SendOtpRequest(String email) {
 	}
 
-//	發送OTP驗證碼
+	/*
+	 * 根據Id發送OTP驗證碼
+	 */
 	@PostMapping("gogobuy/user/send-otp")
 	public BasicRes sendOtpWithoutRedis(@RequestBody SendOtpRequest req, @RequestParam("id") String id) {
-		return userService.sendOTP(req.email(), id);
+		return userService.sendOtpById(req.email(), id);
 	}
 
-//	確認OTP驗證碼並更改email
+	/*
+	 * 驗證OTP碼並更改email
+	 */
 	@PutMapping("gogobuy/user/email-verify")
 	public BasicRes verifyAndUpdateEmail(@RequestBody UserAccountDto dto, @RequestParam("id") String id) {
 		return userService.verifyAndUpdateEmail(dto.getNewEmail(), dto.getOtpCode(), id);
+	}
+
+	/*
+	 * 根據email發送OTP驗證碼
+	 */
+	@PostMapping("gogobuy/user/send-otp-email")
+	public BasicRes sendOtpByEmail(String email) {
+		return userService.sendOtpByEmail(email);
 	}
 
 }
