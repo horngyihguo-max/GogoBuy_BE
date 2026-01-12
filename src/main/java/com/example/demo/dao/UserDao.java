@@ -68,4 +68,17 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Modifying
 	@Query(value = "UPDATE user set otp_code = NULL, otp_expiry = NULL WHERE otp_expiry < ?", nativeQuery = true)
 	int clearExpiredOtp(@Param("now") LocalDateTime now);
+	
+
+//	查詢用戶
+	@Query(value = "Select * from user where email = ?", nativeQuery = true)
+	public User getUser(String email);
+	
+
+//	新增Google用戶
+	@Transactional
+	@Modifying
+	@Query(value = "insert into user(id, email, password, nickname, phone,avatar_url) "//
+			+ " values (?1, ?2, ?3, ?4, ?5, ?6)", nativeQuery = true)
+	public int addGoogleUser(String id, String email, String password, String nickname, String phone , String avatarUrl);
 }
