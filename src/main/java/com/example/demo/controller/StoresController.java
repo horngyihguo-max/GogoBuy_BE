@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -60,6 +61,19 @@ public class StoresController {
 			return new BasicRes(400, "刪除失敗: " + e.getMessage());
 		}
 	}
+	
+//	名字模糊搜尋店家
+	@GetMapping("gogobuy/store/searchName")
+    public BasicRes searchStores(@RequestParam(name = "name",required = false) String name) {
+        return storeService.getStoresByName(name);
+    }
+	
+//	取得指定店家資訊(開團)
+	@GetMapping("gogobuy/store/searchId")
+    public BasicRes getStoreById(@RequestParam(name = "id") int id) {
+        return storeService.getStoreById(id);
+    }
+	
 	
 	
 }

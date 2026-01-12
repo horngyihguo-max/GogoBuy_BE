@@ -3,7 +3,10 @@ package com.example.demo.service;
 import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,9 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.StoresCreateDao;
+import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.StoresUpdateDao;
+import com.example.demo.entity.Stores;
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.StroresRes;
 import com.example.demo.vo.FeeDescriptionVo;
 import com.example.demo.vo.MenuCategoriesVo;
 import com.example.demo.vo.MenuVo;
@@ -22,6 +28,7 @@ import com.example.demo.vo.ProductOptionGroupsVo;
 import com.example.demo.vo.ProductOptionItemsVo;
 import com.example.demo.vo.StoreOperatingHoursVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -34,6 +41,9 @@ public class StoreService {
 		
 	@Autowired
 	private StoresUpdateDao storesUpdateDao;
+	
+	@Autowired
+	private StoresSearchDao storesSearchDao;
 	
 //	店家
 	private void checkStore(StoresReq req) throws Exception {
@@ -258,5 +268,94 @@ public class StoreService {
 		    }
 		    
 		    return new BasicRes(ResMessage.SUCCESS.getCode(), "店家 ID " + storeId + " 已成功軟刪除");
+		}
+		
+		public StroresRes getStoresByName(String name) {
+		    try {
+		        // 修正點：如果未輸入或只有空白，直接回傳空清單
+		        if (name == null || name.trim().isEmpty()) {
+		            return new StroresRes(ResMessage.INPUT_IS_EMPTY.getCode(), "請輸入搜尋關鍵字", null);
+		        }
+
+		        List<Stores> storeList = storesSearchDao.findStoresByNameLike(name);
+		        
+		        return new StroresRes(ResMessage.SUCCESS.getCode(), "搜尋成功，共 " + storeList.size() + " 筆", storeList);
+		    } catch (Exception e) {
+		        return new StroresRes(500, "搜尋失敗: " + e.getMessage());
+		    }
+		}
+		
+		public StroresRes getStoreById(int storesId) {
+		    try {
+		        // 查詢店家主表 (確認是否存在且未被軟刪除)
+		        Stores store = storesSearchDao.getStoreById(storesId);
+		        if (store == null) {
+		            return new StroresRes(ResMessage.STORE_NOT_FOUND.getCode(), 
+		                                 ResMessage.STORE_NOT_FOUND.getMessage(), null);
+		        }
+		        
+		        StroresRes res = new StroresRes(ResMessage.SUCCESS.getCode(), 
+                        ResMessage.SUCCESS.getMessage(), 
+                        List.of(store));
+		     // 營業時間
+		        List<Map<String, Object>> hoursMap = storesSearchDao.getOperatingHoursByStoreId(storesId);
+		        res.setOperatingHoursVoList(mapper.convertValue(hoursMap, new TypeReference<List<StoreOperatingHoursVo>>(){}));
+
+		        // 菜單分類
+		        List<Map<String, Object>> categoriesMap = storesSearchDao.getCategoriesByStoreId(storesId);
+		        List<MenuCategoriesVo> categoriesVoList = new ArrayList<>();
+		        for (Map<String, Object> map : categoriesMap) {
+		            MenuCategoriesVo catVo = new MenuCategoriesVo();
+		            catVo.setName((String) map.get("name"));
+		            // 手動將 price_level 字串轉為 List
+		            String priceLevelStr = (String) map.get("priceLevel");
+		            if (priceLevelStr != null && !priceLevelStr.isEmpty()) {
+		                catVo.setPriceLevel(mapper.readValue(priceLevelStr, new TypeReference<List<PriceLevelVo>>(){}));
+		            }
+		            categoriesVoList.add(catVo);
+		        }
+		        res.setMenuCategoriesVoList(categoriesVoList);
+
+		        // 菜單品項
+		        List<Map<String, Object>> menuMap = storesSearchDao.getMenuByStoreId(storesId);
+		        List<MenuVo> menuVoList = new ArrayList<>();
+		        for (Map<String, Object> map : menuMap) {
+		            // 先轉簡單欄位
+		        	Map<String, Object> tempMap = new HashMap<>(map);
+		        	//先移出unusual		        	
+		        	tempMap.remove("unusual");
+		            MenuVo mVo = mapper.convertValue(tempMap, MenuVo.class);
+		            // 手動將 unusual 字串轉為 Object/Map
+		            String unusualStr = (String) map.get("unusual");
+		            if (unusualStr != null && !unusualStr.isEmpty()) {
+		                //解析為 Map，保留 JSON 的鍵值結構
+		                mVo.setUnusual(mapper.readValue(unusualStr, new TypeReference<Map<String, Object>>(){}));
+		            }
+		            menuVoList.add(mVo);
+		        }
+		        res.setMenuVoList(menuVoList);
+
+		        // 選項群組與細項 (兩層巢狀)
+		        List<Map<String, Object>> groupsMap = storesSearchDao.getOptionGroupsByStoreId(storesId);
+		        List<ProductOptionGroupsVo> groupsVo = mapper.convertValue(groupsMap, new TypeReference<List<ProductOptionGroupsVo>>(){});
+		        
+		        for (ProductOptionGroupsVo group : groupsVo) {
+		            List<Map<String, Object>> itemsMap = storesSearchDao.getOptionItemsByGroupId(group.getId());
+		            group.setItems(mapper.convertValue(itemsMap, new TypeReference<List<ProductOptionItemsVo>>(){}));
+		        }
+		        res.setProductOptionGroupsVoList(groupsVo);
+
+		        // 處理主表內的 JSON 字串 (如 FeeDescription)
+		        //  store 沒有 VoList 欄位，但 res 有，解析後塞給 res
+		        if (store.getFeeDescription() != null) {
+		            List<FeeDescriptionVo> fees = mapper.readValue(store.getFeeDescription(), new TypeReference<List<FeeDescriptionVo>>(){});
+		            res.setFeeDescriptionVoList(fees); 
+		        }
+
+		        return res;
+		                              
+		    } catch (Exception e) {
+		        return new StroresRes(500, "取得店家資料失敗: " + e.getMessage(), null);
+		    }
 		}
 }

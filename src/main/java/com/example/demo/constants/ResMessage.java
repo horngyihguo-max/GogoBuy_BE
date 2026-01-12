@@ -11,6 +11,7 @@ public enum ResMessage {
 	CATEGORY_ERROR(400,"大類型的類型錯誤(不存在)"),
 	STORE_EXISTS(400,"店家(電話)已存在"),
 	STORE_NOT_FOUND(404,"找不到該店家"),
+	INPUT_IS_EMPTY(400,"請輸入搜尋關鍵字"),
 	USER_NOT_FOUND(404, "找不到此用戶");
 	
 	
