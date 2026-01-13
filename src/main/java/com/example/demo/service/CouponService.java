@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,7 @@ import com.example.demo.entity.Coupons;
 import com.example.demo.entity.User;
 import com.example.demo.request.CouponReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.CouponsRes;
 
 @Service
 public class CouponService {
@@ -168,5 +170,13 @@ public class CouponService {
 		
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
+	}
+	
+	public CouponsRes searchCouponByUser(String UserId) {
+		
+		List <Coupons> coupons =  couponsDao.getCouponByUserId(UserId);
+		
+		 return new CouponsRes(ResMessage.SUCCESS.getCode(), //
+					ResMessage.SUCCESS.getMessage(),coupons);
 	}
 }

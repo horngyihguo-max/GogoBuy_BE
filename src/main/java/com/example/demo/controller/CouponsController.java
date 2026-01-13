@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -59,5 +60,10 @@ public class CouponsController {
 		} catch (Exception e) {
 			return new BasicRes(400, "刪除失敗: " + e.getMessage());
 		}
+	}
+	
+	@GetMapping("gogobuy/coupon/searchUser")
+	  public BasicRes getCouponById(@RequestParam(name = "user_id") String userId) {
+		return couponService.searchCouponByUser(userId);
 	}
 }
