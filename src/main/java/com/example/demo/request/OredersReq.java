@@ -1,68 +1,41 @@
-package com.example.demo.entity;
+package com.example.demo.request;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 import com.example.demo.constants.PickupStatusEnum;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-@Entity
-@Table(name = "orders")
-public class Orders {
+public class OredersReq {
 
-	@Id
-	@Column(name = "id")
-	private int id;
-	
-	@Column(name = "events_id")
+	@NotNull(message = "所屬團ID必填")
 	private int eventsId;
-	
-	@Column(name = "user_id")
+    @NotBlank(message = "跟團者ID必填")
 	private String userId;
-	
-	@Column(name = "menu_id")
+    @NotNull(message = "菜單品項ID必填")
 	private int menuId;
-	
-	@Column(name = "quantity")
+    @NotNull(message = "數量必填")
 	private int quantity;
 	
-	@Column(name = "selected_option")
-	private String selectedOption;
+	private List<Map<String, Object>> selectedOptionList;
 	
-	@Column(name = "personal_memo")
 	private String personalMemo;
-	
-	@Column(name = "order_time")
+	@NotBlank(message = "創建時間必填")
 	private LocalDateTime orderTime;
 	
-	@Column(name = "pickup_status")
-	@Enumerated(EnumType.STRING) 
+	@NotNull(message = "支付狀態必填")
 	private PickupStatusEnum pickupStatus;
 	
-	@Column(name = "pickup_time")
+	@NotBlank(message = "領取時間必填")
 	private LocalDateTime pickupTime;
 	
-	@Column(name = "subtotal")
+	@NotNull(message = "創建時間必填")
 	private int subtotal;
 	
-	@Column(name = "weight")
 	private double weight;
-	
-	@Column(name = "is_deleted")
-	private boolean deleted;
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
 
 	public int getEventsId() {
 		return eventsId;
@@ -96,12 +69,12 @@ public class Orders {
 		this.quantity = quantity;
 	}
 
-	public String getSelectedOption() {
-		return selectedOption;
+	public List<Map<String, Object>> getSelectedOptionList() {
+		return selectedOptionList;
 	}
 
-	public void setSelectedOption(String selectedOption) {
-		this.selectedOption = selectedOption;
+	public void setSelectedOptionList(List<Map<String, Object>> selectedOptionList) {
+		this.selectedOptionList = selectedOptionList;
 	}
 
 	public String getPersonalMemo() {
@@ -150,14 +123,6 @@ public class Orders {
 
 	public void setWeight(double weight) {
 		this.weight = weight;
-	}
-
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
 	}
 	
 	

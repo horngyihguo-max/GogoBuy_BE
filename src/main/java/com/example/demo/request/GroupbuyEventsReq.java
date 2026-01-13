@@ -14,6 +14,8 @@ import jakarta.validation.constraints.NotNull;
 
 public class GroupbuyEventsReq {
 
+	private int id;
+	
 	@NotBlank(message = "團長ID必填")
     private String hostId;
 
@@ -47,6 +49,14 @@ public class GroupbuyEventsReq {
 
     @Min(value = 1, message = "成團門檻至少1元")
     private Integer limitation = 0;
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	public String getHostId() {
 		return hostId;
@@ -112,11 +122,11 @@ public class GroupbuyEventsReq {
 		this.type = type;
 	}
 
-	public List<Map<String, Object>>  getTempMenuList() {
+	public List<Map<String, Object>> getTempMenuList() {
 		return tempMenuList;
 	}
 
-	public void setTempMenuList(List<Map<String, Object>>  tempMenuList) {
+	public void setTempMenuList(List<Map<String, Object>> tempMenuList) {
 		this.tempMenuList = tempMenuList;
 	}
 
@@ -148,9 +158,8 @@ public class GroupbuyEventsReq {
 		return limitation;
 	}
 
-	public void setLimitation(int limitation) {
+	public void setLimitation(Integer limitation) {
 		this.limitation = limitation;
 	}
 
-	
 }

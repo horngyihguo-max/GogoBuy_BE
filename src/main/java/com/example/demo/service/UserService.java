@@ -68,7 +68,6 @@ public class UserService {
 	public LoginRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
-	
 
 		User user = userDao.getUserByEmail(email);
 
