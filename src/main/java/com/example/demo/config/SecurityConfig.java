@@ -1,7 +1,5 @@
 package com.example.demo.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +13,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.example.demo.service.GoogleOAuth2Service;
+
+
 
 // @Configuration 告訴 Spring 這是一個配置類別，程式啟動時要先讀取這裡的設定
 @Configuration

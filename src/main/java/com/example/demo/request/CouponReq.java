@@ -1,46 +1,30 @@
-package com.example.demo.entity;
+package com.example.demo.request;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
-import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
-@Entity
-@Table(name = "coupons")
-@IdClass(value = CouponsId.class)
-public class Coupons {
+public class CouponReq {
 	
-	@Id
-	@Column(name = "id")
-	private int id;
+	
+	private int  id;
 
-	@Id
-	@Column(name = "user_id")
+	@NotBlank(message = "USER_ID_EMPTY")
 	private String userId;
 	
-	@Column(name = "coupon_code")
-	private String  couponCode;
+	@NotBlank(message = "COUPON_CODE_EMPTY")
+	private String couponCode;
 	
-	@Column(name = "applicable_stores")
 	private String applicableStores;
 	
-	@Column(name = "amount_threshold")
 	private Integer amountThreshold;
 	
-	@Column(name = "discount_max")
 	private Integer discountMax;
 	
-	@Column(name = "discount_value")
 	private String discountValue;
 	
-	@Column(name = "end_date")
 	private String endDate;
 	
-	@Column(name = "is_used")
 	private boolean used;
 	
-	@Column(name = "is_deleted")
 	private boolean deleted;
 
 	public int getId() {
@@ -75,11 +59,11 @@ public class Coupons {
 		this.applicableStores = applicableStores;
 	}
 
-	public Integer getAmountThershold() {
+	public Integer getAmountThreshold() {
 		return amountThreshold;
 	}
 
-	public void setAmountThershold(Integer amountThreshold) {
+	public void setAmountThreshold(Integer amountThreshold) {
 		this.amountThreshold = amountThreshold;
 	}
 
