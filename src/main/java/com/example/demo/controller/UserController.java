@@ -67,6 +67,14 @@ public class UserController {
 	}
 
 	/*
+	 * 取得用戶資料
+	 */
+	@GetMapping("gogobuy/user/get-user")
+	public BasicRes getUser(@RequestParam("id") String id) {
+		return userService.getUser(id);
+	}
+
+	/*
 	 * 修改大頭貼、暱稱、載具
 	 */
 	@PatchMapping("gogobuy/user/change-profile")

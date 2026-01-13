@@ -21,6 +21,7 @@ import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.GetUserInfoRes;
 import com.example.demo.response.LoginRes;
 
 import jakarta.transaction.Transactional;
@@ -65,27 +66,38 @@ public class UserService {
 	/*
 	 * 登入
 	 */
-	public LoginRes login(UserLoginReq req) {
+	public BasicRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
 
 		User user = userDao.getUserByEmail(email);
 
 		if (user == null) {
-			return new LoginRes(ResMessage.USER_NOT_FOUND.getCode(), //
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
 //		比對密碼:
 //		比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(password, user.getPassword())) {
-			return new LoginRes(ResMessage.PASSWORD_ERROR.getCode(), //
+			return new BasicRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
 		}
 
-		return new LoginRes(ResMessage.SUCCESS.getCode(), //
+		return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+	}
+
+	public GetUserInfoRes getUser(String id) {
+		User user = userDao.getUserById(id);
+		if (user == null) {
+			return new GetUserInfoRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+		return new GetUserInfoRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage(), user.getId(), //
-				user.getNickname(), user.getPhone(), user.getAvatarUrl(), //
-				user.getExp(), user.getCarrier(), user.getTimesRemaining());
+				user.getNickname(), user.getEmail(), user.getPhone(), //
+				user.getAvatarUrl(), user.getCarrier(), user.getExp(), //
+				user.getTimesRemaining());
 	}
 
 	/*
@@ -197,9 +209,9 @@ public class UserService {
 	public BasicRes sendOtpByEmail(String email) {
 		// 1. 生成 6 位數驗證碼
 		String otpCode = String.format("%06d", new Random().nextInt(1000000));
-		
+
 		User user = userDao.getUserByEmail(email);
-		
+
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());

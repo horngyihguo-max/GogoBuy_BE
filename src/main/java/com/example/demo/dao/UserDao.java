@@ -25,7 +25,7 @@ public interface UserDao extends JpaRepository<User, String> {
 //	透過 Email 查詢用戶
 	@Query(value = "Select * from user where email = ?", nativeQuery = true)
 	public User getUserByEmail(String email);
-
+	
 //	透過 ID 查詢用戶
 	@Query(value = "Select * from user where id = ?", nativeQuery = true)
 	public User getUserById(String id);
