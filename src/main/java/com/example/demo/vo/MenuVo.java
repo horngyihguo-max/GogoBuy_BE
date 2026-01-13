@@ -1,6 +1,5 @@
 package com.example.demo.vo;
 
-import java.util.List;
 import java.util.Map;
 
 public class MenuVo {
@@ -87,10 +86,6 @@ private int id;
 	public void setAvailable(boolean available) {
 		this.available = available;
 	}
-
-	
-
-	
 
 	public Map<String, Object> getUnusual() {
 		return unusual;
