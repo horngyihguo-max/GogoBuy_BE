@@ -41,4 +41,6 @@ public List<Stores> findStoresByNameLike(String name);
     // 取得選項群組內的細項 (根據群組 ID)
     @Query(value = "SELECT name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
+    
+       
 }

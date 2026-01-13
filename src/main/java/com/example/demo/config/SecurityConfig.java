@@ -14,6 +14,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.example.demo.service.GoogleOAuth2Service;
 
+
+
 // @Configuration 告訴 Spring 這是一個配置類別，程式啟動時要先讀取這裡的設定
 @Configuration
 @EnableWebSecurity

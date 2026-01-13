@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.User;
+import com.example.demo.response.BasicRes;
 
 @Repository
 public interface UserDao extends JpaRepository<User, String> {
@@ -24,7 +25,7 @@ public interface UserDao extends JpaRepository<User, String> {
 //	透過 Email 查詢用戶
 	@Query(value = "Select * from user where email = ?", nativeQuery = true)
 	public User getUserByEmail(String email);
-
+	
 //	透過 ID 查詢用戶
 	@Query(value = "Select * from user where id = ?", nativeQuery = true)
 	public User getUserById(String id);
@@ -48,12 +49,20 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Query(value = "update user SET phone = ?2 where id = ?1", nativeQuery = true)
 	public int userPhone(String id, String phone);
 
-//	OTP驗證碼
+//	OTP驗證碼至對應id的email
 	@Transactional
 	@Modifying
 	@Query(value = "update user SET otp_code = ?2, otp_expiry=?3 where id = ?1", nativeQuery = true)
-	public int sendOTP(String id, String otpCode, LocalDateTime otpExpiry);
+	public int sendOtpById(String id, String otpCode, LocalDateTime otpExpiry);
 
+//	發送OTP驗證碼至email
+	@Transactional
+	@Modifying
+	@Query(value = "update user SET otp_code = ?2, otp_expiry=?3 where email = ?1", nativeQuery = true)
+	public int sendOtpByEmail(String email, String otpCode, LocalDateTime otpExpiry);
+
+
+	
 //	修改信箱
 	@Transactional
 	@Modifying

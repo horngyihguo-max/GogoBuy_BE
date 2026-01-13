@@ -63,6 +63,13 @@ public class StoreService {
 			}
 		}
 	}
+	
+	private void checkStoreExist(int storeId) throws Exception {
+		Stores existingStore = storesSearchDao.getStoreById(storeId);
+	    if (existingStore == null) {
+	    	throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
+	    }
+	}
 
 //時刻
 	private void checkHours(List<StoreOperatingHoursVo> list) throws Exception {
@@ -204,6 +211,7 @@ public class StoreService {
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes update(int storeId, StoresReq req) throws Exception {
 		// 檢查
+		checkStoreExist(storeId);
 		checkStore(req);
 		checkHours(req.getOperatingHoursVoList());
 		checkMenu(req.getMenuVoList(), req.getMenuCategoriesVoList());
@@ -238,7 +246,9 @@ public class StoreService {
 
 //		物理全刪
 	@Transactional(rollbackFor = Exception.class)
-	public BasicRes deleteFullStore(int storeId) {
+	public BasicRes deleteFullStore(int storeId) throws Exception {
+		
+		checkStoreExist(storeId);
 		// 刪除最底層的選項細項 (依賴於 groups)
 		storesUpdateDao.deleteOptionItemsByStoreId(storeId);
 
@@ -267,7 +277,7 @@ public class StoreService {
 //		軟刪除
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes deleteStore(int storeId) throws Exception {
-
+		checkStoreExist(storeId);
 		// 刪除所有子表資料
 		storesUpdateDao.deleteOptionItemsByStoreId(storeId);
 		storesUpdateDao.deleteOptionGroupsByStoreId(storeId);
@@ -325,6 +335,7 @@ public class StoreService {
 				// 手動將 price_level 字串轉為 List
 				String priceLevelStr = (String) map.get("priceLevel");
 				if (priceLevelStr != null && !priceLevelStr.isEmpty()) {
+//																			Json轉java物件								類型參考
 					catVo.setPriceLevel(mapper.readValue(priceLevelStr, new TypeReference<List<PriceLevelVo>>() {
 					}));
 				}
@@ -340,6 +351,7 @@ public class StoreService {
 				Map<String, Object> tempMap = new HashMap<>(map);
 				// 先移出unusual
 				tempMap.remove("unusual");
+				//	 生成新map(不含unusual)			
 				MenuVo mVo = mapper.convertValue(tempMap, MenuVo.class);
 				// 手動將 unusual 字串轉為 Object/Map
 				String unusualStr = (String) map.get("unusual");

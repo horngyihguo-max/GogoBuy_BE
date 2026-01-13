@@ -21,6 +21,7 @@ import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.GetUserInfoRes;
 import com.example.demo.response.LoginRes;
 
 import jakarta.transaction.Transactional;
@@ -83,9 +84,20 @@ public class UserService {
 		}
 
 		return new LoginRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage(), user.getId());
+	}
+
+	public GetUserInfoRes getUser(String id) {
+		User user = userDao.getUserById(id);
+		if (user == null) {
+			return new GetUserInfoRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+		return new GetUserInfoRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage(), user.getId(), //
-				user.getNickname(), user.getPhone(), user.getAvatarUrl(), //
-				user.getExp(), user.getCarrier(), user.getTimesRemaining());
+				user.getNickname(), user.getEmail(), user.getPhone(), //
+				user.getAvatarUrl(), user.getCarrier(), user.getExp(), //
+				user.getTimesRemaining());
 	}
 
 	/*
@@ -160,22 +172,60 @@ public class UserService {
 	}
 
 	/*
-	 * 發送OTP code 至 Email
+	 * 透過ID發送OTP code 至 Email
 	 */
 	@Transactional
-	public BasicRes sendOTP(String email, String id) {
+	public BasicRes sendOtpById(String email, String id) {
 		// 1. 生成 6 位數驗證碼
 		String otpCode = String.format("%06d", new Random().nextInt(1000000));
 
 		// 2. 找到使用者並更新 OTP 資訊
-		userDao.sendOTP(id, otpCode, LocalDateTime.now().plusMinutes(10));
+		userDao.sendOtpById(id, otpCode, LocalDateTime.now().plusMinutes(10));
 
 		SimpleMailMessage message = new SimpleMailMessage();
 
 		// 從 properties 讀取，或直接寫死發信帳號
 		message.setFrom("GogobuyAdmin@gmail.com");
 		message.setTo(email);
-		message.setSubject("[GoGoBuy] 修改帳號驗證碼");
+		message.setSubject("[GoGoBuy] 修改信箱驗證碼");
+		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 10 分鐘後失效，請盡速完成操作。");
+
+		try {
+			System.out.println("OTP碼:" + otpCode);
+			// 執行發送
+			mailSender.send(message);
+			return new BasicRes(ResMessage.EMAIL_SUCCESS.getCode(), //
+					ResMessage.EMAIL_SUCCESS.getMessage());
+		} catch (Exception e) {
+			return new BasicRes(ResMessage.EMAIL_ERROR.getCode(), //
+					ResMessage.EMAIL_ERROR.getMessage());
+		}
+	}
+
+	/*
+	 * 透過 email 確認是否有該用戶 並發送OTP
+	 */
+	@Transactional
+	public BasicRes sendOtpByEmail(String email) {
+		// 1. 生成 6 位數驗證碼
+		String otpCode = String.format("%06d", new Random().nextInt(1000000));
+
+		User user = userDao.getUserByEmail(email);
+
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+
+		// 2. 找到使用者並更新 OTP 資訊
+		userDao.sendOtpByEmail(user.getEmail(), otpCode, LocalDateTime.now().plusMinutes(10));
+
+		SimpleMailMessage message = new SimpleMailMessage();
+
+		// 從 properties 讀取，或直接寫死發信帳號
+		message.setFrom("GogobuyAdmin@gmail.com");
+		message.setTo(user.getEmail());
+		message.setSubject("[GoGoBuy] 修改密碼驗證碼");
 		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 10 分鐘後失效，請盡速完成操作。");
 
 		try {
@@ -264,6 +314,7 @@ public class UserService {
 //		清空 OTP 防止重複使用
 		user.setOtpCode(null);
 		user.setOtpExpiry(null);
+		user.setPassword(encodePassword);
 		userDao.save(user);
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //

@@ -65,10 +65,17 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 	public int delWish(int id, String userId);
 	
 //	超過3個月
-	@Query(value = "select user_id from wishes where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
-	public List<String> checkOverTime();
+	@Query(value = "select * from wishes where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
+	public List<Wishes> checkOverTime();
 	@Modifying
 	@Transactional
 	@Query(value = "update wishes set is_deleted = true where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
 	public int delOverTime();
+	
+//	新增訊息
+	@Modifying
+	@Transactional
+	@Query(value = "insert into message (user_id, title, description)" //
+			+ " values (?1, ?2, ?3)", nativeQuery = true)
+	public void addMessage(String userId, String title, String description);
 }
