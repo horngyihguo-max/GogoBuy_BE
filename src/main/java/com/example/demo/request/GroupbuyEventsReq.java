@@ -1,7 +1,10 @@
 package com.example.demo.request;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
+import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.SplitTypeEnum;
 
 import jakarta.validation.constraints.Future;
@@ -17,11 +20,15 @@ public class GroupbuyEventsReq {
     @NotNull(message = "商店ID必填")
     private int storesId;
 
+
     @NotNull(message = "結單時間必填")
     @Future(message = "結單時間必須是未來")
     private LocalDateTime endTime;
+    
+    @NotNull(message = "是否開店")
+    private GroupbuyStatusEnum status;
 
-    private int shippingFee = 0;     
+    private Integer shippingFee = 0;     
     
     @NotNull(message = "運費分攤方式必填")
     private SplitTypeEnum splitType;
@@ -30,14 +37,16 @@ public class GroupbuyEventsReq {
     
     private String type;                  
     
-    private String tempMenu;            
+    private List<Map<String, Object>> tempMenuList;            
     
-    private String recommend;             
+    private List<Integer> recommendList;             
     
     private String recommendDescription;  
+    
+    private Integer totalOrderAmount;
 
     @Min(value = 1, message = "成團門檻至少1元")
-    private int limitation = 0;
+    private Integer limitation = 0;
 
 	public String getHostId() {
 		return hostId;
@@ -63,11 +72,19 @@ public class GroupbuyEventsReq {
 		this.endTime = endTime;
 	}
 
-	public int getShippingFee() {
+	public GroupbuyStatusEnum getStatus() {
+		return status;
+	}
+
+	public void setStatus(GroupbuyStatusEnum status) {
+		this.status = status;
+	}
+
+	public Integer getShippingFee() {
 		return shippingFee;
 	}
 
-	public void setShippingFee(int shippingFee) {
+	public void setShippingFee(Integer shippingFee) {
 		this.shippingFee = shippingFee;
 	}
 
@@ -95,20 +112,20 @@ public class GroupbuyEventsReq {
 		this.type = type;
 	}
 
-	public String getTempMenu() {
-		return tempMenu;
+	public List<Map<String, Object>>  getTempMenuList() {
+		return tempMenuList;
 	}
 
-	public void setTempMenu(String tempMenu) {
-		this.tempMenu = tempMenu;
+	public void setTempMenuList(List<Map<String, Object>>  tempMenuList) {
+		this.tempMenuList = tempMenuList;
 	}
 
-	public String getRecommend() {
-		return recommend;
+	public List<Integer> getRecommendList() {
+		return recommendList;
 	}
 
-	public void setRecommend(String recommend) {
-		this.recommend = recommend;
+	public void setRecommendList(List<Integer> recommendList) {
+		this.recommendList = recommendList;
 	}
 
 	public String getRecommendDescription() {
@@ -119,7 +136,15 @@ public class GroupbuyEventsReq {
 		this.recommendDescription = recommendDescription;
 	}
 
-	public int getLimitation() {
+	public Integer getTotalOrderAmount() {
+		return totalOrderAmount;
+	}
+
+	public void setTotalOrderAmount(Integer totalOrderAmount) {
+		this.totalOrderAmount = totalOrderAmount;
+	}
+
+	public Integer getLimitation() {
 		return limitation;
 	}
 
@@ -127,28 +152,5 @@ public class GroupbuyEventsReq {
 		this.limitation = limitation;
 	}
 
-	public GroupbuyEventsReq() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public GroupbuyEventsReq(@NotBlank(message = "團長ID必填") String hostId, @NotNull(message = "商店ID必填") int storesId,
-			@NotNull(message = "結單時間必填") @Future(message = "結單時間必須是未來") LocalDateTime endTime, int shippingFee,
-			@NotNull(message = "運費分攤方式必填") SplitTypeEnum splitType, String announcement, String type, String tempMenu,
-			String recommend, String recommendDescription, @Min(value = 1, message = "成團門檻至少1元") int limitation) {
-		super();
-		this.hostId = hostId;
-		this.storesId = storesId;
-		this.endTime = endTime;
-		this.shippingFee = shippingFee;
-		this.splitType = splitType;
-		this.announcement = announcement;
-		this.type = type;
-		this.tempMenu = tempMenu;
-		this.recommend = recommend;
-		this.recommendDescription = recommendDescription;
-		this.limitation = limitation;
-	}  
-    
-    
+	
 }

@@ -5,27 +5,25 @@ import java.util.List;
 public class GroupbuyEventsVo {
 
 	// 對應 temp_menu：紀錄限制的訂購品項
-    private List<String> tempMenuIds;
+	private List<String> tempMenuList;
 
-    // 對應 recommend：紀錄勾選推薦的品項
-    private List<String> recommendIds;
+	// 對應 recommend：紀錄勾選推薦的品項
+	private List<String> recommendList;
 
-	public List<String> getTempMenuIds() {
-		return tempMenuIds;
+	public List<String> getTempMenuList() {
+		return tempMenuList;
 	}
 
-	public void setTempMenuIds(List<String> tempMenuIds) {
-		this.tempMenuIds = tempMenuIds;
+	public void setTempMenuList(List<String> tempMenuList) {
+		this.tempMenuList = tempMenuList;
 	}
 
-	public List<String> getRecommendIds() {
-		return recommendIds;
+	public List<String> getRecommendList() {
+		return recommendList;
 	}
 
-	public void setRecommendIds(List<String> recommendIds) {
-		this.recommendIds = recommendIds;
+	public void setRecommendList(List<String> recommendList) {
+		this.recommendList = recommendList;
 	}
 
-	
-	
 }
