@@ -63,7 +63,8 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
             res.put("status", "success");
             res.put("nickname", nickname != null ? nickname : user.getNickname()); 
             res.put("email", email);
-//            res.put("sub", encoder.encode(password));
+            res.put("id", user.getId());
+//      res.put("sub", encoder.encode(password));
             res.put("avatarUrl", avatarUrl);
         } else {
             res.put("status", "processing");
