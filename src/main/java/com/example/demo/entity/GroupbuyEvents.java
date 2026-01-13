@@ -1,6 +1,8 @@
 package com.example.demo.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.SplitTypeEnum;
@@ -37,7 +39,7 @@ public class GroupbuyEvents {
 	private int totalOrderAmount;
 	
 	@Column(name = "shipping_fee")
-	private int shippingFee;
+	private Integer shippingFee;
 	
 	@Column(name = "split_type")
 	@Enumerated(EnumType.STRING)  
@@ -50,16 +52,16 @@ public class GroupbuyEvents {
 	private String type;
 	
 	@Column(name = "temp_menu")
-	private String tempMenu;
+	private String tempMenuList;
 	
 	@Column(name = "recommend")
-	private String recommend;
+	private String recommendList;
 	
 	@Column(name = "recommend_description")
 	private String recommendDescription;
 	
 	@Column(name = "limitation")
-	private int limitation;
+	private Integer limitation;
 	
 	@Column(name = "is_deleted")
 	private boolean deleted;
@@ -112,11 +114,11 @@ public class GroupbuyEvents {
 		this.totalOrderAmount = totalOrderAmount;
 	}
 
-	public int getShippingFee() {
+	public Integer getShippingFee() {
 		return shippingFee;
 	}
 
-	public void setShippingFee(int shippingFee) {
+	public void setShippingFee(Integer shippingFee) {
 		this.shippingFee = shippingFee;
 	}
 
@@ -144,20 +146,22 @@ public class GroupbuyEvents {
 		this.type = type;
 	}
 
-	public String getTempMenu() {
-		return tempMenu;
+	
+
+	public String getTempMenuList() {
+		return tempMenuList;
 	}
 
-	public void setTempMenu(String tempMenu) {
-		this.tempMenu = tempMenu;
+	public void setTempMenuList(String tempMenuList) {
+		this.tempMenuList = tempMenuList;
 	}
 
-	public String getRecommend() {
-		return recommend;
+	public String getRecommendList() {
+		return recommendList;
 	}
 
-	public void setRecommend(String recommend) {
-		this.recommend = recommend;
+	public void setRecommendList(String recommendList) {
+		this.recommendList = recommendList;
 	}
 
 	public String getRecommendDescription() {
@@ -168,11 +172,11 @@ public class GroupbuyEvents {
 		this.recommendDescription = recommendDescription;
 	}
 
-	public int getLimitation() {
+	public Integer getLimitation() {
 		return limitation;
 	}
 
-	public void setLimitation(int limitation) {
+	public void setLimitation(Integer limitation) {
 		this.limitation = limitation;
 	}
 
@@ -183,6 +187,8 @@ public class GroupbuyEvents {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
+
 	
+
 	
 }

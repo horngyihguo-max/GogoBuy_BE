@@ -24,8 +24,20 @@ public enum ResMessage {
     PHONE_ERROR(400, "請輸入手機號碼"),
 	WISH_USER_CAN_NOT_FOLLOW(400, "許願者不可跟願"),
 	WISH_DELETE_ERROR(400, "願望刪除失敗"),
+	HOST_ID_ERROR(400, "檢查團長ID錯誤"),
+	HOST_ID_NOT_FOUND(404, "找不到團長ID"),
+	STORES_ID_ERROR(400, "商店ID錯誤"),
+	END_TIME_ERROR(400, "結束時間錯誤"),
+	SPLIT_TYPE_ERROR(400, "拆帳錯誤"),
+	SHIPPING_FEE_ERROR(400, "運費錯誤"),
+	ANNOUMCEMENT_ERROR(400, "總金額錯誤"),
+	TYPE_ERROR(400, "狀態錯誤"),
+	EVENT_ERROR(400, "開團錯誤"),
+	STORES_ID_NULL(400, "商店找不到錯誤"),
+	MENU_NOT_FOUND(404, "找不到menu"),
+	MENU_ITEM_NOT_FOUND(404, "找不到商品"),
+	MENU_ITEM_ERROR(400, "推薦商品錯誤"),
 	USER_NOT_FOUND(404, "找不到此用戶");
-	
 	
 	private int code;
 
