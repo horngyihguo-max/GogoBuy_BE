@@ -1,7 +1,5 @@
 package com.example.demo.config;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +27,9 @@ public class SecurityConfig {
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowedOrigins(List.of("http://localhost:4200")); // Angular 端口
-		config.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH","OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
-		config.setAllowCredentials(true); //允許攜帶 Cookie (JSESSIONID)
+		config.setAllowCredentials(true); // 允許攜帶 Cookie (JSESSIONID)
 
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", config);
@@ -49,15 +47,14 @@ public class SecurityConfig {
 
 				// 1. 授權區塊
 				.authorizeHttpRequests(auth -> auth
-						//繞過免google授權的
-						.requestMatchers("/", "/**","/oauth2/**", "/login/**","/swagger-ui/**").permitAll()
-					)
+						// 繞過免google授權的
+						.requestMatchers("/", "/**", "/oauth2/**", "/login/**", "/swagger-ui/**", "/gogobuy/user/oauth", "/oauth2/**").permitAll())
 				// 2. OAuth2 登入配置區塊
 				.oauth2Login(oauth2 -> {
 					// 交給 googelOAuth2 處理
 					oauth2.userInfoEndpoint(userInfo -> userInfo.userService(googleOAuth2));
 					// 登入成功後的跳轉路徑
-					oauth2.defaultSuccessUrl("http://localhost:4200", true);
+					oauth2.defaultSuccessUrl("http://localhost:4200/auth-callback", true);
 				})
 
 				// 3. 登出區塊
