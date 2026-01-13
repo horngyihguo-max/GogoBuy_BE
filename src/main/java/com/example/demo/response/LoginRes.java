@@ -4,6 +4,14 @@ public class LoginRes extends BasicRes {
 
 	private String id;
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public LoginRes() {
 		super();
 	}
