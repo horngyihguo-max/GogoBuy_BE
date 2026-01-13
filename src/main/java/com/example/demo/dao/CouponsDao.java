@@ -1,5 +1,7 @@
 package com.example.demo.dao;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -43,4 +45,8 @@ public interface CouponsDao extends JpaRepository<Coupons, Integer>{
 	    @Transactional
 	    @Query(value = "UPDATE coupons SET is_deleted = true WHERE id = ?1", nativeQuery = true)
 	    public int softDeleteCouponById(int id);
+	 
+//	 找單位使用者的優惠券
+	 @Query(value = "SELECT * FROM coupons WHERE user_id = ?1 AND is_deleted = false", nativeQuery = true)
+	 public List <Coupons> getCouponByUserId(String userId);
 }
