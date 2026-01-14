@@ -97,7 +97,7 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage(), user.getId(), //
 				user.getNickname(), user.getEmail(), user.getPhone(), //
 				user.getAvatarUrl(), user.getCarrier(), user.getExp(), //
-				user.getTimesRemaining());
+				user.getTimesRemaining(), user.getProvider());
 	}
 
 	/*

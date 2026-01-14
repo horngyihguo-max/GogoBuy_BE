@@ -66,6 +66,7 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
             res.put("id", user.getId());
 //      res.put("sub", encoder.encode(password));
             res.put("avatarUrl", avatarUrl);
+            res.put("", user.getProvider());
         } else {
             res.put("status", "processing");
             res.put("message", "帳號建立中，請稍後再試");

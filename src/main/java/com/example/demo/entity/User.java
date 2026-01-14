@@ -35,6 +35,17 @@ public class User {
 
 	@Column(name = "times_remaining")
 	private int timesRemaining;
+	
+	@Column(name = "provider")
+	private String provider;
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
 
 	public int getTimesRemaining() {
 		return timesRemaining;
