@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -172,9 +173,19 @@ public class CouponService {
 				ResMessage.SUCCESS.getMessage());
 	}
 	
-	public CouponsRes searchCouponByUser(String UserId) {
+	public CouponsRes searchCouponByUser(String userId) {
 		
-		List <Coupons> coupons =  couponsDao.getCouponByUserId(UserId);
+		User user = userDao.getUserById(userId);
+        if (user == null) {
+            return new CouponsRes(ResMessage.USER_NOT_FOUND.getCode(), "此使用者不存在", null);
+        }
+		
+		List <Coupons> coupons =  couponsDao.getCouponByUserId(userId);
+		
+		
+		if (coupons == null || coupons.isEmpty()) {
+            return new CouponsRes(ResMessage.SUCCESS.getCode(), "該使用者目前沒有任何優惠券喵", new ArrayList<>());
+        }
 		
 		 return new CouponsRes(ResMessage.SUCCESS.getCode(), //
 					ResMessage.SUCCESS.getMessage(),coupons);

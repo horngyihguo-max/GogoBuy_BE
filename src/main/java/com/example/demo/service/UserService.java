@@ -66,25 +66,25 @@ public class UserService {
 	/*
 	 * 登入
 	 */
-	public BasicRes login(UserLoginReq req) {
+	public LoginRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
 
 		User user = userDao.getUserByEmail(email);
 
 		if (user == null) {
-			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+			return new LoginRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
 //		比對密碼:
 //		比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(password, user.getPassword())) {
-			return new BasicRes(ResMessage.PASSWORD_ERROR.getCode(), //
+			return new LoginRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
 		}
 
-		return new BasicRes(ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage());
+		return new LoginRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage(), user.getId());
 	}
 
 	public GetUserInfoRes getUser(String id) {
@@ -97,7 +97,7 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage(), user.getId(), //
 				user.getNickname(), user.getEmail(), user.getPhone(), //
 				user.getAvatarUrl(), user.getCarrier(), user.getExp(), //
-				user.getTimesRemaining());
+				user.getTimesRemaining(), user.getProvider());
 	}
 
 	/*

@@ -21,6 +21,16 @@ public class GetUserInfoRes extends BasicRes {
 
 	private int timesRemaining;
 
+	private String provider;
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -94,7 +104,7 @@ public class GetUserInfoRes extends BasicRes {
 	}
 
 	public GetUserInfoRes(int code, String message, String id, String nickname, String email, String phone,
-			String avatarUrl, String carrier, int exp, int timesRemaining) {
+			String avatarUrl, String carrier, int exp, int timesRemaining, String provider) {
 		super(code, message);
 		this.id = id;
 		this.nickname = nickname;
@@ -104,6 +114,7 @@ public class GetUserInfoRes extends BasicRes {
 		this.carrier = carrier;
 		this.exp = exp;
 		this.timesRemaining = timesRemaining;
+		this.provider = provider;
 	}
 
 }

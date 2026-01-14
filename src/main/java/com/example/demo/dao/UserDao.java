@@ -87,7 +87,7 @@ public interface UserDao extends JpaRepository<User, String> {
 //	新增Google用戶
 	@Transactional
 	@Modifying
-	@Query(value = "insert into user(id, email, password, nickname, phone,avatar_url) "//
-			+ " values (?1, ?2, ?3, ?4, ?5, ?6)", nativeQuery = true)
-	public int addGoogleUser(String id, String email, String password, String nickname, String phone , String avatarUrl);
+	@Query(value = "insert into user(id, email, password, nickname, phone, avatar_url, provider) "//
+			+ " values (?1, ?2, ?3, ?4, ?5, ?6, ?7)", nativeQuery = true)
+	public int addGoogleUser(String id, String email, String password, String nickname, String phone , String avatarUrl, String provider);
 }
