@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.example.demo.constants.NotifiCategoryEnum;
 import com.example.demo.entity.Wishes;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
@@ -73,9 +74,14 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 	public int delOverTime();
 	
 //	新增訊息
+//	@Modifying
+//	@Transactional
+//	@Query(value = "insert into notification_messages (category, title, content, target_url)" //
+//			+ " values (?1, ?2, ?3, ?4)", nativeQuery = true)
+//	public void addMessage(NotifiCategoryEnum category, String title, String content, String targetUrl);
+//	新增收信人
 	@Modifying
 	@Transactional
-	@Query(value = "insert into message (user_id, title, description)" //
-			+ " values (?1, ?2, ?3)", nativeQuery = true)
-	public void addMessage(String userId, String title, String description);
+	@Query(value = "insert into user_notification (user_id, notif_id) values (?1, ?2)", nativeQuery = true)
+	public void addRecipient(String userId, int notifiId);
 }

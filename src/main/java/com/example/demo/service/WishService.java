@@ -15,6 +15,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.constants.NotifiCategoryEnum;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.WishDao;
 import com.example.demo.entity.Wishes;
@@ -34,6 +35,8 @@ public class WishService {
 	
 	@Autowired
 	private WishDao wishDao;
+	@Autowired
+	private NotifiCategoryEnum categoryEnum;
 	
 	public AllWishRes allWish() {
 		List<Wishes> data=wishDao.allWish();
@@ -153,18 +156,18 @@ public class WishService {
 			if(wishAmount!=wishesData.size()) {
 				throw new RuntimeException("刪除數量不符");
 			}
-			Map<String, List<String>> titleFollower=new HashMap<>();
+			List<String> wishersList=new ArrayList<>();
 			for(Wishes w:wishesData) {
-				wishDao.addMessage(w.getUser_id(), "你的願望已超過3個月嘍!!", "你的願望已超過3個月，願望未成功開團，請重新許願");
+				wishersList.add(w.getUser_id());
+//				wishDao.addMessage(categoryEnum.EVENT, "願望已超過3個月嘍!!", "這個願望已超過3個月，願望未成功開團，請重新許願",  //
+//						"http://localhost:4200/expired_wishes/wish_id=");
 				if(w.getFollowers()!=null) {
-					titleFollower.put(w.getTitle(), Arrays.asList(w.getFollowers().split(",")));
+					wishersList.addAll(Arrays.asList(w.getFollowers().split(",")));
 				}
 			}
-			titleFollower.forEach((title, followers)->{
-				for(String follower:followers) {
-					wishDao.addMessage(follower, "願望已超過3個月", title+"願望已超過3個月，願望未成功開團，快去許願池找找相似的願望吧");
-				}
-			});
+			for(String w:wishersList) {
+				wishDao.addRecipient(w, 1);
+			}
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
 					ResMessage.SUCCESS.getMessage());
 		}catch(Exception e){
