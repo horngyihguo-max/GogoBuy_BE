@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.constants.ResMessage;
+import com.example.demo.dao.ProductOptionGroupsDao;
 import com.example.demo.dao.StoresCreateDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.StoresUpdateDao;
+import com.example.demo.entity.ProductOptionGroups;
 import com.example.demo.entity.Stores;
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
@@ -44,6 +46,9 @@ public class StoreService {
 
 	@Autowired
 	private StoresSearchDao storesSearchDao;
+	
+	@Autowired
+	private ProductOptionGroupsDao productOptionGroupsDao;
 
 //	店家
 	private void checkStore(StoresReq req) throws Exception {
@@ -165,8 +170,17 @@ public class StoreService {
 //		填入選項群組
 		List<ProductOptionGroupsVo> ProductOptionGroupsVoList = req.getProductOptionGroupsVoList();
 		for (ProductOptionGroupsVo vo : ProductOptionGroupsVoList) {
-			storesCreateDao.addOptionGroups(storeId, vo.getName(), vo.isRequired(), vo.getMaxSelection());
-			int groupId = storesCreateDao.getLastInsertId();
+			ProductOptionGroups group = new ProductOptionGroups();
+	        group.setStoresId(storeId);
+	        group.setName(vo.getName());
+	        group.setRequired(vo.isRequired());
+	        group.setMaxSelection(vo.getMaxSelection());
+	        
+	        group = productOptionGroupsDao.save(group); 
+	        int groupId = group.getId();
+			
+//			storesCreateDao.addOptionGroups(storeId, vo.getName(), vo.isRequired(), vo.getMaxSelection());
+//			int groupId = storesCreateDao.getLastInsertId();
 //		填入選項
 			List<ProductOptionItemsVo> itemVoList = vo.getItems();
 			if (itemVoList != null) {
@@ -193,12 +207,28 @@ public class StoreService {
 		}
 
 //		傳店家表取店家ID
+		Stores store = new Stores();
 		String feeStr = mapper.writeValueAsString(req.getFee_description());
-		storesCreateDao.addStore(req.getStoresname(), req.getPhone(), req.getAddress(), //
-				req.getCategory(), req.getType(), req.getMemo(), //
-				req.getImage(), feeStr, req.isPublish(), req.getCreatedBy());
+		
+		store.setName(req.getStoresname());
+		store.setPhone(req.getPhone());
+		store.setAddress(req.getAddress());
+		store.setCategory(req.getCategory());
+		store.setType(req.getType());
+		store.setMemo(req.getMemo());
+		store.setImage(req.getImage());
+		store.setFeeDescription(feeStr);
+		store.setPublish(req.isPublish());
+		store.setCreatedBy(req.getCreatedBy());
+		
+		store = storesCreateDao.save(store);
+		
+		
+//		storesCreateDao.addStore(req.getStoresname(), req.getPhone(), req.getAddress(), //
+//				req.getCategory(), req.getType(), req.getMemo(), //
+//				req.getImage(), feeStr, req.isPublish(), req.getCreatedBy());
 
-		int storeId = storesCreateDao.getLastInsertId();
+		int storeId = store.getId();
 
 //		填入子表
 		saveSubTables(storeId, req);
