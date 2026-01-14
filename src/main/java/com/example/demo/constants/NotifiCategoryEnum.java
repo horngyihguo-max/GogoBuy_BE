@@ -1,9 +1,9 @@
 package com.example.demo.constants;
 
 public enum NotifiCategoryEnum {
-	PRODUCT("商品"),
+	GROUP_BUY("團購"),
 	SYSTEM("系統"),
-	EVENT("活動");
+	WISH("願望");
 	
 	private String category;
 

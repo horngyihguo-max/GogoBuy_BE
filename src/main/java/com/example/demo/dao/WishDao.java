@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.constants.NotifiCategoryEnum;
 import com.example.demo.entity.Wishes;
+import com.example.demo.repository.WishRepository;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.vo.WishVo;
@@ -19,7 +20,7 @@ import com.example.demo.vo.WishVo;
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface WishDao extends JpaRepository<Wishes, Integer>{
+public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository{
 //	全部願望
 	@Query(value = "select * from wishes where is_deleted = false", nativeQuery = true)
 	public List<Wishes> allWish();
@@ -74,14 +75,14 @@ public interface WishDao extends JpaRepository<Wishes, Integer>{
 	public int delOverTime();
 	
 //	新增訊息
-//	@Modifying
-//	@Transactional
-//	@Query(value = "insert into notification_messages (category, title, content, target_url)" //
-//			+ " values (?1, ?2, ?3, ?4)", nativeQuery = true)
-//	public void addMessage(NotifiCategoryEnum category, String title, String content, String targetUrl);
-//	新增收信人
 	@Modifying
 	@Transactional
-	@Query(value = "insert into user_notification (user_id, notif_id) values (?1, ?2)", nativeQuery = true)
-	public void addRecipient(String userId, int notifiId);
+	@Query(value = "insert into notification_messages (category, title, content, target_url, event_id)" //
+			+ " values (?1, ?2, ?3, ?4, ?5)", nativeQuery = true)
+	public void addMessage(String category, String title, String content, String targetUrl, int wishId);
+//	查詢該訊息id
+	@Query(value = "select id from notification_messages where category = 'WISH' order by id DESC limit 1", nativeQuery = true)
+	public int getMessageId();
+//	新增收信人
+//	(WishRepositoryImpl實作WishRepository，由WishDao繼承WishRepository, )
 }
