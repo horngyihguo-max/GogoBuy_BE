@@ -30,13 +30,22 @@ public enum ResMessage {
 	END_TIME_ERROR(400, "結束時間錯誤"),
 	SPLIT_TYPE_ERROR(400, "拆帳錯誤"),
 	SHIPPING_FEE_ERROR(400, "運費錯誤"),
-	ANNOUMCEMENT_ERROR(400, "總金額錯誤"),
+	TOTALORDERAMOUNT_ERROR(400, "總金額錯誤"),
 	TYPE_ERROR(400, "狀態錯誤"),
 	EVENT_ERROR(400, "開團錯誤"),
 	STORES_ID_NULL(400, "商店找不到錯誤"),
 	MENU_NOT_FOUND(404, "找不到menu"),
 	MENU_ITEM_NOT_FOUND(404, "找不到商品"),
 	MENU_ITEM_ERROR(400, "推薦商品錯誤"),
+	EVENTS_ID_ERROR(400, "所屬團ID錯誤"),
+	MENU_ID_ERROR(400, "商品ID錯誤"),
+	EVENTS_NOT_FOUND(404, "找不到所屬團"),
+	MENULIST_NOT_FOUND(404, "找不到商品ID"),
+	QUANTITY_FOUND(400, "數量錯誤"),
+	PICKUP_STATUS_ERROR(400, "領取狀態錯誤"),
+	PICKUP_TIME_ERROR(400, "領取時間錯誤"),
+	EVENT_CLOSED(400, "此團購已截止，無法再下單"),
+	PARAM_ERROR(400,"金額校驗失敗，正確金額應為："),
 	USER_NOT_FOUND(404, "找不到此用戶");
 	
 	private int code;

@@ -7,27 +7,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.request.GroupbuyEventsReq;
+import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.service.GroupbuyEventsService;
+import com.example.demo.service.OrdersService;
 
 import jakarta.validation.Valid;
 
+
 @CrossOrigin
 @RestController
-public class GroupbuyEventsController {
-	
-	@Autowired
-	private GroupbuyEventsService groupbuyEventsService;
+public class OrdersController {
 
-	// 新增
-	@PostMapping("gogobuy/addEvent")
-	public BasicRes addEvent(@Valid @RequestBody GroupbuyEventsReq req) {
-		return groupbuyEventsService.addEvent(req);
-	}
+	@Autowired
+	private OrdersService ordersService;
 	
-	// 更新
-	@PostMapping("gogobuy/updateEvent")
-	public BasicRes updateEvent(@Valid @RequestBody  GroupbuyEventsReq req) {
-		return groupbuyEventsService.updateEvent( req.getId(), req);
+	@PostMapping("gogobuy/addOrders")
+	public BasicRes addOrders(@Valid @RequestBody OredersReq req) {
+		return ordersService.addOrders(req);
 	}
 }
