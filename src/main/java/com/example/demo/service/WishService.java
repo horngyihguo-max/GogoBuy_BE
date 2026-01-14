@@ -17,8 +17,11 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.constants.NotifiCategoryEnum;
 import com.example.demo.constants.ResMessage;
+import com.example.demo.constants.WishTypeEnum;
 import com.example.demo.dao.WishDao;
+import com.example.demo.entity.NotifiMes;
 import com.example.demo.entity.Wishes;
+import com.example.demo.repository.NotifiMesRepository;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
@@ -35,6 +38,8 @@ public class WishService {
 	
 	@Autowired
 	private WishDao wishDao;
+	@Autowired
+	private NotifiMesRepository notifiMsgRepository;
 	
 	public AllWishRes allWish() {
 		List<Wishes> data=wishDao.allWish();
@@ -71,7 +76,12 @@ public class WishService {
 			return new BasicRes(ResMessage.OUT_OF_TIMES_REMAINING.getCode(), ResMessage.OUT_OF_TIMES_REMAINING.getMessage());
 		}
 		try {
-			wishDao.addWish(req.getUserId(), req.getTitle(), req.isAnonymous(), null, false, req.getType(), req.getLocation());
+			if(req.getType() != WishTypeEnum.beverage && 
+			    req.getType() != WishTypeEnum.restaurant && 
+			    req.getType() != WishTypeEnum.groceries ) {
+				return new BasicRes(ResMessage.WISH_TYPE_ERROR.getCode(), ResMessage.WISH_TYPE_ERROR.getMessage());
+			}
+			wishDao.addWish(req.getUserId(), req.getTitle(), req.isAnonymous(), null, false, req.getType().name(), req.getLocation());
 			times=times-1;
 			wishDao.setTimes(req.getUserId(), times);
 		} catch (Exception e) {
@@ -85,7 +95,6 @@ public class WishService {
 		if(!userId.matches(userIdPattern)) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
 		}
-		
 		List<Object[]> wishData=wishDao.getfollowers(id);
 		if (wishData.isEmpty()) {
 	        return new BasicRes(ResMessage.WISH_ID_NOT_FOUND.getCode(), ResMessage.WISH_ID_NOT_FOUND.getMessage());
@@ -124,10 +133,10 @@ public class WishService {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 	
-	public DelWishRes delWish(int id, String userId) {
+	public BasicRes delWish(int id, String userId) {
 		List<Object[]> wishData=wishDao.getfollowers(id);
 		if (wishData.isEmpty()) {
-	        return new DelWishRes(ResMessage.WISH_ID_NOT_FOUND.getCode(), ResMessage.WISH_ID_NOT_FOUND.getMessage());
+	        return new BasicRes(ResMessage.WISH_ID_NOT_FOUND.getCode(), ResMessage.WISH_ID_NOT_FOUND.getMessage());
 	    }
 		Object[] data=wishData.get(0);
 		String wishUser=data[0].toString();
@@ -135,10 +144,21 @@ public class WishService {
 			    ? new ArrayList<>(Arrays.asList(((String) data[1]).split(","))) 
 			    : new ArrayList<>();
 		int result=wishDao.delWish(id, userId);
+		
+		NotifiCategoryEnum wish=NotifiCategoryEnum.WISH;
+		NotifiMes msg = new NotifiMes();
+		msg.setCategory(wish);
+		msg.setTitle("願望被刪除!!");
+		msg.setContent("願望的主人把願望刪掉了，請重新許願");
+		msg.setTargetUrl("http://localhost:4200/expired_wishes/wishId="+id);
+		msg.setUserId(userId);
+		msg.setEventId(id);
+		notifiMsgRepository.save(msg);  // 新增訊息
+		wishDao.addRecipientsBatch(msg.getId(), followersList);
 		if(result<=0) {
-			return new DelWishRes(ResMessage.WISH_DELETE_ERROR.getCode(), ResMessage.WISH_DELETE_ERROR.getMessage());
+			return new BasicRes(ResMessage.WISH_DELETE_ERROR.getCode(), ResMessage.WISH_DELETE_ERROR.getMessage());
 		}
-		return new DelWishRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), followersList);
+		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 	
 	public void wishTimesReset() {
@@ -146,7 +166,7 @@ public class WishService {
 		wishDao.wishTimesReset(500, 999, 5);
 	}
 	
-//	@Transactional(rollbackOn = Exception.class)
+	@Transactional(rollbackOn = Exception.class)
 	public BasicRes wishOverThreeMonth() throws Exception{
 		List<Wishes> wishesData=wishDao.checkOverTime();
 		if(wishesData.size()<=0) {
@@ -158,15 +178,20 @@ public class WishService {
 				throw new RuntimeException("刪除數量不符");
 			}
 			NotifiCategoryEnum wish=NotifiCategoryEnum.WISH;
+			NotifiMes msg = new NotifiMes();
+			msg.setCategory(wish);
+			msg.setTitle("願望已超過3個月嘍!!");
+			msg.setContent("這個願望已超過3個月，願望未成功開團，請重新許願");
 			for(Wishes w:wishesData) {
 				List<String> wishersList=new ArrayList<>();
 				wishersList.add(w.getUser_id());
-				wishDao.addMessage(wish.name(), "願望已超過3個月嘍!!", "這個願望已超過3個月，願望未成功開團，請重新許願",  //
-						"http://localhost:4200/expired_wishes/wishId="+w.getId(), w.getId());
+				msg.setTargetUrl("http://localhost:4200/expired_wishes/wishId="+w.getId());
+				msg.setEventId(w.getId());
+				notifiMsgRepository.save(msg);  // 新增訊息
 				if(w.getFollowers()!=null) {
 					wishersList.addAll(Arrays.asList(w.getFollowers().split(",")));
 				}
-				wishDao.addRecipientsBatch(wishDao.getMessageId(), wishersList);
+				wishDao.addRecipientsBatch(msg.getId(), wishersList);
 			}
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
 					ResMessage.SUCCESS.getMessage());

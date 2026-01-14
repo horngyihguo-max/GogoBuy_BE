@@ -3,6 +3,8 @@ package com.example.demo.vo;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.example.demo.constants.WishTypeEnum;
+
 import jakarta.persistence.Column;
 
 public class WishVo {
@@ -11,7 +13,7 @@ public class WishVo {
 	private String nickname;
 	private String title;
 	private List<String> followers;
-	private String type;
+	private WishTypeEnum type;
 	private LocalDate buildDate;
 	private String location;
 	
@@ -45,10 +47,10 @@ public class WishVo {
 	public void setFollowers(List<String> followers) {
 		this.followers = followers;
 	}
-	public String getType() {
+	public WishTypeEnum getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(WishTypeEnum type) {
 		this.type = type;
 	}
 	public LocalDate getBuildDate() {

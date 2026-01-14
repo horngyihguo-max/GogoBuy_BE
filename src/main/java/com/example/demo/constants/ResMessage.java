@@ -24,6 +24,7 @@ public enum ResMessage {
     PHONE_ERROR(400, "請輸入手機號碼"),
 	WISH_USER_CAN_NOT_FOLLOW(400, "許願者不可跟願"),
 	WISH_DELETE_ERROR(400, "願望刪除失敗"),
+	WISH_TYPE_ERROR(400, "願望類型無效"),
 	HOST_ID_ERROR(400, "檢查團長ID錯誤"),
 	HOST_ID_NOT_FOUND(404, "找不到團長ID"),
 	STORES_ID_ERROR(400, "商店ID錯誤"),

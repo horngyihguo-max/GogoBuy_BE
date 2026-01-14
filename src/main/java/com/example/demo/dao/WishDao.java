@@ -74,15 +74,7 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository{
 	@Query(value = "update wishes set is_deleted = true where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
 	public int delOverTime();
 	
-//	新增訊息
-	@Modifying
-	@Transactional
-	@Query(value = "insert into notification_messages (category, title, content, target_url, event_id)" //
-			+ " values (?1, ?2, ?3, ?4, ?5)", nativeQuery = true)
-	public void addMessage(String category, String title, String content, String targetUrl, int wishId);
-//	查詢該訊息id
-	@Query(value = "select id from notification_messages where category = 'WISH' order by id DESC limit 1", nativeQuery = true)
-	public int getMessageId();
+	
 //	新增收信人
 //	(WishRepositoryImpl實作WishRepository，由WishDao繼承WishRepository, )
 }

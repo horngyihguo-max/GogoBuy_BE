@@ -2,8 +2,12 @@ package com.example.demo.entity;
 
 import java.time.LocalDate;
 
+import com.example.demo.constants.WishTypeEnum;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -24,7 +28,8 @@ public class Wishes {
 	@Column(name="is_deleted")
 	private boolean deleted;
 	@Column(name="type")
-	private String type;
+	@Enumerated(EnumType.STRING)
+	private WishTypeEnum type;
 	@Column(name="build_date")
 	private LocalDate buildDate;
 	@Column(name="location")
@@ -66,10 +71,10 @@ public class Wishes {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-	public String getType() {
+	public WishTypeEnum getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(WishTypeEnum type) {
 		this.type = type;
 	}
 	public LocalDate getBuildDate() {

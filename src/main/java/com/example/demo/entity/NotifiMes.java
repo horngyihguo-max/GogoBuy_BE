@@ -6,6 +6,10 @@ import com.example.demo.constants.NotifiCategoryEnum;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -14,8 +18,10 @@ import jakarta.persistence.Table;
 public class NotifiMes {
 	@Id
 	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	@Column(name = "category")
+	@Enumerated(EnumType.STRING)
 	private NotifiCategoryEnum category;
 	@Column(name = "title")
 	private String title;
@@ -25,7 +31,7 @@ public class NotifiMes {
 	private String targetUrl;
 	@Column(name = "expired_at")
 	private LocalDate expiredAt;
-	@Column(name = "created_at")
+	@Column(name = "created_at", insertable = false, updatable = false)
 	private LocalDate createdAt;
 	@Column(name = "user_id")
 	private String userId;
