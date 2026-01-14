@@ -35,8 +35,6 @@ public class WishService {
 	
 	@Autowired
 	private WishDao wishDao;
-	@Autowired
-	private NotifiCategoryEnum categoryEnum;
 	
 	public AllWishRes allWish() {
 		List<Wishes> data=wishDao.allWish();
@@ -148,25 +146,27 @@ public class WishService {
 		wishDao.wishTimesReset(500, 999, 5);
 	}
 	
-	@Transactional(rollbackOn = Exception.class)
+//	@Transactional(rollbackOn = Exception.class)
 	public BasicRes wishOverThreeMonth() throws Exception{
 		List<Wishes> wishesData=wishDao.checkOverTime();
+		if(wishesData.size()<=0) {
+			return null;
+		}
 		try {
 			int wishAmount=wishDao.delOverTime();
 			if(wishAmount!=wishesData.size()) {
 				throw new RuntimeException("刪除數量不符");
 			}
-			List<String> wishersList=new ArrayList<>();
+			NotifiCategoryEnum wish=NotifiCategoryEnum.WISH;
 			for(Wishes w:wishesData) {
+				List<String> wishersList=new ArrayList<>();
 				wishersList.add(w.getUser_id());
-//				wishDao.addMessage(categoryEnum.EVENT, "願望已超過3個月嘍!!", "這個願望已超過3個月，願望未成功開團，請重新許願",  //
-//						"http://localhost:4200/expired_wishes/wish_id=");
+				wishDao.addMessage(wish.name(), "願望已超過3個月嘍!!", "這個願望已超過3個月，願望未成功開團，請重新許願",  //
+						"http://localhost:4200/expired_wishes/wishId="+w.getId(), w.getId());
 				if(w.getFollowers()!=null) {
 					wishersList.addAll(Arrays.asList(w.getFollowers().split(",")));
 				}
-			}
-			for(String w:wishersList) {
-				wishDao.addRecipient(w, 1);
+				wishDao.addRecipientsBatch(wishDao.getMessageId(), wishersList);
 			}
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
 					ResMessage.SUCCESS.getMessage());
