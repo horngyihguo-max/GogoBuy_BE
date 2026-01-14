@@ -35,11 +35,12 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
 		String avatarUrl = oAuth2User.getAttribute("picture");
 		String password = oAuth2User.getAttribute("sub");
 		String phone = "未提供電話";
+		String provider = "GOOGLE";
 
 		// 2. 判斷是否需要自動註冊
 		if (userDao.getUser(email) == null) {
 			userDao.addGoogleUser(UUID.randomUUID().toString(), email, encoder.encode(password), nickname, phone,
-					avatarUrl);
+					avatarUrl, provider);
 		}
 		return oAuth2User;
 	}
@@ -66,7 +67,7 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
             res.put("id", user.getId());
 //      res.put("sub", encoder.encode(password));
             res.put("avatarUrl", avatarUrl);
-            res.put("", user.getProvider());
+            res.put("provider", user.getProvider());
         } else {
             res.put("status", "processing");
             res.put("message", "帳號建立中，請稍後再試");
