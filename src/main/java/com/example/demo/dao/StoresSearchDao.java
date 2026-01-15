@@ -42,5 +42,9 @@ public List<Stores> findStoresByNameLike(String name);
     @Query(value = "SELECT name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
     
+    
+    // (給EVENT)   依值搜尋(多個)品項
+    @Query(value = "SELECT * FROM stores WHERE mune_id IN (?1)", nativeQuery = true)
+    List<Stores> getMenuByStoreId(List<Integer> menuId);
        
 }
