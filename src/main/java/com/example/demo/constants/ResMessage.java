@@ -14,6 +14,8 @@ public enum ResMessage {
 	INPUT_IS_EMPTY(400,"請輸入搜尋關鍵字"),
 	OUT_OF_TIMES_REMAINING(400, "超過許願次數"),
 	WISH_ID_NOT_FOUND(400, "願望不存在"),
+	WISH_IS_FINISHED(400, "願望已開團，不可再開團或跟願"),
+	WISH_IS_COMPLETE(400, "願望已完成，不可刪除"),
     SAME_PASSWORD_ERROR(400, "新密碼與舊密碼相同"),
     EMAIL_ERROR(400, "信箱發送失敗"),
     OTP_EMPTY(400, "請先取得驗證碼"),    

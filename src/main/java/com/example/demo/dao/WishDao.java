@@ -31,10 +31,10 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository{
 //	新增願望
 	@Modifying
 	@Transactional
-	@Query(value = "insert into wishes (user_id, title, is_anonymous, followers, is_deleted, type, location)" //
-			+ " values (?1, ?2, ?3, ?4, ?5, ?6, ?7)", nativeQuery = true)
+	@Query(value = "insert into wishes (user_id, title, is_anonymous, followers, is_deleted, type, location, is_finished)" //
+			+ " values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)", nativeQuery = true)
 	public void addWish(String userId, String title, boolean anonymous, String followers, boolean deleted, //
-			String type, String location);
+			String type, String location, boolean finished);
 	
 //	查詢剩餘次數
 	@Query(value = "select times_remaining from user where id = ?", nativeQuery = true)
@@ -52,27 +52,38 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository{
 	public void wishTimesReset(int minExp, int maxExp, int times);
 	
 //	查詢該願望的follower
-	@Query(value = "select user_id, followers, is_deleted from wishes where id = ?", nativeQuery = true)
+	@Query(value = "select user_id, followers, is_deleted, is_finished from wishes where id = ?", nativeQuery = true)
 	public List<Object[]> getfollowers(int id);
 //	許願followers更新
 	@Modifying
 	@Transactional
 	@Query(value = "update wishes set followers = ?2 where id = ?1", nativeQuery = true)
 	public void setfollowers(int id, String newFollowersStr);
+
+//	個人願望完成
+	@Modifying
+	@Transactional
+	@Query(value = "update wishes set is_finished = true where id = ?1", nativeQuery = true)
+	public int finishWish(int id);
+//	查開團id
+	@Query(value = "select id from groupbuy_events where host_id = ? order by id DESC limit 1", nativeQuery = true)
+	public int getEventId(String userId);
 	
-//	個人刪除願望
+//	個人願望刪除
 	@Modifying
 	@Transactional
 	@Query(value = "update wishes set is_deleted = true where id = ?1 and user_id = ?2", nativeQuery = true)
 	public int delWish(int id, String userId);
 	
-//	超過3個月
-	@Query(value = "select * from wishes where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
+//	超過3個月且未被刪除同時也未被完成
+	@Query(value = "select * from wishes where build_date <= DATE_SUB(NOW(), INTERVAL 3 MONTH)"  //
+			+ " and is_deleted = false and is_finished = false", nativeQuery = true)
 	public List<Wishes> checkOverTime();
-	@Modifying
-	@Transactional
-	@Query(value = "update wishes set is_deleted = true where DATE_ADD(build_date, INTERVAL 3 MONTH) <= NOW() and is_deleted = false", nativeQuery = true)
-	public int delOverTime();
+//	@Modifying
+//	@Transactional
+//	@Query(value = "update wishes set is_deleted = true where build_date <= DATE_SUB(NOW(), INTERVAL 3 MONTH)"  //
+//			+ " and is_deleted = false and is_finished = false", nativeQuery = true)
+//	public int delOverTime();
 	
 	
 //	新增收信人

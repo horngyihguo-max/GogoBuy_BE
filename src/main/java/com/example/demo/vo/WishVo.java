@@ -16,6 +16,7 @@ public class WishVo {
 	private WishTypeEnum type;
 	private LocalDate buildDate;
 	private String location;
+	private boolean finished;
 	
 	public int getId() {
 		return id;
@@ -64,5 +65,11 @@ public class WishVo {
 	}
 	public void setLocation(String location) {
 		this.location = location;
+	}
+	public boolean isFinished() {
+		return finished;
+	}
+	public void setFinished(boolean finished) {
+		this.finished = finished;
 	}
 }
