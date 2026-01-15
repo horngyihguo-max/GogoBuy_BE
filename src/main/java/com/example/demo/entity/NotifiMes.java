@@ -19,9 +19,11 @@ public class NotifiMes {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	@Enumerated(EnumType.STRING)
 	@Column(name = "category")
+	@Enumerated(EnumType.STRING)
 	private NotifiCategoryEnum category;
 	@Column(name = "title")
 	private String title;
