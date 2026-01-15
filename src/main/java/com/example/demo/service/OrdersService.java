@@ -189,7 +189,7 @@ public class OrdersService {
 
 	// 更新總金額
 	private void updateSubtotal(int eventId) {
-//	    int count = ordersDao.countOrdersByEventId(eventId);
+		// int count = ordersDao.countOrdersByEventId(eventId);
 		Integer sum = ordersDao.sumSubtotalByEventId(eventId);
 		// 處理查無資料時的狀況
 		int totalAmount = (sum != null) ? sum : 0;

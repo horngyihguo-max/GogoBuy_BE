@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.NotifiCategoryEnum;
 import com.example.demo.constants.ResMessage;
@@ -43,26 +44,33 @@ public class MessagesService {
 
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+	// 檢查通知訊息
 	private void checkNotifiMes(NotifiMesReq req) throws Exception {
-//		檢查類別
+		// 檢查類別
 		try {
 			NotifiCategoryEnum category = req.getCategory();
 		} catch (IllegalArgumentException e) {
 			throw new Exception("不存在的類別喵");
 		}
-//		檢查標題
-		if (req.getTitle() == null || req.getTitle().trim().isEmpty()) {
+		// 檢查標題
+		// if (req.getTitle() == null || req.getTitle().trim().isEmpty()) {
+		if (!StringUtils.hasText(req.getTitle())) {
 			throw new Exception("標題不可為空喵");
 		}
-//		檢查訊息內容
-		if (req.getContent() == null || req.getContent().trim().isEmpty()) {
+
+		// 檢查訊息內容
+		// if (req.getContent() == null || req.getContent().trim().isEmpty()) {
+		if (!StringUtils.hasText(req.getContent())) {
 			throw new Exception("內容不可為空喵");
 		}
-//		檢查URL
-		if (req.getTargetUrl() == null || req.getTargetUrl().trim().isEmpty()) {
+
+		// 檢查URL
+		// if (req.getTargetUrl() == null || req.getTargetUrl().trim().isEmpty()) {
+		if (!StringUtils.hasText(req.getTargetUrl())) {
 			throw new Exception("URL不可為空喵");
 		}
-//		檢查時效
+
+		// 檢查時效
 		try {
 
 			LocalDate expiredAt = LocalDate.parse(req.getExpiredAt(), FORMATTER);
@@ -80,16 +88,21 @@ public class MessagesService {
 //		檢查使用者id
 		String user = req.getUserId();
 		if (user != null) {
-			if (user.trim().isEmpty()) {
+
+			// if (user.trim().isEmpty()) {
+			if (!StringUtils.hasText(user)) {
 				throw new Exception("使用者id不能是空白喵");
 			}
 			User checkUser = userDao.getUserById(user);
+
 			if (checkUser == null) {
 				throw new Exception("使用者id不存在喵");
 			}
 		}
-//		檢查活動id
+
+		// 檢查活動id
 		Integer eventId = req.getEventId();
+
 		if (eventId != null) {
 			NotifiCategoryEnum category = req.getCategory();
 			if (NotifiCategoryEnum.GROUP_BUY.equals(category)) {
@@ -101,16 +114,21 @@ public class MessagesService {
 		}
 	}
 
+	// 檢查使用者通知
 	private void checkUserNotif(List<UserNotificationVo> voList) throws Exception {
 		if (voList == null) {
 			throw new Exception("沒有收件者喵(沒有List喵)");
 		} else {
 			for (UserNotificationVo vo : voList) {
 				String user = vo.getUserId();
-				if (user == null || user.trim().isEmpty()) {
+
+				// if (user == null || user.trim().isEmpty()) {
+				if (!StringUtils.hasText(user)) {
 					throw new Exception("沒有收件者喵(收件者為空喵)");
 				}
+
 				User checkUser = userDao.getUserById(user);
+
 				if (checkUser == null) {
 					throw new Exception("收件者id不存在喵");
 				}
@@ -118,6 +136,7 @@ public class MessagesService {
 		}
 	}
 
+	// 建立通知
 	@Transactional
 	public BasicRes create(NotifiMesReq req) throws Exception {
 		checkNotifiMes(req);
@@ -128,17 +147,17 @@ public class MessagesService {
 		mes.setTitle(req.getTitle());
 		mes.setContent(req.getContent());
 		mes.setTargetUrl(req.getTargetUrl());
-
 		mes.setExpiredAt(LocalDate.parse(req.getExpiredAt(), FORMATTER));
-
 		mes.setUserId(req.getUserId());
 		mes.setEventId(req.getEventId());
 		mes = notifiMesDao.save(mes);
-//	    上行作用取代下行 避免ID撞車問題
-//		notifiMesDao.createNotifiMes(req.getCategory().name(), req.getTitle(), req.getContent(), req.getTargetUrl(), //
-//				req.getExpiredAt(), req.getUserId(), req.getEventId());
+		// 上行作用取代下行 避免ID撞車問題
+		// notifiMesDao.createNotifiMes(req.getCategory().name(), req.getTitle(),
+		// req.getContent(), req.getTargetUrl(), //
+		// req.getExpiredAt(), req.getUserId(), req.getEventId());
 		int nofitId = mes.getId();
 		List<UserNotificationVo> UserNotificationVoList = req.getUserNotificationVoList();
+
 		for (UserNotificationVo vo : UserNotificationVoList) {
 			userNotifDao.createUserNotifi(vo.getUserId(), nofitId);
 		}
@@ -147,8 +166,9 @@ public class MessagesService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
+	// 更新通知
 	public MessagesRes update(int id, NotifiMesReq req) throws Exception {
-//		檢查
+		// 呼叫檢查 function
 		checkNotifiMes(req);
 		checkUserNotif(req.getUserNotificationVoList());
 		NotifiMes mes = notifiMesDao.findById(id).orElseThrow(() -> //
@@ -161,7 +181,6 @@ public class MessagesService {
 		mes.setExpiredAt(LocalDate.parse(req.getExpiredAt(), FORMATTER));
 		mes.setUserId(req.getUserId());
 		mes.setEventId(req.getEventId());
-
 		mes = notifiMesDao.save(mes);
 
 		// 先刪
@@ -179,6 +198,7 @@ public class MessagesService {
 				updatedUserNotifList);
 	}
 
+	// 根據使用者id刪除對應通知
 	public BasicRes deleteByUser(String userId, int notifId) throws Exception {
 		UserNotif userNotif = userNotifDao.findByUserIdAndNotifId(userId, notifId)
 				.orElseThrow(() -> new Exception("找不到該使用者的通知紀錄喵"));
@@ -189,6 +209,7 @@ public class MessagesService {
 
 	}
 
+	// 刪除通知
 	public BasicRes delete(int notifId) throws Exception {
 //		檢查
 		NotifiMes mes = notifiMesDao.findById(notifId)
@@ -200,41 +221,43 @@ public class MessagesService {
 		notifiMesDao.deleteById(notifId);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), "訊息標題:[" + title + "]已經被砍光了喵");
 	}
-	
-	
-	public MessagesRes searchByUser(String userId) throws Exception{
-		if(userId == null || userId.trim().isEmpty()) {
+
+	// 根據使用者id搜尋通知
+	public MessagesRes searchByUser(String userId) throws Exception {
+
+		// if (userId == null || userId.trim().isEmpty()) {
+		if (!StringUtils.hasText(userId)) {
 			throw new Exception("使用者id不能是空白喵");
 		}
-		
-			User checkUser = userDao.getUserById(userId);
-			if (checkUser == null) {
-				throw new Exception("使用者id不存在喵");
-			}
-//		獲取該使用者全部訊息細節
-		List<UserNotif>userMsgList = userNotifDao.searchByUser(userId);
-		
-		if (userMsgList == null || userMsgList.isEmpty()) {
-			return new MessagesRes(ResMessage.SUCCESS.getCode(), "該使用者目前沒有訊息喵",//
-					new ArrayList<>(),new ArrayList<>());
+
+		User checkUser = userDao.getUserById(userId);
+
+		if (checkUser == null) {
+			throw new Exception("使用者id不存在喵");
 		}
-//		取得訊息編號陣列
-		//建立資料流(水線)(類似迴圈)		
+
+		// 獲取該使用者全部訊息細節
+		List<UserNotif> userMsgList = userNotifDao.searchByUser(userId);
+
+		if (userMsgList == null || userMsgList.isEmpty()) {
+			return new MessagesRes(ResMessage.SUCCESS.getCode(), "該使用者目前沒有訊息喵", //
+					new ArrayList<>(), new ArrayList<>());
+		}
+
+		// 取得訊息編號陣列
+		// 建立資料流(水線)(類似迴圈)
 		List<Integer> notifId = userMsgList.stream()
-				//映射	對流中的每一個 UserNotif 物件，呼叫 getNotifiId() 方法		
-	            .map(UserNotif::getNotifiId)
-	            //	排除重複	(notif_id) (雖然我感覺不會有)           
-	            .distinct()
-	            //	收集            
-	            .collect(Collectors.toList());
-		
+				// 映射 對流中的每一個 UserNotif 物件，呼叫 getNotifiId() 方法
+				.map(UserNotif::getNotifiId)
+				// 排除重複 (notif_id) (雖然我感覺不會有)
+				.distinct()
+				// 收集
+				.collect(Collectors.toList());
+
 		List<NotifiMes> msgList = notifiMesDao.searchById(notifId);
-		
-		
-		return new MessagesRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(),//
-				msgList,userMsgList);
+
+		return new MessagesRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), //
+				msgList, userMsgList);
 	}
-	
-	
 
 }

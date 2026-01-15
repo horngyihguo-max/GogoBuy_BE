@@ -127,7 +127,9 @@ public class GroupbuyEventsService {
 		// 檢查推薦菜單品項
 		Set<Integer> validMenuIds = menuList.stream()
 				/*
-				 * 遍歷每一個 Map (m)， // 從中取出鍵值為 "id" 的物件，並強制轉型為 Integer。// 這時的資料從「整個選單資訊」變成只有 id。
+				 * 遍歷每一個 Map (m)， // 
+				 * 從中取出鍵值為 "id" 的物件，並強制轉型為 Integer。// 
+				 * 這時的資料從「整個選單資訊」變成只有 id。
 				 */
 				.map(m -> (Integer) m.get("id"))
 				// .collect : 數據重新打包。
@@ -193,34 +195,41 @@ public class GroupbuyEventsService {
 			event.setRecommendList(recommendJson);
 
 			// 3.存入資料庫
-			groupbuyEventsDao.addEvent(event.getHostId(), event.getStoresId(), event.getStatus().name(),
-					event.getEndTime(), event.getTotalOrderAmount(), event.getShippingFee(),
-					event.getSplitType().name(), event.getAnnouncement(), event.getType(), event.getTempMenuList(),
-					event.getRecommendList(), event.getRecommendDescription(), event.getLimitation());
+			groupbuyEventsDao.addEvent(//
+					event.getHostId(), event.getStoresId(), //
+					event.getStatus().name(), //
+					event.getEndTime(), event.getTotalOrderAmount(), //
+					event.getShippingFee(), event.getSplitType().name(), //
+					event.getAnnouncement(), event.getType(), //
+					event.getTempMenuList(), event.getRecommendList(), //
+					event.getRecommendDescription(), event.getLimitation());
 		} catch (Exception e) {
-			e.printStackTrace();
 			return new BasicRes(ResMessage.EVENT_ERROR.getCode(), ResMessage.EVENT_ERROR.getMessage());
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 
-	// 更新
+	// 更新開團資訊
 	public BasicRes updateEvent(int id, GroupbuyEventsReq req) {
 
 		GroupbuyEvents event = groupbuyEventsDao.findById(id);
+
 		if (event == null) {
 			return new BasicRes(ResMessage.EVENTS_NOT_FOUND.getCode(), ResMessage.EVENTS_NOT_FOUND.getMessage());
 		}
-		if (req.isDeleted()) { 
-			event.setDeleted(true); // 將狀態改為 true
+		
+		// 如果req為true
+		if (req.isDeleted()) {
+			// 將開團狀態改為 true
+			event.setDeleted(true); 
 			groupbuyEventsDao.save(event);
 			return new BasicRes(200, "已成功取消（軟刪除）");
 		}
 		BasicRes checkResult = checkEvent(req);
+
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkResult;
 		}
-		
 
 		try {
 			// 1. 將 List 序列化為 JSON 字串
