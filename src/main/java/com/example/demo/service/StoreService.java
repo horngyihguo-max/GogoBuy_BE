@@ -50,6 +50,8 @@ public class StoreService {
 
 	@Autowired
 	private ProductOptionGroupsDao productOptionGroupsDao;
+	
+//	檢查
 
 	// 檢查店家格式
 	private void checkStore(StoresReq req) throws Exception {

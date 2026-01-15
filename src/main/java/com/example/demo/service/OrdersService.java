@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,7 +18,6 @@ import com.example.demo.entity.Orders;
 import com.example.demo.entity.User;
 import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.OrdersRes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -71,8 +69,6 @@ public class OrdersService {
 
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
-		if (req.getUserId() == null || userDao.getUserById(req.getUserId()) == null) {
-		    return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
 		}
 
 		// 檢查菜單品項ID
@@ -163,12 +159,12 @@ public class OrdersService {
 		if (orders == null) {
 			return new BasicRes(404, "找不到該筆訂單");
 		}
-		if (req.isDeleted()) { 
-	        orders.setDeleted(true);
-	        ordersDao.save(orders);
-	        updateSubtotal(orders.getEventsId());
-	        return new BasicRes(200, "訂單已成功取消（軟刪除）");
-	    }
+		if (req.isDeleted()) {
+			orders.setDeleted(true);
+			ordersDao.save(orders);
+			updateSubtotal(orders.getEventsId());
+			return new BasicRes(200, "訂單已成功取消（軟刪除）");
+		}
 		BasicRes checkResult = checkEvent(req);
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkResult;
@@ -190,14 +186,14 @@ public class OrdersService {
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
-	
+
 	// 更新總金額
-	private void updateSubtotal (int eventId ) {
+	private void updateSubtotal(int eventId) {
 //	    int count = ordersDao.countOrdersByEventId(eventId);
-	    Integer sum = ordersDao.sumSubtotalByEventId(eventId);
-	    // 處理查無資料時的狀況
-	    int totalAmount = (sum != null) ? sum : 0;
-	    groupbuyEventsDao.updateEventStats(totalAmount, eventId);
+		Integer sum = ordersDao.sumSubtotalByEventId(eventId);
+		// 處理查無資料時的狀況
+		int totalAmount = (sum != null) ? sum : 0;
+		groupbuyEventsDao.updateEventStats(totalAmount, eventId);
 	}
-	
+
 }

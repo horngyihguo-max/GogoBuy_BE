@@ -41,6 +41,10 @@ public class MessagesRes extends BasicRes {
 		UserNotifList = userNotifList;
 	}
 	
+	public MessagesRes(int code, String message, List<NotifiMes> notifiMesList) {
+		super(code, message);
+		this.notifiMesList = notifiMesList;
+	}
 	
 	
 }
