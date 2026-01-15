@@ -73,5 +73,9 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Query(value = "select sum(subtotal) from orders where events_id = ?1 and user_id = ?2 and is_deleted = false", nativeQuery = true)
 	Integer sumSubtotalByEventAndUser(int eventId, String userId);
 	
-	
+	// 軟刪除
+	@Transactional
+	@Modifying
+	@Query(value = "update  orders set is_deleted = ?2 where user_id = ?1", nativeQuery = true)
+	public int delete(String userId, boolean delete);
 }

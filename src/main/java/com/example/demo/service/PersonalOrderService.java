@@ -72,7 +72,6 @@ public class PersonalOrderService {
 	        personalOrderDao.save(personalOrder);
 	        return new BasicRes(200, "個人結算單建立成功");
 	    } catch (Exception e) {
-	        e.printStackTrace();
 	        return new BasicRes(500, "資料庫寫入異常，請檢查欄位格式");
 	    }
 	}
@@ -98,17 +97,13 @@ public class PersonalOrderService {
 	            if (order.getPaymentTime() == null) {
 	                order.setPaymentTime(LocalDateTime.now());
 	            }
-	        } else if (newStatus == PaymentStatus.UNPAID) {
-	            // 若狀態改回未支付，清空時間
-	            order.setPaymentTime(null);
-	        }
+	        } 
 	        order.setPaymentStatus(newStatus);
 	        personalOrderDao.save(order);
 	        return new BasicRes(200, "更新成功");
 
 	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return new BasicRes(500, "更新系統異常: " + e.getMessage());
+	        return new BasicRes(500, "更新系統異常: ");
 	    }
 }
 }

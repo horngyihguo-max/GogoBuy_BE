@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -119,7 +120,7 @@ public class GroupbuyEventsService {
 				.map(m -> (Integer) m.get("id"))
 				// .collect : 數據重新打包。
 				// toSet : 將這些 ID 存入一個 Set 集合。
-				.collect(java.util.stream.Collectors.toSet());
+				.collect(Collectors.toSet());
 		if (recommendList != null) {
 			for (Integer recId : req.getRecommendList()) {
 				if (!validMenuIds.contains(recId)) {
@@ -128,20 +129,14 @@ public class GroupbuyEventsService {
 				}
 			}
 		}
-//    			LocalDateTime now = LocalDateTime.now();
-//    		    if (req.getEndTime().isBefore(now.plusMinutes(30))) {
-//    		        return new BasicRes(ResMessage.END_TIME_ERROR.getCode(),
-//    		                           "結單時間至少需設定在 5 分鐘後");
-//    		    }
-//    		    
-
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 
+	
 	public BasicRes addEvent(GroupbuyEventsReq req) {
 		BasicRes checkResult = checkEvent(req);
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
-			return checkResult; // 如果有錯，直接把錯誤回傳給 Controller
+			return checkResult; 
 		}
 		// 新增資料
 		GroupbuyEvents event = new GroupbuyEvents();
@@ -177,7 +172,6 @@ public class GroupbuyEventsService {
 					event.getSplitType().name(), event.getAnnouncement(), event.getType(), event.getTempMenuList(),
 					event.getRecommendList(), event.getRecommendDescription(), event.getLimitation());
 		} catch (Exception e) {
-			e.printStackTrace();
 			return new BasicRes(ResMessage.EVENT_ERROR.getCode(), ResMessage.EVENT_ERROR.getMessage());
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
@@ -217,7 +211,6 @@ public class GroupbuyEventsService {
 					event.getTotalOrderAmount(), req.getShippingFee(), req.getSplitType().name(), req.getAnnouncement(),
 					req.getType(), tempMenuJson, recommendJson, req.getRecommendDescription(), req.getLimitation(), id);
 		} catch (Exception e) {
-			e.printStackTrace();
 			return new BasicRes(ResMessage.EVENT_ERROR.getCode(), ResMessage.EVENT_ERROR.getMessage());
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
