@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import com.example.demo.entity.Menu;
 import com.example.demo.entity.Stores;
 
 @Repository
@@ -44,7 +45,7 @@ public List<Stores> findStoresByNameLike(String name);
     
     
     // (給EVENT)   依值搜尋(多個)品項
-    @Query(value = "SELECT * FROM stores WHERE mune_id IN (?1)", nativeQuery = true)
-    List<Stores> getMenuByStoreId(List<Integer> menuId);
+    @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
+    List<Menu> getMenuByMenuId(List<Integer> menuId);
        
 }
