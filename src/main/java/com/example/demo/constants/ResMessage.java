@@ -45,7 +45,7 @@ public enum ResMessage {
 	PICKUP_STATUS_ERROR(400, "領取狀態錯誤"),
 	PICKUP_TIME_ERROR(400, "領取時間錯誤"),
 	EVENT_CLOSED(400, "此團購已截止，無法再下單"),
-	PARAM_ERROR(400,"金額校驗失敗，正確金額應為："),
+	UPDATE_ERROR(400,"更新失敗"),
 	USER_NOT_FOUND(404, "找不到此用戶");
 	
 	private int code;

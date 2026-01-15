@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import com.example.demo.entity.Orders;
 import com.example.demo.entity.User;
 import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.OrdersRes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -41,7 +43,7 @@ public class OrdersService {
 //	@Autowired
 //	private GroupbuyEvents groupbuyEvents;
 
-	public BasicRes addOrders(OredersReq req) {
+	private BasicRes checkEvent(OredersReq req) {
 		// 檢查所屬團ID
 		if (req.getEventsId() == 0) {
 			return new BasicRes(ResMessage.EVENTS_ID_ERROR.getCode(), //
@@ -57,13 +59,8 @@ public class OrdersService {
 			return new BasicRes(ResMessage.EVENT_CLOSED.getCode(), ResMessage.EVENT_CLOSED.getMessage());
 		}
 		// 檢查跟團者ID
-		if (req.getUserId() == null) {
-			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
-		}
-		// 檢查有沒有跟團者ID
-		User user = userDao.getUserById(req.getUserId());
-		if (user == null) {
-			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
+		if (req.getUserId() == null || userDao.getUserById(req.getUserId()) == null) {
+		    return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
 		}
 		// 檢查菜單品項ID
 		if (req.getMenuId() == 0) {
@@ -101,16 +98,27 @@ public class OrdersService {
 		if (req.getSubtotal() == 0) {
 			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
 		}
+		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
+	}
+
+	// 新增
+	public BasicRes addOrders(OredersReq req) {
+
+		BasicRes checkResult = checkEvent(req);
+		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
+			return checkResult;
+		}
+
 		// 將 List<Map<String, Object>> 轉為 JSON 字串
 		Orders orders = new Orders();
 		try {
 			// List，writeValueAsString 會把它轉成 String
 			String jsonString = mapper.writeValueAsString(req.getSelectedOptionList());
 			orders.setSelectedOption(jsonString);
-		} catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+		} catch (Exception e) {
 			// 如果轉換失敗，可以 log 錯誤或回傳參數錯誤
 			e.printStackTrace();
-			return new BasicRes(ResMessage.PARAM_ERROR.getCode(), "選項格式轉換失敗");
+			return new BasicRes(400, "選項格式轉換失敗");
 		}
 		orders.setEventsId(req.getEventsId());
 		orders.setUserId(req.getUserId());
@@ -123,6 +131,51 @@ public class OrdersService {
 		orders.setPickupTime(req.getPickupTime());
 		orders.setWeight(req.getWeight());
 		ordersDao.save(orders);
+		updateSubtotal(req.getEventsId());
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
+
+	// 更新
+	public BasicRes updateOrders(int id, OredersReq req) {
+		Orders orders = ordersDao.findById(id);
+		if (orders == null) {
+			return new BasicRes(404, "找不到該筆訂單");
+		}
+		if (req.isDeleted()) { 
+	        orders.setDeleted(true);
+	        ordersDao.save(orders);
+	        updateSubtotal(orders.getEventsId());
+	        return new BasicRes(200, "訂單已成功取消（軟刪除）");
+	    }
+		BasicRes checkResult = checkEvent(req);
+		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
+			return checkResult;
+		}
+		try {
+			String jsonString = mapper.writeValueAsString(req.getSelectedOptionList());
+			orders.setSelectedOption(jsonString);
+			orders.setQuantity(req.getQuantity());
+			orders.setPersonalMemo(req.getPersonalMemo());
+			orders.setSubtotal(req.getSubtotal());
+			orders.setPickupStatus(req.getPickupStatus());
+			orders.setPickupTime(req.getPickupTime());
+			orders.setWeight(req.getWeight());
+			ordersDao.save(orders);
+			updateSubtotal(req.getEventsId());
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new BasicRes(ResMessage.UPDATE_ERROR.getCode(), ResMessage.UPDATE_ERROR.getMessage());
+		}
+		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
+	}
+	
+	// 更新總金額
+	private void updateSubtotal (int eventId ) {
+//	    int count = ordersDao.countOrdersByEventId(eventId);
+	    Integer sum = ordersDao.sumSubtotalByEventId(eventId);
+	    // 處理查無資料時的狀況
+	    int totalAmount = (sum != null) ? sum : 0;
+	    groupbuyEventsDao.updateEventStats(totalAmount, eventId);
+	}
+	
 }
