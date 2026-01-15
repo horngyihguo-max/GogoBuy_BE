@@ -15,6 +15,8 @@ public interface StoresCreateDao extends JpaRepository<Stores, Integer> {
 	@Query(value = "SELECT COUNT(*) FROM stores WHERE phone = ?1 AND is_deleted = false", nativeQuery = true)
 	int existsByPhone(String phone);
 	
+//	改用save() 以下沒用到
+	
 //	新增店家
 	@Modifying
 	@Transactional
@@ -29,6 +31,7 @@ public interface StoresCreateDao extends JpaRepository<Stores, Integer> {
 	@Query(value = "SELECT LAST_INSERT_ID()", nativeQuery = true)
 	public int getLastInsertId();
 	
+//	改用save() 以上沒用到
 	
 //	新增時刻
 	@Modifying

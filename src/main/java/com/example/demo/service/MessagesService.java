@@ -3,7 +3,9 @@ package com.example.demo.service;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -192,7 +194,7 @@ public class MessagesService {
 	    
 	    return new BasicRes(
 	            ResMessage.SUCCESS.getCode(), 
-	            "使用者 " + userId + " 的個人通知已刪除"
+	            "使用者 " + userId + " 的個人通知已刪除喵"
 	        );
 	    
 	}
@@ -208,6 +210,40 @@ public class MessagesService {
 		notifiMesDao.deleteById(notifId);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), 
                 "訊息標題:["+title+"]已經被砍光了喵");
+	}
+	
+	
+	public MessagesRes searchByUser(String userId) throws Exception{
+		if(userId == null || userId.trim().isEmpty()) {
+			throw new Exception("使用者id不能是空白喵");
+		}
+		
+			User checkUser = userDao.getUserById(userId);
+			if (checkUser == null) {
+				throw new Exception("使用者id不存在喵");
+			}
+//		獲取該使用者全部訊息細節
+		List<UserNotif>userMsgList = userNotifDao.searchByUser(userId);
+		
+		if (userMsgList == null || userMsgList.isEmpty()) {
+			return new MessagesRes(ResMessage.SUCCESS.getCode(), "該使用者目前沒有訊息喵",//
+					new ArrayList<>(),new ArrayList<>());
+		}
+//		取得訊息編號陣列
+		//建立資料流(水線)(類似迴圈)		
+		List<Integer> notifId = userMsgList.stream()
+				//映射	對流中的每一個 UserNotif 物件，呼叫 getNotifiId() 方法		
+	            .map(UserNotif::getNotifiId)
+	            //	排除重複	(notif_id) (雖然我感覺不會有)           
+	            .distinct()
+	            //	收集            
+	            .collect(Collectors.toList());
+		
+		List<NotifiMes> msgList = notifiMesDao.searchById(notifId);
+		
+		
+		return new MessagesRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(),//
+				msgList,userMsgList);
 	}
 	
 	
