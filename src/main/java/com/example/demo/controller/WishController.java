@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,7 +16,6 @@ import com.example.demo.request.UserAddReq;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.DelWishRes;
 import com.example.demo.service.WishService;
 
 import jakarta.validation.Valid;

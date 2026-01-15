@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import java.lang.reflect.Array;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,7 +26,6 @@ import com.example.demo.repository.NotifiMesRepository;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.DelWishRes;
 import com.example.demo.vo.WishVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
