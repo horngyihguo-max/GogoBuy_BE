@@ -1,13 +1,13 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
@@ -16,10 +16,9 @@ import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Orders;
-import com.example.demo.entity.User;
 import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.OrdersRes;
+import com.example.demo.response.GroupbuyEventsRes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -90,10 +89,10 @@ public class OrdersService {
 		if (req.getPickupStatus() == null) {
 			return new BasicRes(ResMessage.PICKUP_STATUS_ERROR.getCode(), ResMessage.PICKUP_STATUS_ERROR.getMessage());
 		}
-		// 檢查領取時間
-		if (req.getPickupTime() == null) {
-			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
-		}
+//		// 檢查領取時間
+//		if (req.getPickupTime() == null) {
+//			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
+//		}
 		// 檢查小計
 		if (req.getSubtotal() == 0) {
 			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
@@ -129,6 +128,7 @@ public class OrdersService {
 		orders.setPickupTime(req.getPickupTime());
 		orders.setWeight(req.getWeight());
 		ordersDao.save(orders);
+		//同步到主表的總金額
 		updateSubtotal(req.getEventsId());
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
@@ -173,6 +173,22 @@ public class OrdersService {
 	    // 處理查無資料時的狀況
 	    int totalAmount = (sum != null) ? sum : 0;
 	    groupbuyEventsDao.updateEventStats(totalAmount, eventId);
+	}
+	
+	// 查詢跟團者有的訂單
+	public GroupbuyEventsRes getEventIdByUserId(String userId){
+		try {
+			if (!StringUtils.hasText(userId)) {
+				return new GroupbuyEventsRes(400, "輸入正確的user_id");
+			}
+			List<Orders> ordersList = ordersDao.getEventIdByUserId(userId);
+			// 先建立物件，再用 Setter 塞入 List
+	        GroupbuyEventsRes res = new GroupbuyEventsRes(200, "user_id 搜尋成功");
+	        res.setOrders(ordersList); 
+	        return res;
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "找不到 "+userId + "訂單" );
+		}
 	}
 	
 }

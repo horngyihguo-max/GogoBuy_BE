@@ -39,7 +39,7 @@ public class GroupbuyEventsReq {
     
     private String type;                  
     
-    private List<Map<String, Object>> tempMenuList;            
+    private List<Integer> tempMenuList;            
     
     private List<Integer> recommendList;             
     
@@ -124,11 +124,11 @@ public class GroupbuyEventsReq {
 		this.type = type;
 	}
 
-	public List<Map<String, Object>> getTempMenuList() {
+	public List<Integer> getTempMenuList() {
 		return tempMenuList;
 	}
 
-	public void setTempMenuList(List<Map<String, Object>> tempMenuList) {
+	public void setTempMenuList(List<Integer> tempMenuList) {
 		this.tempMenuList = tempMenuList;
 	}
 

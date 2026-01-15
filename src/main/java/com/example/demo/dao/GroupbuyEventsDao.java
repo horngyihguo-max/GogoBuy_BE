@@ -2,7 +2,6 @@ package com.example.demo.dao;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -52,9 +51,10 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "update  groupbuy_events set is_deleted = ?2 where events_id = ?1", nativeQuery = true)
 	public int delete(String eventsId, boolean delete);
 	
-	// 用hostId檢索主表
-	@Query(value = "select * from groupbuy_events  where host_id = ?1 and is_deleted = false ", nativeQuery = true)
-	public GroupbuyEvents getGroupbuyEventById(String hostId);
 	
-	//
+	// 用 hostId 檢索主表
+	@Query(value = "select * from groupbuy_events  where host_id = ?1 and is_deleted = false ", nativeQuery = true)
+	public List<GroupbuyEvents> getGroupbuyEventById(String hostId);
+	
+	
 }
