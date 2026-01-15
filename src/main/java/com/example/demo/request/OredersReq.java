@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Map;
 
 import com.example.demo.constants.PickupStatusEnum;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class OredersReq {
 
+	private int id;
 	@NotNull(message = "所屬團ID必填")
 	private int eventsId;
     @NotBlank(message = "跟團者ID必填")
@@ -23,19 +25,30 @@ public class OredersReq {
 	private List<Map<String, Object>> selectedOptionList;
 	
 	private String personalMemo;
-	@NotBlank(message = "創建時間必填")
+	
+	@NotNull(message = "訂單時間不能為空")
 	private LocalDateTime orderTime;
 	
 	@NotNull(message = "支付狀態必填")
 	private PickupStatusEnum pickupStatus;
 	
-	@NotBlank(message = "領取時間必填")
+	@NotNull(message = "領取時間必填")
 	private LocalDateTime pickupTime;
 	
 	@NotNull(message = "創建時間必填")
 	private int subtotal;
 	
 	private double weight;
+
+	private boolean deleted;
+	
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
 
 	public int getEventsId() {
 		return eventsId;
@@ -124,6 +137,13 @@ public class OredersReq {
 	public void setWeight(double weight) {
 		this.weight = weight;
 	}
-	
-	
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
 }

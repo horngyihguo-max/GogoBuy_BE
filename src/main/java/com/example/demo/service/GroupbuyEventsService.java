@@ -133,7 +133,6 @@ public class GroupbuyEventsService {
 				// .collect : 數據重新打包。
 				// toSet : 將這些 ID 存入一個 Set 集合。
 				.collect(java.util.stream.Collectors.toSet());
-
 		if (recommendList != null) {
 			for (Integer recId : req.getRecommendList()) {
 				if (!validMenuIds.contains(recId)) {
@@ -209,14 +208,19 @@ public class GroupbuyEventsService {
 	public BasicRes updateEvent(int id, GroupbuyEventsReq req) {
 
 		GroupbuyEvents event = groupbuyEventsDao.findById(id);
-
+		if (event == null) {
+			return new BasicRes(ResMessage.EVENTS_NOT_FOUND.getCode(), ResMessage.EVENTS_NOT_FOUND.getMessage());
+		}
+		if (req.isDeleted()) { 
+			event.setDeleted(true); // 將狀態改為 true
+			groupbuyEventsDao.save(event);
+			return new BasicRes(200, "已成功取消（軟刪除）");
+		}
 		BasicRes checkResult = checkEvent(req);
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkResult;
 		}
-		if (event == null) {
-			return new BasicRes(ResMessage.EVENTS_NOT_FOUND.getCode(), ResMessage.EVENTS_NOT_FOUND.getMessage());
-		}
+		
 
 		try {
 			// 1. 將 List 序列化為 JSON 字串

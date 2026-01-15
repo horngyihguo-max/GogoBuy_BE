@@ -49,6 +49,8 @@ public class GroupbuyEventsReq {
 	@Min(value = 1, message = "成團門檻至少1元")
 	private Integer limitation = 0;
 
+    private boolean deleted;
+    
 	public int getId() {
 		return id;
 	}
@@ -159,6 +161,14 @@ public class GroupbuyEventsReq {
 
 	public void setLimitation(Integer limitation) {
 		this.limitation = limitation;
+	}
+
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
 	}
 
 }

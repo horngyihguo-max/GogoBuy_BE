@@ -1,46 +1,34 @@
-package com.example.demo.entity;
+package com.example.demo.request;
 
 import java.time.LocalDateTime;
 
 import com.example.demo.constants.PaymentStatus;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
-@Entity
-@Table(name = "personal_order")
-public class PersonalOrder {
+public class personalOrderReq {
 
-	@Id
-	@Column(name = "id")
 	private int id;
-	
-	@Column(name = "events_id")
+	@NotNull(message = "團ID必填")
 	private int eventsId;
 	
-	@Column(name = "user_id")
+	@NotBlank(message = "跟團者ID必填")
 	private String userId;
+
+	private double totalWeight;
 	
-	@Column(name = "total_weight")
-	private Double totalWeight;
-	
-	@Column(name = "person_fee")
+	@NotNull(message = "個人運費必填")
 	private int personFee;
 	
-	@Column(name = "total_sum")
+	@NotNull(message = "該單總額必填")
 	private int totalSum;
 	
-	@Column(name = "payment_status")
-	@Enumerated(EnumType.STRING)
+
 	private PaymentStatus paymentStatus;
-	
-	@Column(name = "payment_time")
+
 	private LocalDateTime paymentTime;
-	
+
 	public int getId() {
 		return id;
 	}
@@ -65,11 +53,11 @@ public class PersonalOrder {
 		this.userId = userId;
 	}
 
-	public Double getTotalWeight() {
+	public double getTotalWeight() {
 		return totalWeight;
 	}
 
-	public void setTotalWeight(Double totalWeight) {
+	public void setTotalWeight(double totalWeight) {
 		this.totalWeight = totalWeight;
 	}
 

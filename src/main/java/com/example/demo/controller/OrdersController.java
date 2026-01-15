@@ -25,4 +25,8 @@ public class OrdersController {
 	public BasicRes addOrders(@Valid @RequestBody OredersReq req) {
 		return ordersService.addOrders(req);
 	}
+	@PostMapping("gogobuy/updateOrders")
+	public BasicRes updateOrders( @Valid @RequestBody OredersReq req) {
+		return ordersService.updateOrders(req.getId(), req);
+	}
 }
