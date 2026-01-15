@@ -13,6 +13,11 @@ import com.example.demo.entity.Stores;
 @Repository
 public interface StoresSearchDao extends JpaRepository<Stores, Integer>{
 
+//	拿取全店家
+	@Query(value = "SELECT * FROM stores ", nativeQuery = true)
+public List<Stores> getAllStores();
+	
+//	名字模糊搜尋
 	@Query(value = "SELECT * FROM stores " +
             "WHERE name LIKE CONCAT('%', ?1, '%') " +
             "AND is_deleted = false " +
