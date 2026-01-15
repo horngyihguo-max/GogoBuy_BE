@@ -1,11 +1,11 @@
 package com.example.demo.response;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import com.example.demo.vo.WishVo;
 
-public class AllWishRes extends BasicRes{
+public class AllWishRes extends BasicRes {
+	
 	private List<WishVo> allWish;
 
 	public AllWishRes() {

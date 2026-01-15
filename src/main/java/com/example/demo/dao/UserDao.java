@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.User;
-import com.example.demo.response.BasicRes;
 
 @Repository
 public interface UserDao extends JpaRepository<User, String> {

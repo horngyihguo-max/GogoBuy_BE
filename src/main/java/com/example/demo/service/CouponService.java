@@ -175,6 +175,10 @@ public class CouponService {
 	
 	public CouponsRes searchCouponByUser(String userId) {
 		
+		if (userId == null || userId.trim().isEmpty()) {
+            return new CouponsRes(400, "User ID 不得為空", null);
+        }
+		
 		User user = userDao.getUserById(userId);
         if (user == null) {
             return new CouponsRes(ResMessage.USER_NOT_FOUND.getCode(), "此使用者不存在", null);

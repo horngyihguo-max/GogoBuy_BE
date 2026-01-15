@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.request.CouponReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.CouponsRes;
 import com.example.demo.service.CouponService;
 
 import jakarta.validation.Valid;
@@ -63,7 +64,7 @@ public class CouponsController {
 	}
 	
 	@GetMapping("gogobuy/coupon/searchUser")
-	  public BasicRes getCouponById(@RequestParam(name = "user_id") String userId) {
+	  public CouponsRes getCouponByUser(@RequestParam(name = "user_id") String userId) {
 		return couponService.searchCouponByUser(userId);
 	}
 }

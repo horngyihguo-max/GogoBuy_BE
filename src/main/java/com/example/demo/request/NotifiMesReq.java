@@ -1,43 +1,22 @@
-package com.example.demo.entity;
+package com.example.demo.request;
 
-import java.time.LocalDate;
+import java.util.List;
 
 import com.example.demo.constants.NotifiCategoryEnum;
+import com.example.demo.vo.UserNotificationVo;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+public class NotifiMesReq {
 
-@Table(name = "notification_messages")
-@Entity
-public class NotifiMes {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
 	private int id;
-	@Enumerated(EnumType.STRING)
-	@Column(name = "category")
 	private NotifiCategoryEnum category;
-	@Column(name = "title")
 	private String title;
-	@Column(name = "content")
 	private String content;
-	@Column(name = "target_url")
 	private String targetUrl;
-	@Column(name = "expired_at")
-	private LocalDate expiredAt;
-	@Column(name = "created_at", insertable = false, updatable = false)
-	private LocalDate createdAt;
-	@Column(name = "user_id")
+	private String expiredAt;
+	private String createdAt;
 	private String userId;
-	@Column(name = "event_id")
 	private Integer eventId;
-	
+	private List<UserNotificationVo>UserNotificationVoList;
 	public int getId() {
 		return id;
 	}
@@ -68,16 +47,16 @@ public class NotifiMes {
 	public void setTargetUrl(String targetUrl) {
 		this.targetUrl = targetUrl;
 	}
-	public LocalDate getExpiredAt() {
+	public String getExpiredAt() {
 		return expiredAt;
 	}
-	public void setExpiredAt(LocalDate expiredAt) {
+	public void setExpiredAt(String expiredAt) {
 		this.expiredAt = expiredAt;
 	}
-	public LocalDate getCreatedAt() {
+	public String getCreatedAt() {
 		return createdAt;
 	}
-	public void setCreatedAt(LocalDate createdAt) {
+	public void setCreatedAt(String createdAt) {
 		this.createdAt = createdAt;
 	}
 	public String getUserId() {
@@ -86,10 +65,20 @@ public class NotifiMes {
 	public void setUserId(String userId) {
 		this.userId = userId;
 	}
-	public int getEventId() {
+	public Integer getEventId() {
 		return eventId;
 	}
 	public void setEventId(Integer eventId) {
 		this.eventId = eventId;
 	}
+	public List<UserNotificationVo> getUserNotificationVoList() {
+		return UserNotificationVoList;
+	}
+	public void setUserNotificationVoList(List<UserNotificationVo> userNotificationVoList) {
+		UserNotificationVoList = userNotificationVoList;
+	}
+
+	
+
+	
 }

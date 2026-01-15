@@ -3,7 +3,7 @@ package com.example.demo.constants;
 public enum NotifiCategoryEnum {
 	GROUP_BUY("團購"),
 	SYSTEM("系統"),
-	WISH("願望");
+	WISH("許願");
 	
 	private String category;
 
