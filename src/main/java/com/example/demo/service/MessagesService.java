@@ -41,7 +41,6 @@ public class MessagesService {
 
 	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-	
 	private void checkNotifiMes(NotifiMesReq req) throws Exception {
 //		檢查類別
 		try {
@@ -92,22 +91,21 @@ public class MessagesService {
 		if (eventId != null) {
 			NotifiCategoryEnum category = req.getCategory();
 			if (NotifiCategoryEnum.GROUP_BUY.equals(category)) {
-				if (groupbuyEventsDao.findById(eventId) .isEmpty()) {
+				if (groupbuyEventsDao.findById(eventId).isEmpty()) {
 					throw new Exception("團購不存在喵");
 				}
-				
+
 			}
 		}
 	}
-	
-	private void checkUserNotif(List<UserNotificationVo> voList)throws Exception {
-		if (voList==null) {
+
+	private void checkUserNotif(List<UserNotificationVo> voList) throws Exception {
+		if (voList == null) {
 			throw new Exception("沒有收件者喵(沒有List喵)");
-		}
-		else {
-			for(UserNotificationVo vo:voList) {
+		} else {
+			for (UserNotificationVo vo : voList) {
 				String user = vo.getUserId();
-				if(user==null||user.trim().isEmpty()) {
+				if (user == null || user.trim().isEmpty()) {
 					throw new Exception("沒有收件者喵(收件者為空喵)");
 				}
 				User checkUser = userDao.getUserById(user);
@@ -122,22 +120,22 @@ public class MessagesService {
 	public BasicRes create(NotifiMesReq req) throws Exception {
 		checkNotifiMes(req);
 		checkUserNotif(req.getUserNotificationVoList());
-		
+
 		NotifiMes mes = new NotifiMes();
-	    mes.setCategory(req.getCategory());
-	    mes.setTitle(req.getTitle());
-	    mes.setContent(req.getContent());
-	    mes.setTargetUrl(req.getTargetUrl());
-	    
-	    mes.setExpiredAt(LocalDate.parse(req.getExpiredAt(), FORMATTER));
-	    
-	    mes.setUserId(req.getUserId());
-	    mes.setEventId(req.getEventId());
-	    mes = notifiMesDao.save(mes);
+		mes.setCategory(req.getCategory());
+		mes.setTitle(req.getTitle());
+		mes.setContent(req.getContent());
+		mes.setTargetUrl(req.getTargetUrl());
+
+		mes.setExpiredAt(LocalDate.parse(req.getExpiredAt(), FORMATTER));
+
+		mes.setUserId(req.getUserId());
+		mes.setEventId(req.getEventId());
+		mes = notifiMesDao.save(mes);
 //	    上行作用取代下行 避免ID撞車問題
 //		notifiMesDao.createNotifiMes(req.getCategory().name(), req.getTitle(), req.getContent(), req.getTargetUrl(), //
 //				req.getExpiredAt(), req.getUserId(), req.getEventId());
-	    int nofitId = mes.getId();
+		int nofitId = mes.getId();
 		List<UserNotificationVo> UserNotificationVoList = req.getUserNotificationVoList();
 		for (UserNotificationVo vo : UserNotificationVoList) {
 			userNotifDao.createUserNotifi(vo.getUserId(), nofitId);
@@ -146,70 +144,59 @@ public class MessagesService {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
-	
-	public MessagesRes update(int id, NotifiMesReq req) throws Exception{
+
+	public MessagesRes update(int id, NotifiMesReq req) throws Exception {
 //		檢查
 		checkNotifiMes(req);
-	    checkUserNotif(req.getUserNotificationVoList());
-	    NotifiMes mes = notifiMesDao.findById(id).orElseThrow(() -> //
-	    new Exception("找不到該筆訊息 ID: " + id + " 喵"));
-	    
-	    mes.setCategory(req.getCategory());
-	    mes.setTitle(req.getTitle());
-	    mes.setContent(req.getContent());
-	    mes.setTargetUrl(req.getTargetUrl());
-	    mes.setExpiredAt(LocalDate.parse(req.getExpiredAt(), FORMATTER));
-	    mes.setUserId(req.getUserId());
-	    mes.setEventId(req.getEventId());
+		checkUserNotif(req.getUserNotificationVoList());
+		NotifiMes mes = notifiMesDao.findById(id).orElseThrow(() -> //
+		new Exception("找不到該筆訊息 ID: " + id + " 喵"));
 
-	    mes = notifiMesDao.save(mes);
+		mes.setCategory(req.getCategory());
+		mes.setTitle(req.getTitle());
+		mes.setContent(req.getContent());
+		mes.setTargetUrl(req.getTargetUrl());
+		mes.setExpiredAt(LocalDate.parse(req.getExpiredAt(), FORMATTER));
+		mes.setUserId(req.getUserId());
+		mes.setEventId(req.getEventId());
 
-	    //	先刪	    
-	    userNotifDao.deleteByNotifId(id);
-	    
-	    //後加	    
-	    List<UserNotificationVo> voList = req.getUserNotificationVoList();
-	    for (UserNotificationVo vo : voList) {
-	        userNotifDao.createUserNotifi(vo.getUserId(), id);
-	    }
-	    
-	    List<UserNotif> updatedUserNotifList = userNotifDao.findByNotifId(id);
-		
-		return new MessagesRes(
-		        ResMessage.SUCCESS.getCode(), 
-		        ResMessage.SUCCESS.getMessage()
-		       , 
-		        List.of(mes), 
-		        updatedUserNotifList
-		    );
+		mes = notifiMesDao.save(mes);
+
+		// 先刪
+		userNotifDao.deleteByNotifId(id);
+
+		// 後加
+		List<UserNotificationVo> voList = req.getUserNotificationVoList();
+		for (UserNotificationVo vo : voList) {
+			userNotifDao.createUserNotifi(vo.getUserId(), id);
+		}
+
+		List<UserNotif> updatedUserNotifList = userNotifDao.findByNotifId(id);
+
+		return new MessagesRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), List.of(mes),
+				updatedUserNotifList);
 	}
-	
-	public BasicRes deleteByUser(String userId, int notifId) throws Exception{
+
+	public BasicRes deleteByUser(String userId, int notifId) throws Exception {
 		UserNotif userNotif = userNotifDao.findByUserIdAndNotifId(userId, notifId)
-	            .orElseThrow(() -> new Exception("找不到該使用者的通知紀錄喵"));
-		userNotif.setDeleted(true); 
-	    userNotifDao.save(userNotif);
-	    
-	    return new BasicRes(
-	            ResMessage.SUCCESS.getCode(), 
-	            "使用者 " + userId + " 的個人通知已刪除"
-	        );
-	    
+				.orElseThrow(() -> new Exception("找不到該使用者的通知紀錄喵"));
+		userNotif.setDeleted(true);
+		userNotifDao.save(userNotif);
+
+		return new BasicRes(ResMessage.SUCCESS.getCode(), "使用者 " + userId + " 的個人通知已刪除");
+
 	}
-	
-	public BasicRes delete(int notifId) throws Exception{
+
+	public BasicRes delete(int notifId) throws Exception {
 //		檢查
 		NotifiMes mes = notifiMesDao.findById(notifId)
-	            .orElseThrow(() -> new Exception("找不到該筆訊息 ID: " + notifId + "，刪除失敗喵"));
+				.orElseThrow(() -> new Exception("找不到該筆訊息 ID: " + notifId + "，刪除失敗喵"));
 		String title = mes.getTitle();
 //		砍子表
 		userNotifDao.deleteByNotifId(notifId);
 //		砍主表
 		notifiMesDao.deleteById(notifId);
-		return new BasicRes(ResMessage.SUCCESS.getCode(), 
-                "訊息標題:["+title+"]已經被砍光了喵");
+		return new BasicRes(ResMessage.SUCCESS.getCode(), "訊息標題:[" + title + "]已經被砍光了喵");
 	}
-	
-	
 
 }

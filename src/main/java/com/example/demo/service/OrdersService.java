@@ -47,56 +47,71 @@ public class OrdersService {
 			return new BasicRes(ResMessage.EVENTS_ID_ERROR.getCode(), //
 					ResMessage.EVENTS_ID_ERROR.getMessage());
 		}
+
 		// 檢查有沒有所屬團
 		GroupbuyEvents events = groupbuyEventsDao.findById(req.getEventsId());
 		if (events == null) {
 			return new BasicRes(ResMessage.EVENTS_NOT_FOUND.getCode(), ResMessage.EVENTS_NOT_FOUND.getMessage());
 		}
+
 		// 團購是否截止
 		if (events.getEndTime().isBefore(LocalDateTime.now())) {
 			return new BasicRes(ResMessage.EVENT_CLOSED.getCode(), ResMessage.EVENT_CLOSED.getMessage());
 		}
+
 		// 檢查跟團者ID
 		if (req.getUserId() == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
 		}
+
 		// 檢查有沒有跟團者ID
 		User user = userDao.getUserById(req.getUserId());
+
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
 		}
+
 		// 檢查菜單品項ID
 		if (req.getMenuId() == 0) {
 			return new BasicRes(ResMessage.MENU_ID_ERROR.getCode(), ResMessage.MENU_ID_ERROR.getMessage());
 		}
+
 		// 從找到的團購事件中取得商店 ID
 		int storesId = events.getStoresId();
 		// 根據該商店 ID 取得菜單
 		List<Map<String, Object>> menuList = storesSearchDao.getMenuByStoreId(storesId);
+
 		if (menuList == null || menuList.isEmpty()) {
 			return new BasicRes(ResMessage.MENULIST_NOT_FOUND.getCode(), ResMessage.MENULIST_NOT_FOUND.getMessage());
 		}
+
 		// 檢查前端傳來的 menuId 是否真的存在於該菜單中
 		boolean isMenuExist = menuList.stream().anyMatch(m -> m.get("id").equals(req.getMenuId()));
+
 		if (!isMenuExist) {
 			return new BasicRes(ResMessage.MENU_ID_ERROR.getCode(), "該商店無此商品");
 		}
+
 		// 檢查數量
 		if (req.getQuantity() == 0) {
 			return new BasicRes(ResMessage.QUANTITY_FOUND.getCode(), ResMessage.QUANTITY_FOUND.getMessage());
 		}
+
 		// 檢查訂單創建時間
 		if (req.getOrderTime() == null) {
 			return new BasicRes(ResMessage.END_TIME_ERROR.getCode(), ResMessage.END_TIME_ERROR.getMessage());
 		}
+
 		// 檢查領取狀態
 		if (req.getPickupStatus() == null) {
 			return new BasicRes(ResMessage.PICKUP_STATUS_ERROR.getCode(), ResMessage.PICKUP_STATUS_ERROR.getMessage());
 		}
+
 		// 檢查領取時間
 		if (req.getPickupTime() == null) {
 			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
 		}
+
 		// 檢查小計
 		if (req.getSubtotal() == 0) {
 			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());

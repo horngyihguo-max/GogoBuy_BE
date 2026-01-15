@@ -15,40 +15,39 @@ import jakarta.validation.constraints.NotNull;
 public class GroupbuyEventsReq {
 
 	private int id;
-	
+
 	@NotBlank(message = "團長ID必填")
-    private String hostId;
+	private String hostId;
 
-    @NotNull(message = "商店ID必填")
-    private int storesId;
+	@NotNull(message = "商店ID必填")
+	private int storesId;
 
+	@NotNull(message = "結單時間必填")
+	@Future(message = "結單時間必須是未來")
+	private LocalDateTime endTime;
 
-    @NotNull(message = "結單時間必填")
-    @Future(message = "結單時間必須是未來")
-    private LocalDateTime endTime;
-    
-    @NotNull(message = "是否開店")
-    private GroupbuyStatusEnum status;
+	@NotNull(message = "是否開店")
+	private GroupbuyStatusEnum status;
 
-    private Integer shippingFee = 0;     
-    
-    @NotNull(message = "運費分攤方式必填")
-    private SplitTypeEnum splitType;
+	private Integer shippingFee = 0;
 
-    private String announcement;         
-    
-    private String type;                  
-    
-    private List<Map<String, Object>> tempMenuList;            
-    
-    private List<Integer> recommendList;             
-    
-    private String recommendDescription;  
-    
-    private Integer totalOrderAmount;
+	@NotNull(message = "運費分攤方式必填")
+	private SplitTypeEnum splitType;
 
-    @Min(value = 1, message = "成團門檻至少1元")
-    private Integer limitation = 0;
+	private String announcement;
+
+	private String type;
+
+	private List<Map<String, Object>> tempMenuList;
+
+	private List<Integer> recommendList;
+
+	private String recommendDescription;
+
+	private Integer totalOrderAmount;
+
+	@Min(value = 1, message = "成團門檻至少1元")
+	private Integer limitation = 0;
 
 	public int getId() {
 		return id;

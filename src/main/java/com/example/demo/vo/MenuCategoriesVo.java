@@ -3,13 +3,13 @@ package com.example.demo.vo;
 import java.util.List;
 
 public class MenuCategoriesVo {
-	
+
 	private int id;
-	
+
 	private int storeId;
-	
+
 	private String name;
-	
+
 	private List<PriceLevelVo> priceLevel;
 
 	public MenuCategoriesVo() {
@@ -56,7 +56,4 @@ public class MenuCategoriesVo {
 		this.priceLevel = priceLevel;
 	}
 
-
-
- 
 }
