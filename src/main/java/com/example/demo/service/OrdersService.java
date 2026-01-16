@@ -134,8 +134,6 @@ public class OrdersService {
 			String jsonString = mapper.writeValueAsString(req.getSelectedOptionList());
 			orders.setSelectedOption(jsonString);
 		} catch (Exception e) {
-			// 如果轉換失敗，可以 log 錯誤或回傳參數錯誤
-			e.printStackTrace();
 			return new BasicRes(400, "選項格式轉換失敗");
 		}
 		orders.setEventsId(req.getEventsId());
@@ -181,7 +179,6 @@ public class OrdersService {
 			ordersDao.save(orders);
 			updateSubtotal(req.getEventsId());
 		} catch (Exception e) {
-			e.printStackTrace();
 			return new BasicRes(ResMessage.UPDATE_ERROR.getCode(), ResMessage.UPDATE_ERROR.getMessage());
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
