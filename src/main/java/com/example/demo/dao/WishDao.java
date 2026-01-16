@@ -76,13 +76,7 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository 
 	@Query(value = "select * from wishes where build_date <= DATE_SUB(NOW(), INTERVAL 3 MONTH)"  //
 			+ " and is_deleted = false and is_finished = false", nativeQuery = true)
 	public List<Wishes> checkOverTime();
-//	@Modifying
-//	@Transactional
-//	@Query(value = "update wishes set is_deleted = true where build_date <= DATE_SUB(NOW(), INTERVAL 3 MONTH)"  //
-//			+ " and is_deleted = false and is_finished = false", nativeQuery = true)
-//	public int delOverTime();
-	
-	
+
 //	新增收信人
-//	(WishRepositoryImpl實作WishRepository，由WishDao繼承WishRepository, )
+//	(WishRepositoryImpl實作WishRepository，由WishDao繼承WishRepository)
 }
