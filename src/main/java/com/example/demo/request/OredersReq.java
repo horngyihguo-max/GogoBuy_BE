@@ -32,7 +32,6 @@ public class OredersReq {
 	@NotNull(message = "支付狀態必填")
 	private PickupStatusEnum pickupStatus;
 	
-	@NotNull(message = "領取時間必填")
 	private LocalDateTime pickupTime;
 	
 	@NotNull(message = "創建時間必填")

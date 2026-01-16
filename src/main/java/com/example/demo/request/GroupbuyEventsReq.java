@@ -31,8 +31,17 @@ public class GroupbuyEventsReq {
 
 	private Integer shippingFee = 0;
 
-	@NotNull(message = "運費分攤方式必填")
-	private SplitTypeEnum splitType;
+    private String announcement;         
+    
+    private String type;                  
+    
+    private List<Integer> tempMenuList;            
+    
+    private List<Integer> recommendList;             
+    
+    private String recommendDescription;  
+    
+    private Integer totalOrderAmount;
 
 	private String announcement;
 
@@ -123,11 +132,11 @@ public class GroupbuyEventsReq {
 		this.type = type;
 	}
 
-	public List<Map<String, Object>> getTempMenuList() {
+	public List<Integer> getTempMenuList() {
 		return tempMenuList;
 	}
 
-	public void setTempMenuList(List<Map<String, Object>> tempMenuList) {
+	public void setTempMenuList(List<Integer> tempMenuList) {
 		this.tempMenuList = tempMenuList;
 	}
 

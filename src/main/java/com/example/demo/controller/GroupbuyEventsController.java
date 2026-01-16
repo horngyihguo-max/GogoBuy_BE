@@ -2,12 +2,15 @@ package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.request.GroupbuyEventsReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.GroupbuyEventsRes;
 import com.example.demo.service.GroupbuyEventsService;
 
 import jakarta.validation.Valid;
@@ -29,5 +32,11 @@ public class GroupbuyEventsController {
 	@PostMapping("gogobuy/updateEvent")
 	public BasicRes updateEvent(@Valid @RequestBody  GroupbuyEventsReq req) {
 		return groupbuyEventsService.updateEvent( req.getId(), req);
+	}
+	
+	//查詢開團者的開團紀錄
+	@GetMapping("gogobuy/getGroupbuyEventById")
+	public GroupbuyEventsRes getGroupbuyEventById(@RequestParam(name = "host_id",required = false) String hostId) {
+		return groupbuyEventsService.getGroupbuyEventById(hostId);
 	}
 }
