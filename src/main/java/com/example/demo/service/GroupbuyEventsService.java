@@ -18,6 +18,7 @@ import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.Menu;
 import com.example.demo.entity.Stores;
 import com.example.demo.entity.User;
 import com.example.demo.request.GroupbuyEventsReq;
@@ -45,14 +46,12 @@ public class GroupbuyEventsService {
 	// 將重複的驗證邏輯提取出來
 	private BasicRes checkEvent(GroupbuyEventsReq req) {
 		// 檢查團長ID
-//		if (req.getHostId() == null || req.getHostId().trim().isEmpty()) {
-		if (!StringUtils.hasText(req.getHostId())) {
+		if (req.getHostId() == null || req.getHostId().trim().isEmpty()) {
 			return new BasicRes(ResMessage.HOST_ID_ERROR.getCode(), //
 					ResMessage.HOST_ID_ERROR.getMessage());
 		}
 		// 檢查有沒有團長
 		User user = userDao.findById(req.getHostId()).orElse(null);
-
 		if (user == null) {
 			return new BasicRes(ResMessage.HOST_ID_NOT_FOUND.getCode(), ResMessage.HOST_ID_NOT_FOUND.getMessage());
 		}
@@ -62,103 +61,52 @@ public class GroupbuyEventsService {
 			return new BasicRes(ResMessage.STORES_ID_ERROR.getCode(), //
 					ResMessage.STORES_ID_ERROR.getMessage());
 		}
-
 		// 檢查商家是否存在
 		Stores stores = storesSearchDao.getStoreById(req.getStoresId());
-
 		if (stores == null) {
 			return new BasicRes(ResMessage.STORES_ID_NULL.getCode(), //
 					ResMessage.STORES_ID_NULL.getMessage());
 		}
-
 		// 檢查結束時間
 		if (req.getEndTime() == null) {
 			return new BasicRes(ResMessage.END_TIME_ERROR.getCode(), //
 					ResMessage.END_TIME_ERROR.getMessage());
 		}
-
 		// 檢查拆帳模式
 		if (req.getSplitType() == null) {
 			return new BasicRes(ResMessage.SPLIT_TYPE_ERROR.getCode(), //
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
 		}
-
 		// 檢查總金額
 		if (req.getTotalOrderAmount() < 0) {
 			return new BasicRes(ResMessage.TOTALORDERAMOUNT_ERROR.getCode(), //
 					ResMessage.TOTALORDERAMOUNT_ERROR.getMessage());
 		}
-
 		// 檢查總運費
 		if (req.getShippingFee() == 0 || req.getShippingFee() < 0) {
 			return new BasicRes(ResMessage.SHIPPING_FEE_ERROR.getCode(), //
 					ResMessage.SHIPPING_FEE_ERROR.getMessage());
 		}
-
 		// 檢查商家類型
 		if (req.getType() == null) {
 			return new BasicRes(ResMessage.TYPE_ERROR.getCode(), //
 					ResMessage.TYPE_ERROR.getMessage());
 		}
-
 		// 金額門檻
 		if (req.getLimitation() == 0 || req.getLimitation() < 0) {
 			return new BasicRes(ResMessage.SPLIT_TYPE_ERROR.getCode(), //
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
-		}
-
-		// 檢查推薦品項是否存在
-		List<Map<String, Object>> menuList = storesSearchDao.getMenuByStoreId(req.getStoresId());
-		// 前端給的推薦品項
-		List<Integer> recommendList = req.getRecommendList();
-
-		if (menuList == null) {
-			return new BasicRes(ResMessage.MENU_NOT_FOUND.getCode(), //
-					ResMessage.MENU_NOT_FOUND.getMessage());
-		}
-
-		List<MenuVo> menuVoList = new ArrayList<>();
-		for (Map<String, Object> map : menuList) {
-			// 先轉簡單欄位
-			Map<String, Object> tempMap = new HashMap<>(map);
-			// 先移出unusual
-			tempMap.remove("unusual");
-			MenuVo mVo = mapper.convertValue(tempMap, MenuVo.class);
-			menuVoList.add(mVo);
-		}
-
-		// 檢查推薦菜單品項
-		Set<Integer> validMenuIds = menuList.stream()
-				/*
-				 * 遍歷每一個 Map (m)， // 
-				 * 從中取出鍵值為 "id" 的物件，並強制轉型為 Integer。// 
-				 * 這時的資料從「整個選單資訊」變成只有 id。
-				 */
-				.map(m -> (Integer) m.get("id"))
-				// .collect : 數據重新打包。
-				// toSet : 將這些 ID 存入一個 Set 集合。
-				.collect(Collectors.toSet());
-		if (recommendList != null) {
-			for (Integer recId : req.getRecommendList()) {
-				if (!validMenuIds.contains(recId)) {
-					return new BasicRes(ResMessage.MENU_ITEM_NOT_FOUND.getCode(),
-							ResMessage.MENU_ITEM_NOT_FOUND.getMessage());
-				}
-			}
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 
 	// 新增開團
 	public BasicRes addEvent(GroupbuyEventsReq req) {
-		// 透過checkEvent function 去檢查 req 並回傳BasicRes的status code
 		BasicRes checkResult = checkEvent(req);
-
+		//如果 checkResult.getCode() 不等於 SUCCESS.getCode() 就會回傳 錯誤的訊息跟代碼
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
-			// 回傳錯誤的code + message
 			return checkResult;
 		}
-
 		// 新增資料
 		GroupbuyEvents event = new GroupbuyEvents();
 		event.setHostId(req.getHostId());
@@ -178,13 +126,11 @@ public class GroupbuyEventsService {
 			List<Map<String, Object>> Menu = storesSearchDao.getMenuByStoreId(req.getStoresId());
 			// 將資料庫菜單 ID 轉成 Set，方便快速比較
 			Set<Integer> MenuIds = Menu.stream()
-					/*
-					 * 一整個 Map，我們只對 m.get("id") 感興趣，要 toString() 是因為 id 有時候是 Long 之類的
-					 * Integer.valueOf() 是因為直接轉型 Integer 很容易噴錯，所以先轉成字串再轉回數字
-					 */
+					/*一整個 Map，我們只對 m.get("id") 感興趣，要 toString() 是因為 id 有時候是 Long 之類的
+					 * Integer.valueOf() 是因為直接轉型 Integer 很容易噴錯，所以先轉成字串再轉回數字*/
 					.map(m -> Integer.valueOf(m.get("id").toString()))
-					/* Set 會自動確保裡面不會有重複的 ID */
-					// 在 .collect 收集起來打包回 MenuIds
+					/* 在 .collect 收集起來打包回 MenuIds
+					 * .toSet 會自動確保裡面不會有重複的 ID  */
 					.collect(Collectors.toSet());
 
 			// 檢查飲料 ID
@@ -241,10 +187,9 @@ public class GroupbuyEventsService {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 
-	// 更新開團資訊
+	// 更新
 	public BasicRes updateEvent(int id, GroupbuyEventsReq req) {
 		GroupbuyEvents event = groupbuyEventsDao.findById(id);
-
 		if (event == null) {
 			return new BasicRes(ResMessage.EVENTS_NOT_FOUND.getCode(), ResMessage.EVENTS_NOT_FOUND.getMessage());
 		}
@@ -327,7 +272,6 @@ public class GroupbuyEventsService {
 				return new GroupbuyEventsRes(400, "輸入正確的host_id");
 			}
 			List<GroupbuyEvents> eventsList = groupbuyEventsDao.getGroupbuyEventById(hostId);
-			// 先建立物件，再用 Setter 塞入 List
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "host_id 搜尋成功");
 			res.setGroupbuyEvents(eventsList);
 			return res;
@@ -335,4 +279,20 @@ public class GroupbuyEventsService {
 			return new GroupbuyEventsRes(500, "host_id 搜尋失敗");
 		}
 	}
+	
+	//回傳菜單
+	 public GroupbuyEventsRes getMenuByMenuId(List<Integer> menuList){
+			 try {
+				 //先去抓商店的菜單ID
+				List<Menu> list = storesSearchDao.getMenuByMenuId(menuList);
+				//先建立一個物件
+				GroupbuyEventsRes res = new GroupbuyEventsRes(200, "menuId 搜尋成功");
+				//Set 回去
+				res.setMenuList(list);
+				//然後回傳
+				return res;
+			 }  catch(Exception e) {
+				 return new GroupbuyEventsRes(500, "菜單搜尋失敗");
+			 }
+	 }
 }

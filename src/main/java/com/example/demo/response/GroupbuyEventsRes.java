@@ -3,6 +3,7 @@ package com.example.demo.response;
 import java.util.List;
 
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
 import com.example.demo.entity.PersonalOrder;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -17,6 +18,8 @@ public class GroupbuyEventsRes extends BasicRes {
 	private List<Orders> orders;
 	
 	private List<PersonalOrder> personalOrder;
+	
+	private List<Menu> menuList;
 
 	public List<GroupbuyEvents> getGroupbuyEvents() {
 		return groupbuyEvents;
@@ -42,6 +45,14 @@ public class GroupbuyEventsRes extends BasicRes {
 		this.personalOrder = personalOrder;
 	}
 
+	public List<Menu> getMenuList() {
+		return menuList;
+	}
+
+	public void setMenuList(List<Menu> menuList) {
+		this.menuList = menuList;
+	}
+
 	public GroupbuyEventsRes() {
 		super();
 	}
@@ -51,11 +62,12 @@ public class GroupbuyEventsRes extends BasicRes {
 	}
 
 	public GroupbuyEventsRes(int code, String message, List<GroupbuyEvents> groupbuyEvents, List<Orders> orders,
-			List<PersonalOrder> personalOrder) {
+			List<PersonalOrder> personalOrder, List<Menu> menuList) {
 		super(code, message);
 		this.groupbuyEvents = groupbuyEvents;
 		this.orders = orders;
 		this.personalOrder = personalOrder;
+		this.menuList = menuList;
 	}
 
 
