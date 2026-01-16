@@ -29,7 +29,6 @@ import com.example.demo.vo.MenuVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
-@Transactional
 public class GroupbuyEventsService {
 
 	@Autowired
@@ -103,7 +102,7 @@ public class GroupbuyEventsService {
 	// 新增開團
 	public BasicRes addEvent(GroupbuyEventsReq req) {
 		BasicRes checkResult = checkEvent(req);
-		//如果 checkResult.getCode() 不等於 SUCCESS.getCode() 就會回傳 錯誤的訊息跟代碼
+		// 如果 checkResult.getCode() 不等於 SUCCESS.getCode() 就會回傳 錯誤的訊息跟代碼
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkResult;
 		}
@@ -126,11 +125,14 @@ public class GroupbuyEventsService {
 			List<Map<String, Object>> Menu = storesSearchDao.getMenuByStoreId(req.getStoresId());
 			// 將資料庫菜單 ID 轉成 Set，方便快速比較
 			Set<Integer> MenuIds = Menu.stream()
-					/*一整個 Map，我們只對 m.get("id") 感興趣，要 toString() 是因為 id 有時候是 Long 之類的
-					 * Integer.valueOf() 是因為直接轉型 Integer 很容易噴錯，所以先轉成字串再轉回數字*/
+					/*
+					 * 一整個 Map，我們只對 m.get("id") 感興趣，要 toString() 是因為 id 有時候是 Long 之類的
+					 * Integer.valueOf() 是因為直接轉型 Integer 很容易噴錯，所以先轉成字串再轉回數字
+					 */
 					.map(m -> Integer.valueOf(m.get("id").toString()))
-					/* 在 .collect 收集起來打包回 MenuIds
-					 * .toSet 會自動確保裡面不會有重複的 ID  */
+					/*
+					 * 在 .collect 收集起來打包回 MenuIds .toSet 會自動確保裡面不會有重複的 ID
+					 */
 					.collect(Collectors.toSet());
 
 			// 檢查飲料 ID
@@ -138,8 +140,10 @@ public class GroupbuyEventsService {
 			if (req.getTempMenuList() != null) {
 				for (Integer selectedId : req.getTempMenuList()) {
 					// 檢查這個 ID 是否有在商店裡
-					/*.contains(selectedId) (快速比對)：這是 Set 的功能。
-					 * 會瞬間檢查 selectedId（團長給的菜單的商品 ID）有沒有在 MenuIds 商店菜單裡面。*/
+					/*
+					 * .contains(selectedId) (快速比對)：這是 Set 的功能。 會瞬間檢查 selectedId（團長給的菜單的商品 ID）有沒有在
+					 * MenuIds 商店菜單裡面。
+					 */
 					if (!MenuIds.contains(selectedId)) {
 						return new BasicRes(400, "品項 ID: " + selectedId + " 不屬於此店家，無法開團");
 					}
@@ -152,8 +156,10 @@ public class GroupbuyEventsService {
 			if (req.getRecommendList() != null) {
 				for (Integer recommendId : req.getRecommendList()) {
 					// 檢查這個 ID 是否有在商店裡
-					/*.contains(selectedId) (快速比對)：這是 Set 的功能。
-					 * 會瞬間檢查 selectedId（團長給的菜單的商品 ID）有沒有在 MenuIds 商店菜單裡面。*/
+					/*
+					 * .contains(selectedId) (快速比對)：這是 Set 的功能。 會瞬間檢查 selectedId（團長給的菜單的商品 ID）有沒有在
+					 * MenuIds 商店菜單裡面。
+					 */
 					if (!selectedIds.contains(recommendId)) {
 						return new BasicRes(400, "推薦品項 ID: " + recommendId + " 不在本次團購的選購名單內");
 					}
@@ -218,8 +224,10 @@ public class GroupbuyEventsService {
 			if (req.getTempMenuList() != null) {
 				for (Integer selectedId : req.getTempMenuList()) {
 					// 檢查這個 ID 是否有在商店裡
-					/*.contains(selectedId) (快速比對)：這是 Set 的功能。
-					 * 會瞬間檢查 selectedId（團長給的菜單的商品 ID）有沒有在 MenuIds 商店菜單裡面。*/
+					/*
+					 * .contains(selectedId) (快速比對)：這是 Set 的功能。 會瞬間檢查 selectedId（團長給的菜單的商品 ID）有沒有在
+					 * MenuIds 商店菜單裡面。
+					 */
 					if (!MenuIds.contains(selectedId)) {
 						return new BasicRes(400, "品項 ID: " + selectedId + " 不屬於此店家，無法開團");
 					}
@@ -232,8 +240,10 @@ public class GroupbuyEventsService {
 			if (req.getRecommendList() != null) {
 				for (Integer recommendId : req.getRecommendList()) {
 					// 檢查這個 ID 是否有在商店裡
-					/*.contains(selectedId) (快速比對)：這是 Set 的功能。
-					 * 會瞬間檢查 recommendId（團長給的推薦商品 ID）有沒有在 selectedIds （團長給的菜單的商品 ID）菜單裡面。*/
+					/*
+					 * .contains(selectedId) (快速比對)：這是 Set 的功能。 會瞬間檢查 recommendId（團長給的推薦商品 ID）有沒有在
+					 * selectedIds （團長給的菜單的商品 ID）菜單裡面。
+					 */
 					if (!selectedIds.contains(recommendId)) {
 						return new BasicRes(400, "推薦品項 ID: " + recommendId + " 不在本次團購的選購名單內");
 					}
@@ -279,20 +289,53 @@ public class GroupbuyEventsService {
 			return new GroupbuyEventsRes(500, "host_id 搜尋失敗");
 		}
 	}
+
+	// 回傳團長給的菜單
+	public GroupbuyEventsRes getMenuByMenuId(List<Integer> menuList) {
+		try {
+			// 先去抓商店的菜單ID
+			List<Menu> list = storesSearchDao.getMenuByMenuId(menuList);
+			// 先建立一個物件
+			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "menuId 搜尋成功");
+			// Set 回去
+			res.setMenuList(list);
+			// 然後回傳
+			return res;
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "菜單搜尋失敗");
+		}
+	}
+
+// 回傳用商店ID查詢的菜單
+	public GroupbuyEventsRes getMenuByStoresId(int storesId) {
+		try {
+			if (storesId <= 0) {
+				return new GroupbuyEventsRes(400, "輸入正確的stores_id");
+			}
+			List<Menu> eventsList = groupbuyEventsDao.getMenuByStoresId(storesId);
+			if (eventsList == null || eventsList.isEmpty()) {
+				return new GroupbuyEventsRes(200, "查無此店家的菜單資料");
+			}
+			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "店家菜單搜尋成功");
+			res.setMenuList(eventsList);
+			return res;
+		} catch (Exception e) {
+			return  new GroupbuyEventsRes(500, "店家菜單搜尋失敗");
+		}
+	}
 	
-	//回傳菜單
-	 public GroupbuyEventsRes getMenuByMenuId(List<Integer> menuList){
-			 try {
-				 //先去抓商店的菜單ID
-				List<Menu> list = storesSearchDao.getMenuByMenuId(menuList);
-				//先建立一個物件
-				GroupbuyEventsRes res = new GroupbuyEventsRes(200, "menuId 搜尋成功");
-				//Set 回去
-				res.setMenuList(list);
-				//然後回傳
-				return res;
-			 }  catch(Exception e) {
-				 return new GroupbuyEventsRes(500, "菜單搜尋失敗");
-			 }
-	 }
+	//回傳全部開團的
+	public  GroupbuyEventsRes  getAll() {
+		try {
+	        List<GroupbuyEvents> list = groupbuyEventsDao.getAll();
+	        if (list == null ) {
+	            return new GroupbuyEventsRes(200, "目前暫無任何開團資料");
+	        }
+	        GroupbuyEventsRes res = new GroupbuyEventsRes(200, "搜尋成功");
+	        res.setGroupbuyEvents(list);
+	        return res;
+	    } catch (Exception e) {
+	        return new GroupbuyEventsRes(500, "查詢失敗");
+	    }
+	}
 }
