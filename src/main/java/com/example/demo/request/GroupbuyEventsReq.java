@@ -33,6 +33,8 @@ public class GroupbuyEventsReq {
 
     private String announcement;         
     
+    private SplitTypeEnum splitType;
+    
     private String type;                  
     
     private List<Integer> tempMenuList;            
@@ -43,17 +45,6 @@ public class GroupbuyEventsReq {
     
     private Integer totalOrderAmount;
 
-	private String announcement;
-
-	private String type;
-
-	private List<Map<String, Object>> tempMenuList;
-
-	private List<Integer> recommendList;
-
-	private String recommendDescription;
-
-	private Integer totalOrderAmount;
 
 	@Min(value = 1, message = "成團門檻至少1元")
 	private Integer limitation = 0;

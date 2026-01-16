@@ -45,12 +45,7 @@ public interface StoresSearchDao extends JpaRepository<Stores, Integer> {
 
 	// 取得選項群組內的細項 (根據群組 ID)
 	@Query(value = "SELECT name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
-	public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
-
-    // 取得選項群組內的細項 (根據群組 ID)
-    @Query(value = "SELECT name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
-    public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
-    
+	public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);   
     
     // (給EVENT)   依值搜尋(多個)品項
     @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
