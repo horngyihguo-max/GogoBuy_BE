@@ -1,20 +1,13 @@
 package com.example.demo.service;
 
-import java.lang.reflect.Array;
-
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.NotifiCategoryEnum;
 import com.example.demo.constants.ResMessage;
@@ -27,20 +20,18 @@ import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
 import com.example.demo.vo.WishVo;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 
 @Service
 public class WishService {
-	
+
 	@Autowired
 	private WishDao wishDao;
+
 	@Autowired
 	private NotifiMesRepository notifiMsgRepository;
-	
+
 	public AllWishRes allWish() {
 		List<Wishes> wishesData=wishDao.allWish();
 		List<WishVo> returnData=new ArrayList<>();
@@ -55,31 +46,34 @@ public class WishService {
 			vo.setFinished(w.isFinished());
 			if(!w.isAnonymous()) {
 				vo.setNickname(wishDao.getNickname(w.getUser_id()));
-			}else {
+			} else {
 				vo.setNickname(null);
 			}
-			if (w.getFollowers() != null && !w.getFollowers().isBlank()) {
-	            vo.setFollowers(
-	                Arrays.asList(w.getFollowers().split(","))
-	            );
-	        }else {
-	        		vo.setFollowers(Collections.emptyList());
-	        }
+
+			// if (w.getFollowers() != null && !w.getFollowers().isBlank()) {
+			if (StringUtils.hasText(w.getFollowers())) {
+				vo.setFollowers(Arrays.asList(w.getFollowers().split(",")));
+			} else {
+				vo.setFollowers(Collections.emptyList());
+			}
 			returnData.add(vo);
 		}
 		return new AllWishRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), returnData);
 	}
-	
+
 	@Transactional(rollbackOn = Exception.class)
-	public BasicRes addWish(WishReq req) throws Exception{
-		int times=wishDao.getTimes(req.getUserId());
-		if(times<=0) {
-			return new BasicRes(ResMessage.OUT_OF_TIMES_REMAINING.getCode(), ResMessage.OUT_OF_TIMES_REMAINING.getMessage());
+	public BasicRes addWish(WishReq req) throws Exception {
+		int times = wishDao.getTimes(req.getUserId());
+
+		if (times <= 0) {
+			return new BasicRes(ResMessage.OUT_OF_TIMES_REMAINING.getCode(),
+					ResMessage.OUT_OF_TIMES_REMAINING.getMessage());
 		}
+
 		try {
-			if(req.getType() != WishTypeEnum.beverage && 
-			    req.getType() != WishTypeEnum.restaurant && 
-			    req.getType() != WishTypeEnum.groceries ) {
+
+			if (req.getType() != WishTypeEnum.beverage && req.getType() != WishTypeEnum.restaurant
+					&& req.getType() != WishTypeEnum.groceries) {
 				return new BasicRes(ResMessage.WISH_TYPE_ERROR.getCode(), ResMessage.WISH_TYPE_ERROR.getMessage());
 			}
 			wishDao.addWish(req.getUserId(), req.getTitle(), req.isAnonymous(), null, false, req.getType().name(), req.getLocation(), false);
@@ -90,13 +84,16 @@ public class WishService {
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
-	
+
 	public BasicRes setfollowers(int id, String userId) {
-		final String userIdPattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
-		if(!userId.matches(userIdPattern)) {
+		final String userIdPattern = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$";
+
+		if (!userId.matches(userIdPattern)) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
 		}
-		List<Object[]> wishData=wishDao.getfollowers(id);
+
+		List<Object[]> wishData = wishDao.getfollowers(id);
+
 		if (wishData.isEmpty()) {
 	        return new BasicRes(ResMessage.WISH_ID_NOT_FOUND.getCode(), ResMessage.WISH_ID_NOT_FOUND.getMessage());
 	    }
@@ -115,24 +112,37 @@ public class WishService {
 		if(userId.equals(wishUser)) {
 			return new BasicRes(ResMessage.WISH_USER_CAN_NOT_FOLLOW.getCode(), ResMessage.WISH_USER_CAN_NOT_FOLLOW.getMessage());
 		}
-		//物件轉陣列
-		List<String> followersList=new ArrayList<>();
-		if(followersStr != null && !followersStr.trim().isEmpty()) {
-			String[] splitData = followersStr.split(",");  //過濾字串
-	        for (String s : splitData) {
-	            if (s != null && !s.trim().isEmpty()) {
-	                followersList.add(s.trim());
-	            }
-	        }
+
+		// 許願者不可跟願
+		if (userId.equals(wishUser)) {
+			return new BasicRes(ResMessage.WISH_USER_CAN_NOT_FOLLOW.getCode(),
+					ResMessage.WISH_USER_CAN_NOT_FOLLOW.getMessage());
 		}
+
+		// 物件轉陣列
+		List<String> followersList = new ArrayList<>();
+
+		// if (followersStr != null && !followersStr.trim().isEmpty()) {
+		if (StringUtils.hasText(followersStr)) {
+
+			String[] splitData = followersStr.split(","); // 過濾字串
+
+			for (String s : splitData) {
+				// if (s != null && !s.trim().isEmpty()) {
+				if (StringUtils.hasText(s)) {
+					followersList.add(s.trim());
+				}
+			}
+		}
+
 		// 檢查是否已經跟隨過
 		if (followersList.contains(userId)) {
 			followersList.remove(userId);
-		}else {
+		} else {
 			followersList.add(userId);
 		}
 
-	    // 轉回字串存回 DB
+		// 轉回字串存回 DB
 		String saveStr = String.join(",", followersList);
 		wishDao.setfollowers(id, saveStr);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
@@ -228,9 +238,10 @@ public class WishService {
 		}catch(Exception e) {
 			throw e;
 		}
+
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
-	
+
 	public void wishTimesReset() {
 		wishDao.wishTimesReset(0, 499, 3);
 		wishDao.wishTimesReset(500, 999, 5);
@@ -244,6 +255,7 @@ public class WishService {
 		if(wishesData.size()<=0) {
 			return null;
 		}
+
 		try {
 			NotifiCategoryEnum wish=NotifiCategoryEnum.WISH;
 			for(Wishes w:wishesData) {
@@ -273,7 +285,7 @@ public class WishService {
 			}
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
 					ResMessage.SUCCESS.getMessage());
-		}catch(Exception e){
+		} catch (Exception e) {
 			throw e;
 		}
 	}

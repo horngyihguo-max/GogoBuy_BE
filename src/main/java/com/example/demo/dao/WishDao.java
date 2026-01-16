@@ -1,33 +1,28 @@
 package com.example.demo.dao;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.example.demo.constants.NotifiCategoryEnum;
 import com.example.demo.entity.Wishes;
 import com.example.demo.repository.WishRepository;
-import com.example.demo.request.WishReq;
-import com.example.demo.response.AllWishRes;
-import com.example.demo.vo.WishVo;
 
 import jakarta.transaction.Transactional;
 
 @Repository
-public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository{
-//	全部願望
+public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository {
+
+	// 全部願望
 	@Query(value = "select * from wishes where is_deleted = false", nativeQuery = true)
 	public List<Wishes> allWish();
-	//抓非匿名人類
+
+	// 抓非匿名人類
 	@Query(value = "select nickname from user where id = ?", nativeQuery = true)
 	public String getNickname(String userId);
-	
+
 //	新增願望
 	@Modifying
 	@Transactional
@@ -39,13 +34,14 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository{
 //	查詢剩餘次數
 	@Query(value = "select times_remaining from user where id = ?", nativeQuery = true)
 	public int getTimes(String id);
-//	更新次數
+
+	// 更新次數
 	@Modifying
 	@Transactional
 	@Query(value = "update user set times_remaining = ?2 where id = ?1", nativeQuery = true)
 	public int setTimes(String id, int times);
 
-//	每月許願次數重新計算
+	// 每月許願次數重新計算
 	@Modifying
 	@Transactional
 	@Query(value = "update user set times_remaining = ?3 where exp >= ?1 and exp <= ?2", nativeQuery = true)
@@ -54,7 +50,8 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository{
 //	查詢該願望的follower
 	@Query(value = "select user_id, followers, is_deleted, is_finished from wishes where id = ?", nativeQuery = true)
 	public List<Object[]> getfollowers(int id);
-//	許願followers更新
+
+	// 許願followers更新
 	@Modifying
 	@Transactional
 	@Query(value = "update wishes set followers = ?2 where id = ?1", nativeQuery = true)
