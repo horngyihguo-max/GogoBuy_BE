@@ -21,7 +21,7 @@ import com.example.demo.entity.ProductOptionGroups;
 import com.example.demo.entity.Stores;
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.StroresRes;
+import com.example.demo.response.StoresRes;
 import com.example.demo.vo.FeeDescriptionVo;
 import com.example.demo.vo.MenuCategoriesVo;
 import com.example.demo.vo.MenuVo;
@@ -327,31 +327,31 @@ public class StoreService {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), "店家 ID " + storeId + " 已成功軟刪除");
 	}
 
-	public StroresRes getStoresByName(String name) {
+	public StoresRes getStoresByName(String name) {
 		try {
 			// 修正點：如果未輸入或只有空白，直接回傳空清單
 			if (name == null || name.trim().isEmpty()) {
-				return new StroresRes(ResMessage.INPUT_IS_EMPTY.getCode(), "請輸入搜尋關鍵字", null);
+				return new StoresRes(ResMessage.INPUT_IS_EMPTY.getCode(), "請輸入搜尋關鍵字", null);
 			}
 
 			List<Stores> storeList = storesSearchDao.findStoresByNameLike(name);
 
-			return new StroresRes(ResMessage.SUCCESS.getCode(), "搜尋成功，共 " + storeList.size() + " 筆", storeList);
+			return new StoresRes(ResMessage.SUCCESS.getCode(), "搜尋成功，共 " + storeList.size() + " 筆", storeList);
 		} catch (Exception e) {
-			return new StroresRes(500, "搜尋失敗: " + e.getMessage());
+			return new StoresRes(500, "搜尋失敗: " + e.getMessage());
 		}
 	}
 
-	public StroresRes getStoreById(int storesId) {
+	public StoresRes getStoreById(int storesId) {
 		try {
 			// 查詢店家主表 (確認是否存在且未被軟刪除)
 			Stores store = storesSearchDao.getStoreById(storesId);
 			if (store == null) {
-				return new StroresRes(ResMessage.STORE_NOT_FOUND.getCode(), ResMessage.STORE_NOT_FOUND.getMessage(),
+				return new StoresRes(ResMessage.STORE_NOT_FOUND.getCode(), ResMessage.STORE_NOT_FOUND.getMessage(),
 						null);
 			}
 
-			StroresRes res = new StroresRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(),
+			StoresRes res = new StoresRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(),
 					List.of(store));
 			// 營業時間
 			List<Map<String, Object>> hoursMap = storesSearchDao.getOperatingHoursByStoreId(storesId);
@@ -421,15 +421,15 @@ public class StoreService {
 			return res;
 
 		} catch (Exception e) {
-			return new StroresRes(500, "取得店家資料失敗: " + e.getMessage(), null);
+			return new StoresRes(500, "取得店家資料失敗: " + e.getMessage(), null);
 		}
 	}
 	
 	
 //	全部店家
-	public StroresRes getAllStores() {
+	public StoresRes getAllStores() {
 		
 		List<Stores>storesList = storesSearchDao.getAllStores();
-		return new StroresRes(ResMessage.STORE_NOT_FOUND.getCode(), "共"+storesList.size()+"筆資料" , storesList);
+		return new StoresRes(ResMessage.STORE_NOT_FOUND.getCode(), "共"+storesList.size()+"筆資料" , storesList);
 	}
 }
