@@ -22,6 +22,8 @@ public class GroupbuyEventsReq {
     @NotNull(message = "商店ID必填")
     private int storesId;
 
+    @NotNull(message = "團名必填")
+    private String eventName;
 
     @NotNull(message = "結單時間必填")
     @Future(message = "結單時間必須是未來")
@@ -51,7 +53,7 @@ public class GroupbuyEventsReq {
     private Integer limitation = 0;
 
     private boolean deleted;
-    
+
 	public int getId() {
 		return id;
 	}
@@ -74,6 +76,14 @@ public class GroupbuyEventsReq {
 
 	public void setStoresId(int storesId) {
 		this.storesId = storesId;
+	}
+
+	public String getEventName() {
+		return eventName;
+	}
+
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
 	}
 
 	public LocalDateTime getEndTime() {
@@ -171,5 +181,6 @@ public class GroupbuyEventsReq {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-
+    
+	
 }

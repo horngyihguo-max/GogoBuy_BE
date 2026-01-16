@@ -72,10 +72,10 @@ public class OrdersService {
 		if (menuList == null || menuList.isEmpty()) {
 			return new BasicRes(ResMessage.MENULIST_NOT_FOUND.getCode(), ResMessage.MENULIST_NOT_FOUND.getMessage());
 		}
-		// 檢查前端傳來的 menuId 是否真的存在於該菜單中
+		// 跟團者傳來的商品 ID是否在菜單清單中
 		boolean isMenuExist = menuList.stream().anyMatch(m -> m.get("id").equals(req.getMenuId()));
 		if (!isMenuExist) {
-			return new BasicRes(ResMessage.MENU_ID_ERROR.getCode(), "該商店無此商品");
+			return new BasicRes(404, "該商店無此商品");
 		}
 		// 檢查數量
 		if (req.getQuantity() == 0) {
@@ -89,10 +89,7 @@ public class OrdersService {
 		if (req.getPickupStatus() == null) {
 			return new BasicRes(ResMessage.PICKUP_STATUS_ERROR.getCode(), ResMessage.PICKUP_STATUS_ERROR.getMessage());
 		}
-//		// 檢查領取時間
-//		if (req.getPickupTime() == null) {
-//			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
-//		}
+
 		// 檢查小計
 		if (req.getSubtotal() == 0) {
 			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
