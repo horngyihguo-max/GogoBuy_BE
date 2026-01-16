@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.Menu;
 
 @Repository
 public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer> {
@@ -50,11 +51,17 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Modifying
 	@Query(value = "update  groupbuy_events set is_deleted = ?2 where events_id = ?1", nativeQuery = true)
 	public int delete(String eventsId, boolean delete);
-	
-	
+
 	// 用 hostId 檢索主表
 	@Query(value = "select * from groupbuy_events  where host_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<GroupbuyEvents> getGroupbuyEventById(String hostId);
-	
-	
+
+	// 用 storesId 查詢菜單
+	@Query(value = "select * from menu  where stores_id = ?1 ", nativeQuery = true)
+	public List<Menu> getMenuByStoresId(int storesId);
+
+	// 查詢全部的開團
+	@Query(value = "select * from groupbuy_events where is_deleted = false", nativeQuery = true)
+	public List<GroupbuyEvents> getAll();
+
 }
