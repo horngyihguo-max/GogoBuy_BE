@@ -18,6 +18,7 @@ import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.Menu;
 import com.example.demo.entity.Stores;
 import com.example.demo.entity.User;
 import com.example.demo.request.GroupbuyEventsReq;
@@ -153,7 +154,7 @@ public class GroupbuyEventsService {
 	public BasicRes addEvent(GroupbuyEventsReq req) {
 		// 透過checkEvent function 去檢查 req 並回傳BasicRes的status code
 		BasicRes checkResult = checkEvent(req);
-
+		//如果 checkResult.getCode() 不等於 SUCCESS.getCode() 就會回傳 錯誤的訊息跟代碼
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
 			// 回傳錯誤的code + message
 			return checkResult;
@@ -178,13 +179,11 @@ public class GroupbuyEventsService {
 			List<Map<String, Object>> Menu = storesSearchDao.getMenuByStoreId(req.getStoresId());
 			// 將資料庫菜單 ID 轉成 Set，方便快速比較
 			Set<Integer> MenuIds = Menu.stream()
-					/*
-					 * 一整個 Map，我們只對 m.get("id") 感興趣，要 toString() 是因為 id 有時候是 Long 之類的
-					 * Integer.valueOf() 是因為直接轉型 Integer 很容易噴錯，所以先轉成字串再轉回數字
-					 */
+					/*一整個 Map，我們只對 m.get("id") 感興趣，要 toString() 是因為 id 有時候是 Long 之類的
+					 * Integer.valueOf() 是因為直接轉型 Integer 很容易噴錯，所以先轉成字串再轉回數字*/
 					.map(m -> Integer.valueOf(m.get("id").toString()))
-					/* Set 會自動確保裡面不會有重複的 ID */
-					// 在 .collect 收集起來打包回 MenuIds
+					/* 在 .collect 收集起來打包回 MenuIds
+					 * .toSet 會自動確保裡面不會有重複的 ID  */
 					.collect(Collectors.toSet());
 
 			// 檢查飲料 ID
@@ -327,7 +326,6 @@ public class GroupbuyEventsService {
 				return new GroupbuyEventsRes(400, "輸入正確的host_id");
 			}
 			List<GroupbuyEvents> eventsList = groupbuyEventsDao.getGroupbuyEventById(hostId);
-			// 先建立物件，再用 Setter 塞入 List
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "host_id 搜尋成功");
 			res.setGroupbuyEvents(eventsList);
 			return res;
@@ -335,4 +333,20 @@ public class GroupbuyEventsService {
 			return new GroupbuyEventsRes(500, "host_id 搜尋失敗");
 		}
 	}
+	
+	//回傳菜單
+	 public GroupbuyEventsRes getMenuByMenuId(List<Integer> menuList){
+			 try {
+				 //先去抓商店的菜單ID
+				List<Menu> list = storesSearchDao.getMenuByMenuId(menuList);
+				//先建立一個物件
+				GroupbuyEventsRes res = new GroupbuyEventsRes(200, "menuId 搜尋成功");
+				//Set 回去
+				res.setMenuList(list);
+				//然後回傳
+				return res;
+			 }  catch(Exception e) {
+				 return new GroupbuyEventsRes(500, "菜單搜尋失敗");
+			 }
+	 }
 }

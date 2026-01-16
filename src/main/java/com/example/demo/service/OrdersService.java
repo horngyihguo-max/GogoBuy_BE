@@ -16,6 +16,7 @@ import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Orders;
+import com.example.demo.entity.User;
 import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;

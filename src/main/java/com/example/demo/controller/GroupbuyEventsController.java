@@ -1,5 +1,7 @@
 package com.example.demo.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +39,11 @@ public class GroupbuyEventsController {
 	//查詢開團者的開團紀錄
 	@GetMapping("gogobuy/getGroupbuyEventById")
 	public GroupbuyEventsRes getGroupbuyEventById(@RequestParam(name = "host_id",required = false) String hostId) {
-		return groupbuyEventsService.getGroupbuyEventById(hostId);
+		return  groupbuyEventsService.getGroupbuyEventById(hostId);
 	}
+	//查詢開團菜單
+	@GetMapping("gogobuy/getMenuByMenuId")
+	 public GroupbuyEventsRes getMenuByMenuId(@RequestParam (name = "temp_menu",required = false)  List<Integer> menuId){
+		return  groupbuyEventsService.getMenuByMenuId(menuId);
+	 }
 }
