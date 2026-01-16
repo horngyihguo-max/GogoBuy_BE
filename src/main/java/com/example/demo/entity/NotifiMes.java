@@ -18,7 +18,6 @@ import jakarta.persistence.Table;
 public class NotifiMes {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private int id;
 

@@ -40,13 +40,18 @@ public class WishController {
 	    return new BasicRes(ResMessage.WISH_TYPE_ERROR.getCode(), ResMessage.WISH_TYPE_ERROR.getMessage());
 	}
 	
-	@PostMapping("gogobuy/follow")
+	@PostMapping("gogobuy/follow_wish")
 	public BasicRes follow(@RequestParam("id") int id, @RequestParam("userId") String userId) {
 		return wishService.setfollowers(id, userId);
 	}
 	
-	@PostMapping("gogobuy/delete")
-	public BasicRes delete(@RequestParam("id") int id, @RequestParam("userId") String userId) {
+	@PostMapping("gogobuy/finish_wish")
+	public BasicRes finish(@RequestParam("id") int id, @RequestParam("userId") String userId) throws Exception {
+		return wishService.finishWish(id, userId);
+	}
+	
+	@PostMapping("gogobuy/delete_wish")
+	public BasicRes delete(@RequestParam("id") int id, @RequestParam("userId") String userId) throws Exception {
 		return wishService.delWish(id, userId);
 	}
 }

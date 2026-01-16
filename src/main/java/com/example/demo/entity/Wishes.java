@@ -34,6 +34,8 @@ public class Wishes {
 	private LocalDate buildDate;
 	@Column(name="location")
 	private String location;
+	@Column(name="is_finished")
+	private boolean finished;
 	
 	public int getId() {
 		return id;
@@ -88,5 +90,11 @@ public class Wishes {
 	}
 	public void setLocation(String location) {
 		this.location = location;
+	}
+	public boolean isFinished() {
+		return finished;
+	}
+	public void setFinished(boolean finished) {
+		this.finished = finished;
 	}
 }

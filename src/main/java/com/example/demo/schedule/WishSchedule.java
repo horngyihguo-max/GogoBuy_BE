@@ -19,6 +19,7 @@ public class WishSchedule {
     }
 	
 	@Scheduled(cron = "0 0 0 * * ?")
+//	@Scheduled(fixedRate = 20000)
 	public void overThreeMonth() throws Exception {
 		wishService.wishOverThreeMonth();
 	}
