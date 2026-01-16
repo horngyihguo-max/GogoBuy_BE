@@ -470,4 +470,12 @@ public class StoreService {
 			return new StroresRes(500, "取得店家資料失敗: " + e.getMessage(), null);
 		}
 	}
+	
+	
+//	全部店家
+	public StroresRes getAllStores() {
+		
+		List<Stores>storesList = storesSearchDao.getAllStores();
+		return new StroresRes(ResMessage.STORE_NOT_FOUND.getCode(), "共"+storesList.size()+"筆資料" , storesList);
+	}
 }

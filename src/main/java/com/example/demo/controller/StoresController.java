@@ -75,5 +75,11 @@ public class StoresController {
     }
 	
 	
+//	取得全部店家資訊
+	@GetMapping("gogobuy/store/all")
+    public BasicRes getAllStore() {
+        return storeService.getAllStores();
+    }
+	
 	
 }

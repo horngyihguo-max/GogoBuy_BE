@@ -13,12 +13,17 @@ import com.example.demo.entity.Stores;
 @Repository
 public interface StoresSearchDao extends JpaRepository<Stores, Integer> {
 
-	// 模糊搜尋店家名稱
-	@Query(value = "SELECT * FROM stores " + "WHERE name LIKE CONCAT('%', ?1, '%') " + "AND is_deleted = false "
-			+ "ORDER BY id DESC", nativeQuery = true)
+	//	拿取全店家
+	@Query(value = "SELECT * FROM stores ", nativeQuery = true)
+	public List<Stores> getAllStores();
+	
+	//	名字模糊搜尋
+	@Query(value = "SELECT * FROM stores " +
+            "WHERE name LIKE CONCAT('%', ?1, '%') " +
+            "AND is_deleted = false " +
+            "ORDER BY id DESC", nativeQuery = true)
 	public List<Stores> findStoresByNameLike(String name);
-
-//	根據店家id取得對應店家資訊
+	
 	@Query(value = "SELECT * FROM stores WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
 	public Stores getStoreById(int id);
 
