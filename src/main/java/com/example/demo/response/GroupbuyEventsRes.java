@@ -3,6 +3,7 @@ package com.example.demo.response;
 import java.util.List;
 
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
 import com.example.demo.entity.PersonalOrder;
@@ -20,6 +21,8 @@ public class GroupbuyEventsRes extends BasicRes {
 	private List<PersonalOrder> personalOrder;
 	
 	private List<Menu> menuList;
+	
+	private List<GroupsSearchView> groupsSearchViewList;
 
 	public List<GroupbuyEvents> getGroupbuyEvents() {
 		return groupbuyEvents;
@@ -68,6 +71,24 @@ public class GroupbuyEventsRes extends BasicRes {
 		this.orders = orders;
 		this.personalOrder = personalOrder;
 		this.menuList = menuList;
+	}
+
+	public List<GroupsSearchView> getGroupsSearchViewList() {
+		return groupsSearchViewList;
+	}
+
+	public void setGroupsSearchViewList(List<GroupsSearchView> groupsSearchViewList) {
+		this.groupsSearchViewList = groupsSearchViewList;
+	}
+
+	public GroupbuyEventsRes(int code, String message, List<GroupbuyEvents> groupbuyEvents, List<Orders> orders,
+			List<PersonalOrder> personalOrder, List<Menu> menuList, List<GroupsSearchView> groupsSearchViewList) {
+		super(code, message);
+		this.groupbuyEvents = groupbuyEvents;
+		this.orders = orders;
+		this.personalOrder = personalOrder;
+		this.menuList = menuList;
+		this.groupsSearchViewList = groupsSearchViewList;
 	}
 
 

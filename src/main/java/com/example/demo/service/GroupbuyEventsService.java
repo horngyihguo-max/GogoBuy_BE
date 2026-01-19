@@ -1,7 +1,6 @@
 package com.example.demo.service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,23 +8,22 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
+import com.example.demo.dao.GroupsSearchViewDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Stores;
 import com.example.demo.entity.User;
 import com.example.demo.request.GroupbuyEventsReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
-import com.example.demo.response.StroresRes;
-import com.example.demo.vo.MenuVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -39,6 +37,9 @@ public class GroupbuyEventsService {
 
 	@Autowired
 	private GroupbuyEventsDao groupbuyEventsDao;
+	
+	@Autowired
+	private GroupsSearchViewDao groupsSearchViewDao;
 
 	private ObjectMapper mapper = new ObjectMapper();
 
@@ -66,6 +67,11 @@ public class GroupbuyEventsService {
 			return new BasicRes(ResMessage.STORES_ID_NULL.getCode(), //
 					ResMessage.STORES_ID_NULL.getMessage());
 		}
+		// 檢查團名
+		if (!StringUtils.hasText(req.getEventName())) {
+			return new BasicRes(400, "團名必填");
+		}
+
 		// 檢查結束時間
 		if (req.getEndTime() == null) {
 			return new BasicRes(ResMessage.END_TIME_ERROR.getCode(), //
@@ -110,6 +116,7 @@ public class GroupbuyEventsService {
 		GroupbuyEvents event = new GroupbuyEvents();
 		event.setHostId(req.getHostId());
 		event.setStoresId(req.getStoresId());
+		event.setEventName(req.getEventName());
 		event.setStatus(GroupbuyStatusEnum.OPEN);
 		event.setEndTime(req.getEndTime());
 		event.setSplitType(req.getSplitType());
@@ -176,6 +183,7 @@ public class GroupbuyEventsService {
 
 			groupbuyEventsDao.addEvent(event.getHostId(), //
 					event.getStoresId(), //
+					event.getEventName(), //
 					event.getStatus().name(), //
 					event.getEndTime(), //
 					event.getTotalOrderAmount(), //
@@ -258,6 +266,7 @@ public class GroupbuyEventsService {
 			groupbuyEventsDao.updateEvent(//
 					req.getHostId(), //
 					req.getStoresId(), //
+					req.getEventName(), //
 					req.getStatus().name(), //
 					req.getEndTime(), //
 					event.getTotalOrderAmount(), //
@@ -306,36 +315,69 @@ public class GroupbuyEventsService {
 		}
 	}
 
-// 回傳用商店ID查詢的菜單
+	// 回傳用商店ID查詢的菜單
 	public GroupbuyEventsRes getMenuByStoresId(int storesId) {
 		try {
 			if (storesId <= 0) {
 				return new GroupbuyEventsRes(400, "輸入正確的stores_id");
 			}
-			List<Menu> eventsList = groupbuyEventsDao.getMenuByStoresId(storesId);
+			List<Menu> menuList = groupbuyEventsDao.getMenuByStoresId(storesId);
+			if (menuList == null || menuList.isEmpty()) {
+				return new GroupbuyEventsRes(200, "查無此店家的菜單資料");
+			}
+			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "店家菜單搜尋成功");
+			res.setMenuList(menuList);
+			return res;
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "店家菜單搜尋失敗");
+		}
+	}
+
+	// 回傳用商店ID查詢符合的團
+	public GroupbuyEventsRes getGroupbuyEventByStoresId(int storesId) {
+		try {
+			if (storesId <= 0) {
+				return new GroupbuyEventsRes(400, "輸入正確的stores_id");
+			}
+			List<GroupbuyEvents> eventsList = groupbuyEventsDao.getGroupbuyEventByStoresId(storesId);
 			if (eventsList == null || eventsList.isEmpty()) {
 				return new GroupbuyEventsRes(200, "查無此店家的菜單資料");
 			}
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "店家菜單搜尋成功");
-			res.setMenuList(eventsList);
+			res.setGroupbuyEvents(eventsList);
 			return res;
 		} catch (Exception e) {
-			return  new GroupbuyEventsRes(500, "店家菜單搜尋失敗");
+			return new GroupbuyEventsRes(500, "店家菜單搜尋失敗");
 		}
 	}
-	
-	//回傳全部開團的
-	public  GroupbuyEventsRes  getAll() {
+
+	// 回傳全部開團的
+	public GroupbuyEventsRes getAll() {
 		try {
-	        List<GroupbuyEvents> list = groupbuyEventsDao.getAll();
-	        if (list == null ) {
-	            return new GroupbuyEventsRes(200, "目前暫無任何開團資料");
-	        }
-	        GroupbuyEventsRes res = new GroupbuyEventsRes(200, "搜尋成功");
-	        res.setGroupbuyEvents(list);
-	        return res;
-	    } catch (Exception e) {
-	        return new GroupbuyEventsRes(500, "查詢失敗");
-	    }
+			List<GroupbuyEvents> list = groupbuyEventsDao.getAll();
+			if (list == null) {
+				return new GroupbuyEventsRes(200, "目前暫無任何開團資料");
+			}
+			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "搜尋成功");
+			res.setGroupbuyEvents(list);
+			return res;
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "查詢失敗");
+		}
+	}
+
+	// 回傳暱稱有的開團
+	public GroupbuyEventsRes getGroupbuyEventByStoresName(String hostNickname) {
+		List<GroupsSearchView> nicknameEventsList = groupsSearchViewDao.getGroupbuyEventByStoresName(hostNickname);
+		if (nicknameEventsList == null ) {
+			return new GroupbuyEventsRes(200, "查無此開團者的開團資料");
+		}
+		try {
+			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "開團者搜尋成功");
+			res.setGroupsSearchViewList(nicknameEventsList);
+			return res;
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "這裡失敗?");
+		}
 	}
 }

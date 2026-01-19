@@ -54,9 +54,21 @@ public class GroupbuyEventsController {
 		return  groupbuyEventsService.getMenuByMenuId(menuId);
 	 }
 	
+	//透過店家ID取得對應菜單
+	@GetMapping("gogobuy/getGroupbuyEventByStoresId")
+	 public GroupbuyEventsRes getGroupbuyEventByStoresId(@RequestParam (name = "stores_id",required = false)  int storesId){
+			return  groupbuyEventsService.getGroupbuyEventByStoresId(storesId);
+	 }
+	
 	//查詢全部開團
 	@GetMapping("gogobuy/getAll")
 	public  GroupbuyEventsRes  getAll() {
 		return  groupbuyEventsService.getAll();
+	}
+	
+	//暱稱查詢開團紀錄
+	@GetMapping("gogobuy/getGroupbuyEventByStoresName")
+	public GroupbuyEventsRes getGroupbuyEventByStoresName(@RequestParam (name = "host_nickname",required = false) String hostNickname) {
+		return  groupbuyEventsService.getGroupbuyEventByStoresName(hostNickname);
 	}
 }

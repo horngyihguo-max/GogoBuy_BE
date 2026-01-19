@@ -44,10 +44,6 @@ public class PersonalOrderService {
 		if (userDao.getUserById(req.getUserId()) == null) {
 		    return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
 		}
-		// 總金額
-	      if (req.getTotalSum() <= 0) {
-              return new BasicRes(400, "訂單總額不可為空或為0");
-          }
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 	// 新增
@@ -58,7 +54,7 @@ public class PersonalOrderService {
 		}
 		PersonalOrder po = personalOrderDao.findByEventsIdAndUserId(req.getEventsId(), req.getUserId());
 	    if (po != null) {
-	        return new BasicRes(400, "新增失敗：該用戶在此活動中已存在結算單");
+	        return new BasicRes(400, "該用戶在此活動中已存在結算單");
 	    }
 
 	    try {
@@ -82,7 +78,7 @@ public class PersonalOrderService {
 	        // 查詢該筆「結算單」是否存在
 	        PersonalOrder order = personalOrderDao.findByEventsIdAndUserId(req.getEventsId(), req.getUserId());
 	        if (order == null) {
-	            return new BasicRes(404, "更新失敗：找不到此結算單資料");
+	            return new BasicRes(404, "找不到此結算單資料");
 	        }
 	        order.setEventsId(req.getEventsId());
 	        order.setUserId(req.getUserId());
@@ -101,7 +97,6 @@ public class PersonalOrderService {
 	        order.setPaymentStatus(newStatus);
 	        personalOrderDao.save(order);
 	        return new BasicRes(200, "更新成功");
-
 	    } catch (Exception e) {
 	        return new BasicRes(500, "更新系統異常: ");
 	    }
