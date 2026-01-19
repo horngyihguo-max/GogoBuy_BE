@@ -29,23 +29,23 @@ public List<Stores> findStoresByNameLike(String name);
 	
 	
 	// 取得營業時間
-    @Query(value = "SELECT week, open_time as openTime, close_time as closeTime FROM store_operating_hours WHERE stores_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT id, stores_id as storesId, week, open_time as openTime, close_time as closeTime FROM store_operating_hours WHERE stores_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getOperatingHoursByStoreId(int storeId);
 
     // 取得菜單品項
-    @Query(value = "SELECT id, category_id as categoryId, name, description, base_price as basePrice, image, unusual FROM menu WHERE stores_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT stores_id as storesId, id, category_id as categoryId, name, description, base_price as basePrice, image, unusual FROM menu WHERE stores_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getMenuByStoreId(int storeId);
 
     // 取得品項類別 (包含價格級距 JSON)
-    @Query(value = "SELECT name, price_level as priceLevel FROM menu_categories WHERE stores_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT id, stores_id as storesId, name, price_level as priceLevel FROM menu_categories WHERE stores_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getCategoriesByStoreId(int storeId);
 
     // 取得選項群組
-    @Query(value = "SELECT id, name, is_required as required, max_selection as maxSelection FROM product_option_groups WHERE stores_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT stores_id as storesId, id, name, is_required as required, max_selection as maxSelection FROM product_option_groups WHERE stores_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getOptionGroupsByStoreId(int storeId);
 
     // 取得選項群組內的細項 (根據群組 ID)
-    @Query(value = "SELECT name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT id, group_id as groupId, name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
     
     
