@@ -15,7 +15,7 @@ import jakarta.transaction.Transactional;
 @Repository
 public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository {
 
-	// 全部願望
+//	全部願望
 	@Query(value = "select * from wishes where is_deleted = false", nativeQuery = true)
 	public List<Wishes> allWish();
 
@@ -62,7 +62,7 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository 
 	@Transactional
 	@Query(value = "update wishes set is_finished = true where id = ?1", nativeQuery = true)
 	public int finishWish(int id);
-//	查開團id
+	// 查開團id
 	@Query(value = "select id from groupbuy_events where host_id = ? order by id DESC limit 1", nativeQuery = true)
 	public int getEventId(String userId);
 	
@@ -71,6 +71,9 @@ public interface WishDao extends JpaRepository<Wishes, Integer>, WishRepository 
 	@Transactional
 	@Query(value = "update wishes set is_deleted = true where id = ?1 and user_id = ?2", nativeQuery = true)
 	public int delWish(int id, String userId);
+	// 查被刪除願望data
+	@Query(value = "select title from wishes where id = ?", nativeQuery = true)
+	public String getWishTitle(int id);
 	
 //	超過3個月且未被刪除同時也未被完成
 	@Query(value = "select * from wishes where build_date <= DATE_SUB(NOW(), INTERVAL 3 MONTH)"  //

@@ -224,12 +224,13 @@ public class WishService {
 			if(result<=0) {
 				return new BasicRes(ResMessage.WISH_DELETE_ERROR.getCode(), ResMessage.WISH_DELETE_ERROR.getMessage());
 			}
+			String wishTitle=wishDao.getWishTitle(id);
 			if(followersList.size()>0) {
 				NotifiCategoryEnum wish=NotifiCategoryEnum.WISH;
 				NotifiMes msg = new NotifiMes();
 				msg.setCategory(wish);
 				msg.setTitle("願望被刪除!!");
-				msg.setContent("願望的主人把願望刪掉了，請重新許願");
+				msg.setContent("願望的主人把"+wishTitle+"願望刪掉了，快去許願池找找相似的願望吧!");
 				msg.setUserId(userId);
 				msg.setEventId(id);
 				notifiMsgRepository.save(msg);  // 新增訊息
@@ -263,7 +264,7 @@ public class WishService {
 				NotifiMes userMsg = new NotifiMes();
 				userMsg.setCategory(wish);
 				userMsg.setTitle("願望已超過3個月嘍!!");
-				userMsg.setTargetUrl("http://localhost:4200/wishes/wishId="+w.getId());
+				userMsg.setTargetUrl("/user/wishes?tab=mine&filter=expired&wishId="+w.getId());
 				userMsg.setEventId(w.getId());
 				userMsg.setUserId(w.getUser_id());
 				userMsg.setContent("這個願望已超過3個月，願望未成功開團，請重新許願");
@@ -276,7 +277,7 @@ public class WishService {
 					NotifiMes follwersMsg = new NotifiMes();
 					follwersMsg.setCategory(wish);
 					follwersMsg.setTitle("願望已超過3個月嘍!!");
-					follwersMsg.setTargetUrl("http://localhost:4200/wishes/wishId="+w.getId());
+					follwersMsg.setTargetUrl("/user/wishes?tab=followed&filter=expired&wishId="+w.getId());
 					follwersMsg.setEventId(w.getId());
 					follwersMsg.setContent("這個願望已過期，願望未成功開團，快去許願池找找有沒有相似的願望吧!");
 					notifiMsgRepository.save(follwersMsg);
