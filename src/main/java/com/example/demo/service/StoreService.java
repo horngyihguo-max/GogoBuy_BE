@@ -1,16 +1,24 @@
 package com.example.demo.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.time.DateTimeException;
 import java.time.DayOfWeek;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.ProductOptionGroupsDao;
@@ -31,7 +39,10 @@ import com.example.demo.vo.ProductOptionItemsVo;
 import com.example.demo.vo.StoreOperatingHoursVo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import net.coobird.thumbnailator.Thumbnails;
 
 @Service
 public class StoreService {
@@ -46,17 +57,41 @@ public class StoreService {
 
 	@Autowired
 	private StoresSearchDao storesSearchDao;
-	
+
 	@Autowired
 	private ProductOptionGroupsDao productOptionGroupsDao;
-	
+
+	@Autowired
+	private RestTemplate restTemplate;
+
+	// Spring 會自動從 application.properties 抓取對應的值注入到變數
+	@Value("${gemini.api.key}")
+	private String geminiApiKey;
+
+	@Value("${gemini.api.url}")
+	private String geminiUrl;
+
 //	檢查
 
 //	店家
 	private void checkStore(StoresReq req) throws Exception {
-//		電話長度過長
-		if (req.getPhone() == null || req.getPhone().length() > 10) {
-			throw new Exception(ResMessage.PHONE_SIZE_ERROR.getMessage());
+//		電話
+		// 先處理字串：移除所有橫線，並過濾掉空白（避免前端傳入 "02- 123" 這種狀況）
+		String purePhone = req.getPhone() == null ? "" : req.getPhone().replace("-", "").trim();
+
+		// 判斷邏輯：
+		// 台灣電話規格：
+		// - 手機：09xxxxxxxx (共10碼)
+		// - 市話：0x-xxxxxxx (共9碼) 或 0x-xxxxxxxx (共10碼，如台北/台中/高雄)
+		if (req.getPhone() == null || purePhone.isEmpty()) {
+		    throw new Exception("電話不能為空喵");
+		}
+
+		// 使用正則表達式檢查格式與長度：
+		// ^0：必須以 0 開頭
+		// \d{8,9}：後面接 8 到 9 位數字 (總長 9~10 碼)
+		if (!purePhone.matches("^0\\d{8,9}$")) {
+		    throw new Exception(ResMessage.PHONE_SIZE_ERROR.getMessage());
 		}
 //	  	category類型驗證
 		if (!(req.getCategory().equals("fast") || req.getCategory().equals("slow"))) {
@@ -70,12 +105,12 @@ public class StoreService {
 			}
 		}
 	}
-	
+
 	private void checkStoreExist(int storeId) throws Exception {
 		Stores existingStore = storesSearchDao.getStoreById(storeId);
-	    if (existingStore == null) {
-	    	throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
-	    }
+		if (existingStore == null) {
+			throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
+		}
 	}
 
 //時刻
@@ -173,14 +208,14 @@ public class StoreService {
 		List<ProductOptionGroupsVo> ProductOptionGroupsVoList = req.getProductOptionGroupsVoList();
 		for (ProductOptionGroupsVo vo : ProductOptionGroupsVoList) {
 			ProductOptionGroups group = new ProductOptionGroups();
-	        group.setStoresId(storeId);
-	        group.setName(vo.getName());
-	        group.setRequired(vo.isRequired());
-	        group.setMaxSelection(vo.getMaxSelection());
-	        
-	        group = productOptionGroupsDao.save(group); 
-	        int groupId = group.getId();
-			
+			group.setStoresId(storeId);
+			group.setName(vo.getName());
+			group.setRequired(vo.isRequired());
+			group.setMaxSelection(vo.getMaxSelection());
+
+			group = productOptionGroupsDao.save(group);
+			int groupId = group.getId();
+
 //			storesCreateDao.addOptionGroups(storeId, vo.getName(), vo.isRequired(), vo.getMaxSelection());
 //			int groupId = storesCreateDao.getLastInsertId();
 //		填入選項
@@ -211,7 +246,7 @@ public class StoreService {
 //		傳店家表取店家ID
 		Stores store = new Stores();
 		String feeStr = mapper.writeValueAsString(req.getFee_description());
-		
+
 		store.setName(req.getStoresname());
 		store.setPhone(req.getPhone());
 		store.setAddress(req.getAddress());
@@ -222,10 +257,9 @@ public class StoreService {
 		store.setFeeDescription(feeStr);
 		store.setPublish(req.isPublish());
 		store.setCreatedBy(req.getCreatedBy());
-		
+
 		store = storesCreateDao.save(store);
-		
-		
+
 //		storesCreateDao.addStore(req.getStoresname(), req.getPhone(), req.getAddress(), //
 //				req.getCategory(), req.getType(), req.getMemo(), //
 //				req.getImage(), feeStr, req.isPublish(), req.getCreatedBy());
@@ -279,7 +313,7 @@ public class StoreService {
 //		物理全刪
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes deleteFullStore(int storeId) throws Exception {
-		
+
 		checkStoreExist(storeId);
 		// 刪除最底層的選項細項 (依賴於 groups)
 		storesUpdateDao.deleteOptionItemsByStoreId(storeId);
@@ -355,6 +389,7 @@ public class StoreService {
 					List.of(store));
 			// 營業時間
 			List<Map<String, Object>> hoursMap = storesSearchDao.getOperatingHoursByStoreId(storesId);
+			
 			res.setOperatingHoursVoList(mapper.convertValue(hoursMap, new TypeReference<List<StoreOperatingHoursVo>>() {
 			}));
 
@@ -363,6 +398,12 @@ public class StoreService {
 			List<MenuCategoriesVo> categoriesVoList = new ArrayList<>();
 			for (Map<String, Object> map : categoriesMap) {
 				MenuCategoriesVo catVo = new MenuCategoriesVo();
+				catVo.setStoresId(storesId);
+				
+				if (map.get("id") != null) {
+			        catVo.setId((Integer) map.get("id"));
+			    }
+				
 				catVo.setName((String) map.get("name"));
 				// 手動將 price_level 字串轉為 List
 				String priceLevelStr = (String) map.get("priceLevel");
@@ -383,7 +424,7 @@ public class StoreService {
 				Map<String, Object> tempMap = new HashMap<>(map);
 				// 先移出unusual
 				tempMap.remove("unusual");
-				//	 生成新map(不含unusual)			
+				// 生成新map(不含unusual)
 				MenuVo mVo = mapper.convertValue(tempMap, MenuVo.class);
 				// 手動將 unusual 字串轉為 Object/Map
 				String unusualStr = (String) map.get("unusual");
@@ -424,12 +465,130 @@ public class StoreService {
 			return new StoresRes(500, "取得店家資料失敗: " + e.getMessage(), null);
 		}
 	}
-	
-	
-//	全部店家
+
+//	取得全部店家
 	public StoresRes getAllStores() {
-		
-		List<Stores>storesList = storesSearchDao.getAllStores();
-		return new StoresRes(ResMessage.STORE_NOT_FOUND.getCode(), "共"+storesList.size()+"筆資料" , storesList);
+
+		List<Stores> storesList = storesSearchDao.getAllStores();
+		return new StoresRes(ResMessage.STORE_NOT_FOUND.getCode(), "共" + storesList.size() + "筆資料", storesList);
+	}
+
+//	AI填菜單
+	//
+
+	public String callGeminiApi(byte[] imageBytes) throws Exception {
+
+		// 1. 強制等待，避免觸發配額限制
+		Thread.sleep(2000);
+
+		// 2. 壓縮圖片
+		byte[] processedImage = compressImage(imageBytes);
+
+		// 3. 確保使用壓縮後的圖轉 Base64
+		String base64Image = Base64.getEncoder().encodeToString(processedImage);
+
+		// 4. 清理 URL (防止結尾有換行或空白)
+		String cleanUrl = geminiUrl.trim();
+	    String cleanKey = geminiApiKey.trim();
+	    String finalUrl = cleanUrl + "?key=" + cleanKey;
+
+
+		String prompt = """
+								你是一個專業的菜單辨識員。請分析圖片並「僅」以 JSON 格式回傳資料。
+				            請確保 JSON 欄位完全符合以下結構：
+					            {
+				            "storesname": "店家名稱",
+				            "phone": "電話",
+				            "address": "地址",
+				            "category": "fast",
+				            "type": "類型",
+				            "memo": "備註",
+				            "fee_description": [{ "km": 2, "fee": 30 }],
+				            "operatingHoursVoList": [{ "week": 1, "openTime": "09:00", "closeTime": "21:00" }],
+				            "menuCategoriesVoList": [{ "name": "類別名稱", "priceLevel": [{ "name": "規格", "price": 100 }] }],
+				            "menuVoList": [{ "name": "品名", "description": "描述", "basePrice": 80, "unusual": {} }],
+				            "productOptionGroupsVoList": [{ "name": "選項群組", "items": [{ "name": "項目", "extraPrice": 0 }] }]
+				        }
+				unusual欄位可以留空,如有產品特殊規格、價格(熱飲、與同類型商品加大不同價)視必要性填入
+				商品、各欄位要盡可能完整齊全提供，但沒有的就不要亂填
+				category可以是fast或slow,請依據是否為餐飲業來判斷
+					            """;
+
+		Map<String, Object> requestBody = Map.of(//
+			    "contents", List.of(//
+			        Map.of("parts", List.of(//
+			            Map.of("text", prompt),//
+			            Map.of("inline_data", Map.of(//
+			                "mime_type", "image/jpeg", //
+			                "data", base64Image//
+			            ))
+			        ))
+			    ),"generationConfig", Map.of(
+			            "response_mime_type", "application/json", // 強制 AI 回傳純 JSON 字串
+			            "temperature", 0.1 // 降低隨機性，讓格式更固定
+			    )
+			);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+		return restTemplate.postForObject(finalUrl, entity, String.class);
+
+	}
+
+	public StoresReq aiAnalyzeMenu(byte[] imageBytes) throws Exception {
+	    String rawResponse = callGeminiApi(imageBytes);
+
+	    try {
+	        JsonNode root = mapper.readTree(rawResponse);
+	        JsonNode candidate = root.path("candidates").get(0);
+	        
+	        // 檢查 API 是否有回傳內容（有時會因為安全過濾而回傳空內容）
+	        if (candidate.path("content").path("parts").isMissingNode()) {
+	            throw new Exception("Gemini 3 拒絕回應或圖片無法辨識，請更換圖片再試");
+	        }
+
+	        String aiJsonText = candidate.path("content").path("parts").get(0).path("text").asText();
+
+	        // 【優化】更穩健的 JSON 清洗邏輯
+	        // 尋找第一個 '{' 和最後一個 '}'，確保只抓取 JSON 本體
+	        int start = aiJsonText.indexOf("{");
+	        int end = aiJsonText.lastIndexOf("}");
+	        if (start == -1 || end == -1) {
+	            throw new Exception("AI 回傳的內容不包含合法的 JSON 結構");
+	        }
+	        String cleanedJson = aiJsonText.substring(start, end + 1);
+
+	        // 4. 轉換為 StoresReq 物件
+	        StoresReq req = mapper.readValue(cleanedJson, StoresReq.class);
+
+	        // 5. 確保關鍵欄位有預設值
+	        if (req.getCategory() == null) req.setCategory("fast");
+	        if (req.getStoresname() == null) req.setStoresname("未命名店家");
+
+	        return req;
+
+	    } catch (Exception e) {
+	        // 增加詳細錯誤輸出，方便調試
+	        System.err.println("解析異常回傳內容：" + rawResponse);
+	        throw new Exception("AI 辨識解析失敗: " + e.getMessage());
+	    }
+	}
+
+	private byte[] compressImage(byte[] imageBytes) throws Exception {
+		try {
+			ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+			// size(1024, 1024) 會將長邊縮放至 1024，寬邊等比例縮小
+			// outputQuality(0.7) 壓縮率 70%，體積會掉非常多但文字依然清晰
+			Thumbnails.of(bais).size(1024, 1024).outputQuality(0.7).outputFormat("jpg").toOutputStream(baos);
+
+			return baos.toByteArray();
+		} catch (Exception e) {
+			// 如果壓縮失敗，就回傳原圖，不要讓程式掛掉
+			return imageBytes;
+		}
 	}
 }

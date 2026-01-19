@@ -6,7 +6,7 @@ public class ProductOptionGroupsVo {
 	
 	private int id;
 	
-	private int storeId;
+	private int storesId;
 	
 	private String name;
 	
@@ -24,12 +24,12 @@ public class ProductOptionGroupsVo {
 		this.id = id;
 	}
 
-	public int getStoreId() {
-		return storeId;
+	public int getStoresId() {
+		return storesId;
 	}
 
-	public void setStoreId(int storeId) {
-		this.storeId = storeId;
+	public void setStoresId(int storesId) {
+		this.storesId = storesId;
 	}
 
 	public String getName() {
