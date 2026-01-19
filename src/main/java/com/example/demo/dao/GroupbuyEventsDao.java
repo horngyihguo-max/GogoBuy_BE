@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.Menu;
 
 @Repository
 public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer> {
@@ -17,12 +18,12 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	// 新增開團
 	@Transactional
 	@Modifying
-	@Query(value = "insert into groupbuy_events(host_id, stores_id, status, end_time, total_order_amount, "
+	@Query(value = "insert into groupbuy_events(host_id, stores_id, event_name, status, end_time, total_order_amount, "
 			+ "shipping_fee, split_type, announcement, type, temp_menu, recommend, recommend_description, limitation)"
-			+ "values(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)", nativeQuery = true)
-	public int addEvent(String hostId, int storesId, String status, LocalDateTime endTime, Integer totalOrderAmount,
-			Integer shippingFee, String splitType, String announcement, String type, String temp_menu, String recommend,
-			String recommendDescription, Integer limitation);
+			+ "values(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13,?14)", nativeQuery = true)
+	public int addEvent(String hostId, int storesId, String event_name, String status, LocalDateTime endTime,
+			Integer totalOrderAmount, Integer shippingFee, String splitType, String announcement, String type,
+			String temp_menu, String recommend, String recommendDescription, Integer limitation);
 
 	// 查所屬團ID
 	@Query(value = "select* from groupbuy_events where id = ?", nativeQuery = true)
@@ -31,13 +32,13 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	// 更新團
 	@Transactional
 	@Modifying
-	@Query(value = "update groupbuy_events set " + "host_id = ?1, stores_id = ?2, status = ?3, end_time = ?4, "
-			+ "total_order_amount = ?5, shipping_fee = ?6, split_type = ?7, "
-			+ "announcement = ?8, type = ?9, temp_menu = ?10, recommend = ?11, "
-			+ "recommend_description = ?12, limitation = ?13 " + "where id = ?14", nativeQuery = true)
-	public int updateEvent(String hostId, int storesId, String status, LocalDateTime endTime, Integer totalOrderAmount,
-			Integer shippingFee, String splitType, String announcement, String type, String tempMenu, String recommend,
-			String recommendDescription, Integer limitation, int id);
+	@Query(value = "update groupbuy_events set " + "host_id = ?1, stores_id = ?2, event_name = ?3, status = ?4, "
+			+ "end_time = ?5, total_order_amount = ?6, shipping_fee = ?7, "
+			+ "split_type = ?8, announcement = ?9, type= ?10, temp_menu = ?11, "
+			+ "recommend = ?12, recommend_description = ?13 limitation = ?14 where id = ?15", nativeQuery = true)
+	public int updateEvent(String hostId, int storesId, String eventName, String status, LocalDateTime endTime,
+			Integer totalOrderAmount, Integer shippingFee, String splitType, String announcement, String type,
+			String tempMenu, String recommend, String recommendDescription, Integer limitation, int id);
 
 	// 更新總金額
 	@Transactional
@@ -50,11 +51,23 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Modifying
 	@Query(value = "update  groupbuy_events set is_deleted = ?2 where events_id = ?1", nativeQuery = true)
 	public int delete(String eventsId, boolean delete);
-	
-	
+
 	// 用 hostId 檢索主表
 	@Query(value = "select * from groupbuy_events  where host_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<GroupbuyEvents> getGroupbuyEventById(String hostId);
+
+	// 用 storesId 查詢菜單
+	@Query(value = "select * from menu  where stores_id = ?1 ", nativeQuery = true)
+	public List<Menu> getMenuByStoresId(int storesId);
+
+	// 查詢全部的開團
+	@Query(value = "select * from groupbuy_events where is_deleted = false", nativeQuery = true)
+	public List<GroupbuyEvents> getAll();
+
+	// 用店家Id找符合的團
+	@Query(value = "select * from groupbuy_events  where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
+	public List<GroupbuyEvents> getGroupbuyEventByStoresId(int storesId);
 	
 	
+
 }

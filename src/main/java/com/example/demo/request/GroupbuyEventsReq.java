@@ -15,25 +15,29 @@ import jakarta.validation.constraints.NotNull;
 public class GroupbuyEventsReq {
 
 	private int id;
-
+	
 	@NotBlank(message = "團長ID必填")
-	private String hostId;
+    private String hostId;
 
-	@NotNull(message = "商店ID必填")
-	private int storesId;
+    @NotNull(message = "商店ID必填")
+    private int storesId;
 
-	@NotNull(message = "結單時間必填")
-	@Future(message = "結單時間必須是未來")
-	private LocalDateTime endTime;
+    @NotNull(message = "團名必填")
+    private String eventName;
 
-	@NotNull(message = "是否開店")
-	private GroupbuyStatusEnum status;
+    @NotNull(message = "結單時間必填")
+    @Future(message = "結單時間必須是未來")
+    private LocalDateTime endTime;
+    
+    @NotNull(message = "是否開店")
+    private GroupbuyStatusEnum status;
 
-	private Integer shippingFee = 0;
+    private Integer shippingFee = 0;     
+    
+    @NotNull(message = "運費分攤方式必填")
+    private SplitTypeEnum splitType;
 
     private String announcement;         
-    
-    private SplitTypeEnum splitType;
     
     private String type;                  
     
@@ -45,12 +49,11 @@ public class GroupbuyEventsReq {
     
     private Integer totalOrderAmount;
 
-
-	@Min(value = 1, message = "成團門檻至少1元")
-	private Integer limitation = 0;
+    @Min(value = 1, message = "成團門檻至少1元")
+    private Integer limitation = 0;
 
     private boolean deleted;
-    
+
 	public int getId() {
 		return id;
 	}
@@ -73,6 +76,14 @@ public class GroupbuyEventsReq {
 
 	public void setStoresId(int storesId) {
 		this.storesId = storesId;
+	}
+
+	public String getEventName() {
+		return eventName;
+	}
+
+	public void setEventName(String eventName) {
+		this.eventName = eventName;
 	}
 
 	public LocalDateTime getEndTime() {
@@ -170,5 +181,6 @@ public class GroupbuyEventsReq {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-
+    
+	
 }

@@ -9,7 +9,7 @@ import com.example.demo.vo.MenuVo;
 import com.example.demo.vo.ProductOptionGroupsVo;
 import com.example.demo.vo.StoreOperatingHoursVo;
 
-public class StroresRes  extends BasicRes{
+public class StoresRes  extends BasicRes{
 
 	private List<Stores> storeList;
 	
@@ -31,15 +31,15 @@ public class StroresRes  extends BasicRes{
 		this.storeList = storeList;
 	}
 
-	public StroresRes() {
+	public StoresRes() {
 		super();
 	}
 
-	public StroresRes(int code, String message) {
+	public StoresRes(int code, String message) {
 		super(code, message);
 	}
 
-	public StroresRes(int code, String message, List<Stores> storeList) {
+	public StoresRes(int code, String message, List<Stores> storeList) {
 		super(code, message);
 		this.storeList = storeList;
 	}
@@ -76,7 +76,7 @@ public class StroresRes  extends BasicRes{
 		this.productOptionGroupsVoList = productOptionGroupsVoList;
 	}
 
-	public StroresRes(int code, String message, List<Stores> storeList,
+	public StoresRes(int code, String message, List<Stores> storeList,
 			List<StoreOperatingHoursVo> operatingHoursVoList, List<MenuVo> menuVoList,
 			List<MenuCategoriesVo> menuCategoriesVoList, List<ProductOptionGroupsVo> productOptionGroupsVoList) {
 		super(code, message);

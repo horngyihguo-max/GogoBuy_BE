@@ -1,8 +1,6 @@
 package com.example.demo.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.SplitTypeEnum;
@@ -15,25 +13,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "groupbuy_events")
-public class GroupbuyEvents {
-
+@Table(name = "groups_search_view")
+public class GroupsSearchView {
+	
 	@Id
-	@Column(name = "id")
-	private int id;
-	
-	@Column(name = "host_id")
-	private String hostId;
-	
-	@Column(name = "stores_id")
-	private int storesId;
+	@Column(name = "event_id")
+	private int eventId;
 	
 	@Column(name = "event_name")
 	private String eventName;
 	
-	@Column(name = "status")
+	@Column(name = "store_id")
+	private int storeId;
+	
+	@Column(name = "event_status")
 	@Enumerated(EnumType.STRING)  
-	private GroupbuyStatusEnum status;
+	private GroupbuyStatusEnum eventStatus;
 	
 	@Column(name = "end_time")
 	private LocalDateTime endTime;
@@ -51,8 +46,8 @@ public class GroupbuyEvents {
 	@Column(name = "announcement")
 	private String announcement;
 	
-	@Column(name = "type")
-	private String type;
+	@Column(name = "event_type")
+	private String eventType;
 	
 	@Column(name = "temp_menu")
 	private String tempMenuList;
@@ -66,31 +61,28 @@ public class GroupbuyEvents {
 	@Column(name = "limitation")
 	private Integer limitation;
 	
-	@Column(name = "is_deleted")
-	private boolean deleted;
+	@Column(name = "store_name")
+	private String storeName;
+	
+	@Column(name = "store_category")
+	private String storeCategory;
+	
+	@Column(name = "host_id")
+	private String hostId;
+	
+	@Column(name = "host_nickname")
+	private String hostNickname;
+	
+	@Column(name = "host_avatar")
+	private String hostAvatar;
+	
 
-	public int getId() {
-		return id;
+	public int getEventId() {
+		return eventId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
-	}
-
-	public String getHostId() {
-		return hostId;
-	}
-
-	public void setHostId(String hostId) {
-		this.hostId = hostId;
-	}
-
-	public int getStoresId() {
-		return storesId;
-	}
-
-	public void setStoresId(int storesId) {
-		this.storesId = storesId;
+	public void setEventId(int eventId) {
+		this.eventId = eventId;
 	}
 
 	public String getEventName() {
@@ -101,12 +93,20 @@ public class GroupbuyEvents {
 		this.eventName = eventName;
 	}
 
-	public GroupbuyStatusEnum getStatus() {
-		return status;
+	public int getStoreId() {
+		return storeId;
 	}
 
-	public void setStatus(GroupbuyStatusEnum status) {
-		this.status = status;
+	public void setStoreId(int storeId) {
+		this.storeId = storeId;
+	}
+
+	public GroupbuyStatusEnum getEventStatus() {
+		return eventStatus;
+	}
+
+	public void setEventStatus(GroupbuyStatusEnum eventStatus) {
+		this.eventStatus = eventStatus;
 	}
 
 	public LocalDateTime getEndTime() {
@@ -149,12 +149,12 @@ public class GroupbuyEvents {
 		this.announcement = announcement;
 	}
 
-	public String getType() {
-		return type;
+	public String getEventType() {
+		return eventType;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setEventType(String eventType) {
+		this.eventType = eventType;
 	}
 
 	public String getTempMenuList() {
@@ -189,12 +189,46 @@ public class GroupbuyEvents {
 		this.limitation = limitation;
 	}
 
-	public boolean isDeleted() {
-		return deleted;
+	public String getStoreName() {
+		return storeName;
 	}
 
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
+	public void setStoreName(String storeName) {
+		this.storeName = storeName;
 	}
 
+	public String getStoreCategory() {
+		return storeCategory;
+	}
+
+	public void setStoreCategory(String storeCategory) {
+		this.storeCategory = storeCategory;
+	}
+
+	public String getHostId() {
+		return hostId;
+	}
+
+	public void setHostId(String hostId) {
+		this.hostId = hostId;
+	}
+
+	public String getHostNickname() {
+		return hostNickname;
+	}
+
+	public void setHostNickname(String hostNickname) {
+		this.hostNickname = hostNickname;
+	}
+
+	public String getHostAvatar() {
+		return hostAvatar;
+	}
+
+	public void setHostAvatar(String hostAvatar) {
+		this.hostAvatar = hostAvatar;
+	}
+
+	
+	
 }

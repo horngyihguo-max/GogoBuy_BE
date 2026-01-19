@@ -77,4 +77,6 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	// userId 檢索 order 
 	@Query(value = "select * from orders where user_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getEventIdByUserId(String userId);
+	
+	
 }
