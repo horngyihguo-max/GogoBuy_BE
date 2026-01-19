@@ -1,0 +1,109 @@
+package com.example.demo.entity;
+
+import java.time.LocalDateTime;
+
+import com.example.demo.constants.PaymentStatus;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "personal_order")
+public class PersonalOrder {
+
+	@Id
+	@Column(name = "id")
+	private int id;
+	
+	@Column(name = "events_id")
+	private int eventsId;
+	
+	@Column(name = "user_id")
+	private String userId;
+	
+	@Column(name = "total_weight")
+	private Double totalWeight;
+	
+	@Column(name = "person_fee")
+	private int personFee;
+	
+	@Column(name = "total_sum")
+	private int totalSum;
+	
+	@Column(name = "payment_status")
+	@Enumerated(EnumType.STRING)
+	private PaymentStatus paymentStatus;
+	
+	@Column(name = "payment_time")
+	private LocalDateTime paymentTime;
+	
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getEventsId() {
+		return eventsId;
+	}
+
+	public void setEventsId(int eventsId) {
+		this.eventsId = eventsId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
+	public Double getTotalWeight() {
+		return totalWeight;
+	}
+
+	public void setTotalWeight(Double totalWeight) {
+		this.totalWeight = totalWeight;
+	}
+
+	public int getPersonFee() {
+		return personFee;
+	}
+
+	public void setPersonFee(int personFee) {
+		this.personFee = personFee;
+	}
+
+	public int getTotalSum() {
+		return totalSum;
+	}
+
+	public void setTotalSum(int totalSum) {
+		this.totalSum = totalSum;
+	}
+
+	public PaymentStatus getPaymentStatus() {
+		return paymentStatus;
+	}
+
+	public void setPaymentStatus(PaymentStatus paymentStatus) {
+		this.paymentStatus = paymentStatus;
+	}
+
+	public LocalDateTime getPaymentTime() {
+		return paymentTime;
+	}
+
+	public void setPaymentTime(LocalDateTime paymentTime) {
+		this.paymentTime = paymentTime;
+	}
+
+	
+}

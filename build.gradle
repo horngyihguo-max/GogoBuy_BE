@@ -8,10 +8,16 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
 
-java {
+/* java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(17)
 	}
+}
+*/
+
+java{
+	sourceCompatibility = '17'
+	targetCompatibility = '17'
 }
 
 repositories {
@@ -36,6 +42,16 @@ dependencies {
 	// openapi 線上文件  加完之後執行專案即可打開 http://localhost:8080/swagger-ui/index.html
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 
+	// google 登入
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client:3.5.9'
+
+	//Redis 暫時用不到
+    //implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    
+    //送出認證信
+        implementation 'org.springframework.boot:spring-boot-starter-mail'
+	
+
 	// cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	// caffeine cache
@@ -43,24 +59,11 @@ dependencies {
 	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	//sprint data jpa 
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	// mysql connector
-	implementation 'com.mysql:mysql-connector-j'
-	
-	//資料驗證
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
 	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	
-	// openapi 線上文件
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
-	
-	// cache
-	implementation 'org.springframework.boot:spring-boot-starter-cache'
-	// caffeine cache
-	implementation 'com.github.ben-manes.caffeine:caffeine'
+
 }
 
 tasks.named('test') {

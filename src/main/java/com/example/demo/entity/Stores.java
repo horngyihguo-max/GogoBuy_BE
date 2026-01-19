@@ -2,6 +2,8 @@ package com.example.demo.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -10,6 +12,7 @@ import jakarta.persistence.Table;
 public class Stores {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private int id;
 
@@ -35,7 +38,7 @@ public class Stores {
 	private String image;
 
 	@Column(name = "fee_description")
-	private String fee_description;
+	private String feeDescription;
 
 	@Column(name = "is_deleted")
 	private boolean deleted;
@@ -44,7 +47,7 @@ public class Stores {
 	private boolean publish;
 
 	@Column(name = "created_by")
-	private String created_by;
+	private String createdBy;
 
 	@Column(name = "force_closed")
 	private boolean force_closed;
@@ -113,12 +116,12 @@ public class Stores {
 		this.image = image;
 	}
 
-	public String getFee_description() {
-		return fee_description;
+	public String getFeeDescription() {
+		return feeDescription;
 	}
 
-	public void setFee_description(String fee_description) {
-		this.fee_description = fee_description;
+	public void setFeeDescription(String feeDescription) {
+		this.feeDescription = feeDescription;
 	}
 
 	public boolean isDeleted() {
@@ -138,11 +141,11 @@ public class Stores {
 	}
 
 	public String getCreated_by() {
-		return created_by;
+		return createdBy;
 	}
 
-	public void setCreated_by(String created_by) {
-		this.created_by = created_by;
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
 	}
 
 	public boolean isForce_closed() {
@@ -154,3 +157,5 @@ public class Stores {
 	}
 
 }
+
+
