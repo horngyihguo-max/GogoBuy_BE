@@ -50,7 +50,7 @@ public class StoresReq {
 	@Valid
 	private List<ProductOptionGroupsVo> productOptionGroupsVoList;
 	@Valid
-	private List<ProductOptionItemsVo> ProductOptionItemsVoList;
+	private List<ProductOptionItemsVo> productOptionItemsVoList;
 
 
 	public String getStoresname() {
@@ -159,11 +159,11 @@ public class StoresReq {
 	}
 
 	public List<ProductOptionItemsVo> getProductOptionItemsVoList() {
-		return ProductOptionItemsVoList;
+		return productOptionItemsVoList;
 	}
 
 	public void setProductOptionItemsVoList(List<ProductOptionItemsVo> productOptionItemsVoList) {
-		ProductOptionItemsVoList = productOptionItemsVoList;
+		this.productOptionItemsVoList = productOptionItemsVoList;
 	}
 
 	public String getCreatedBy() {
