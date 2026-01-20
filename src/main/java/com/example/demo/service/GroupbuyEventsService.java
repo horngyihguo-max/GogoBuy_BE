@@ -77,7 +77,7 @@ public class GroupbuyEventsService {
 					ResMessage.ANNOUMCEMENT_ERROR.getMessage());
 		}
 		// 檢查總運費
-		if (req.getShippingFee() == 0) {
+		if (req.getShippingFee() < 0) {
 			return new BasicRes(ResMessage.SHIPPING_FEE_ERROR.getCode(), //
 					ResMessage.SHIPPING_FEE_ERROR.getMessage());
 		}
