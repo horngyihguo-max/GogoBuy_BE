@@ -1,9 +1,11 @@
 package com.example.demo.controller;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,21 +22,14 @@ public class ImageController {
     @Autowired
     private ImageService imageService;
 
- // 使用者大頭照
-    @PostMapping("/upload/avatar")
-    public String uploadAvatar(@RequestParam("file") MultipartFile file) throws IOException {
-        return imageService.uploadImage(file, "avatars");
-    }
-
-    // 商店照片
-    @PostMapping("/upload/stores")
-    public String uploadStoresImage(@RequestParam("file") MultipartFile file) throws IOException {
-        return imageService.uploadImage(file, "stores");
-    }
-
-    // 菜單照片
-    @PostMapping("/upload/menu")
-    public String uploadMenuImage(@RequestParam("file") MultipartFile file) throws IOException {
-        return imageService.uploadImage(file, "menu");
+    private final List<String> ALLOWED_TYPES = List.of("avatars", "stores", "menu");
+    
+    @PostMapping("/upload/{type}")
+    public String upload(@PathVariable String type, @RequestParam("file") MultipartFile file) throws IOException {
+    	
+    	if (!ALLOWED_TYPES.contains(type)) {
+    		throw new IllegalArgumentException("不支援的上傳類型");
+    	}
+        return imageService.uploadImage(file, type);
     }
 }

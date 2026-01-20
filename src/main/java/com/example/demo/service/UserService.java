@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.UserDao;
@@ -34,6 +36,9 @@ public class UserService {
 
 	@Autowired
 	private JavaMailSender mailSender;
+	
+	@Autowired
+	private ImageService imageService;
 
 	/**
 	 * Redis發送修改email驗證碼功能 暫時用不到
@@ -363,4 +368,29 @@ public class UserService {
 	 * return new BasicRes(ResMessage.SUCCESS.getCode(), //
 	 * ResMessage.SUCCESS.getMessage()); }
 	 */
+	
+	@Transactional
+	public BasicRes changeAvatar(String id, MultipartFile file) {
+	    try {
+	        // 檢查用戶是否存在
+	        User user = userDao.getUserById(id);
+	        if (user == null) {
+	            return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
+	        }
+
+	        //  ImageService 進行 Cloudinary 上傳
+	        String newAvatarUrl = imageService.uploadImage(file, "avatars");
+
+	        // 更新資料庫
+	        userDao.updateProfile(user.getNickname(), newAvatarUrl, user.getCarrier(), id);
+
+	        return new BasicRes(ResMessage.SUCCESS.getCode(), "圖片上傳成功"); 
+	        
+	    } catch (IOException e) {
+	    	//	借400用
+	        return new BasicRes(ResMessage.REGISTRATION_ERROR.getCode(), "圖片上傳失敗");
+	    }
+	}
+	
+	
 }
