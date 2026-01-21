@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.UserDao;
@@ -34,6 +36,15 @@ public class UserService {
 
 	@Autowired
 	private JavaMailSender mailSender;
+	
+	@Autowired
+	private ImageService imageService;
+
+	/**
+	 * Redis發送修改email驗證碼功能 暫時用不到
+	 * 
+	 * @Autowired private StringRedisTemplate redisTemplate;
+	 */
 
 	private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -70,8 +81,8 @@ public class UserService {
 			return new LoginRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
-		// 比對密碼:
-		// 比對輸入的密碼與資料庫中加密過的密碼是否相同
+//		比對密碼:
+//		比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(password, user.getPassword())) {
 			return new LoginRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
@@ -91,7 +102,7 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage(), user.getId(), //
 				user.getNickname(), user.getEmail(), user.getPhone(), //
 				user.getAvatarUrl(), user.getCarrier(), user.getExp(), //
-				user.getTimesRemaining(), user.getProvider());
+				user.getTimesRemaining());
 	}
 
 	/*
@@ -122,14 +133,14 @@ public class UserService {
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes updatePassword(String id, UserPasswordDto dto) {
 		User user = userDao.getUserById(id);
-		// 檢查帳戶是否存在
+//		檢查帳戶是否存在
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
 
-		// 比對密碼:
-		// 比對輸入的密碼與資料庫中加密過的密碼是否相同
+//		比對密碼:
+//		比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(dto.getOldPassword(), user.getPassword())) {
 			return new BasicRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
@@ -139,7 +150,7 @@ public class UserService {
 					ResMessage.SAME_PASSWORD_ERROR.getMessage());
 		}
 
-		// 加密新密碼
+//		加密新密碼
 		String encodePassword = encoder.encode(dto.getNewPassword());
 		userDao.userPassword(id, encodePassword);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
@@ -277,7 +288,7 @@ public class UserService {
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes resetPassword(ResetPasswordReq req) {
 		User user = userDao.getUserByEmail(req.getEmail());
-		// 檢查帳戶是否存在
+//		檢查帳戶是否存在
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
@@ -301,11 +312,11 @@ public class UserService {
 					ResMessage.OTP_ERROR.getMessage());
 		}
 
-		// 加密新密碼
+//		加密新密碼
 		String encodePassword = encoder.encode(req.getNewPassword());
 		userDao.userPassword(user.getId(), encodePassword);
 
-		// 清空 OTP 防止重複使用
+//		清空 OTP 防止重複使用
 		user.setOtpCode(null);
 		user.setOtpExpiry(null);
 		user.setPassword(encodePassword);
@@ -315,7 +326,7 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-	// 每小時進行一次清理
+//	每小時進行一次清理
 	@Scheduled(cron = "0 0 * * * ?")
 	@Transactional
 	/*
@@ -330,4 +341,56 @@ public class UserService {
 		System.out.println("清理完成，共影響了 " + updatedRows + " 筆資料。");
 	}
 
+	/*
+	 * Redis功能區塊 暫時用不到 // 驗證並更新 Email
+	 * 
+	 * @Transactional(rollbackOn = Exception.class) public BasicRes
+	 * verifyAndUpdateEmail(UserAccountDto dto, String id) { User user =
+	 * userDao.getUserById(id); String redisKey = "OTP:EMAIL_CHANGE:" + id; String
+	 * storedCode = redisTemplate.opsForValue().get(redisKey);
+	 * 
+	 * // 1. 檢查驗證碼是否存在 if (storedCode == null) { return new
+	 * BasicRes(ResMessage.OTP_EXPIRED.getCode(), //
+	 * ResMessage.OTP_EXPIRED.getMessage()); }
+	 * 
+	 * // 2. 比對驗證碼 if (!storedCode.equals(dto.getOtpCode())) { return new
+	 * BasicRes(ResMessage.OTP_ERROR.getCode(), //
+	 * ResMessage.OTP_ERROR.getMessage()); }
+	 * 
+	 * // 3. 檢查 Email 是否重複 if (user.getEmail() == (dto.getNewEmail())) { return new
+	 * BasicRes(ResMessage.EMAIL_EXITS.getCode(), //
+	 * ResMessage.EMAIL_EXITS.getMessage()); }
+	 * 
+	 * // 4. 更新 user.setEmail(dto.getNewEmail()); userDao.save(user);
+	 * 
+	 * // 5. 更新成功，刪除驗證碼 redisTemplate.delete(redisKey);
+	 * 
+	 * return new BasicRes(ResMessage.SUCCESS.getCode(), //
+	 * ResMessage.SUCCESS.getMessage()); }
+	 */
+	
+	@Transactional
+	public BasicRes changeAvatar(String id, MultipartFile file) {
+	    try {
+	        // 檢查用戶是否存在
+	        User user = userDao.getUserById(id);
+	        if (user == null) {
+	            return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
+	        }
+
+	        //  ImageService 進行 Cloudinary 上傳
+	        String newAvatarUrl = imageService.uploadImage(file, "avatars");
+
+	        // 更新資料庫
+	        userDao.updateProfile(user.getNickname(), newAvatarUrl, user.getCarrier(), id);
+
+	        return new BasicRes(ResMessage.SUCCESS.getCode(), "圖片上傳成功"); 
+	        
+	    } catch (IOException e) {
+	    	//	借400用
+	        return new BasicRes(ResMessage.REGISTRATION_ERROR.getCode(), "圖片上傳失敗");
+	    }
+	}
+	
+	
 }

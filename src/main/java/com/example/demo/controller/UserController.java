@@ -145,5 +145,7 @@ public class UserController {
 	public BasicRes sendOtpByEmail(@RequestBody String email) {
 		return userService.sendOtpByEmail(email);
 	}
+	
+	
 
 }

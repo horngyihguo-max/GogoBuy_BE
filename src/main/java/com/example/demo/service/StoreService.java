@@ -63,6 +63,9 @@ public class StoreService {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private ImageService imageService;
 
 	// Spring 會自動從 application.properties 抓取對應的值注入到變數
 	@Value("${gemini.api.key}")
@@ -239,6 +242,11 @@ public class StoreService {
 
 //    店家已存在
 		if (storesCreateDao.existsByPhone(req.getPhone()) > 0) {
+//			防孤兒圖片
+			if (req.getImage() != null) {
+		        imageService.deleteImage(req.getImage());
+		    }
+			
 			return new BasicRes(ResMessage.STORE_EXISTS.getCode(), //
 					ResMessage.STORE_EXISTS.getMessage());
 		}
@@ -276,8 +284,19 @@ public class StoreService {
 	// 店家修改
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes update(int storeId, StoresReq req) throws Exception {
+		//	檢查店家是否存在並暫存新店家	
+		Stores existingStore = storesSearchDao.getStoreById(storeId);
+	    if (existingStore == null) {
+	        throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
+	    }
+		
+		String oldImageUrl = existingStore.getImage();
+	    String newImageUrl = req.getImage();
+	    
+	    if (oldImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
+	        imageService.deleteImage(oldImageUrl);
+	    }
 		// 檢查
-		checkStoreExist(storeId);
 		checkStore(req);
 		checkHours(req.getOperatingHoursVoList());
 		checkMenu(req.getMenuVoList(), req.getMenuCategoriesVoList());
@@ -313,8 +332,15 @@ public class StoreService {
 //		物理全刪
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes deleteFullStore(int storeId) throws Exception {
-
-		checkStoreExist(storeId);
+		//		檢查店是否存在
+		Stores store = storesSearchDao.getStoreById(storeId);
+	    if (store == null) {
+	        return new BasicRes(ResMessage.STORE_NOT_FOUND.getCode(), ResMessage.STORE_NOT_FOUND.getMessage());
+	    }
+	    //	刪除該店的雲端圖片    
+	    if (store.getImage() != null) {
+	        imageService.deleteImage(store.getImage());
+	    }
 		// 刪除最底層的選項細項 (依賴於 groups)
 		storesUpdateDao.deleteOptionItemsByStoreId(storeId);
 
@@ -487,7 +513,7 @@ public class StoreService {
 		// 3. 確保使用壓縮後的圖轉 Base64
 		String base64Image = Base64.getEncoder().encodeToString(processedImage);
 
-		// 4. 清理 URL (防止結尾有換行或空白)
+		// 4. URL 
 		String cleanUrl = geminiUrl.trim();
 	    String cleanKey = geminiApiKey.trim();
 	    String finalUrl = cleanUrl + "?key=" + cleanKey;
@@ -498,7 +524,7 @@ public class StoreService {
 				            請確保 JSON 欄位完全符合以下結構：
 					            {
 				            "storesname": "店家名稱",
-				            "phone": "電話",
+				            "phone": "電話 (請移除括號、空格與橫線，僅保留純數字，例如 033605369 或 0912345678)"
 				            "address": "地址",
 				            "category": "fast",
 				            "type": "類型",
@@ -515,24 +541,28 @@ public class StoreService {
 					            """;
 
 		Map<String, Object> requestBody = Map.of(//
-			    "contents", List.of(//
-			        Map.of("parts", List.of(//
-			            Map.of("text", prompt),//
-			            Map.of("inline_data", Map.of(//
-			                "mime_type", "image/jpeg", //
-			                "data", base64Image//
+			    "contents", List.of(//內容層
+			        Map.of("parts", List.of(//媒體陣列
+			            Map.of("text", prompt),//提示詞
+			            Map.of("inline_data", Map.of(//傳送圖片的標準格式
+			                "mime_type", "image/jpeg", //定義格式
+			                "data", base64Image//壓縮後轉成 Base64 編碼的圖片字串
 			            ))
 			        ))
-			    ),"generationConfig", Map.of(
+			    ),"generationConfig", Map.of(//設定層
 			            "response_mime_type", "application/json", // 強制 AI 回傳純 JSON 字串
-			            "temperature", 0.1 // 降低隨機性，讓格式更固定
+			            "temperature", 0.1 // 降低隨機性 範圍通常是 0.0 到 2.0
 			    )
 			);
 
+		//	告訴GOOGLE伺服器要傳送的資料格式(避免415 Unsupported Media Type)
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
+		
+		//	將要傳送的內容貼上標籤(JSON)
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
+		//AI回答		
 		return restTemplate.postForObject(finalUrl, entity, String.class);
 
 	}
@@ -541,17 +571,20 @@ public class StoreService {
 	    String rawResponse = callGeminiApi(imageBytes);
 
 	    try {
+			//讀取樹狀結構			
 	        JsonNode root = mapper.readTree(rawResponse);
+			//	Gemini 的回傳結構中，答案放在 candidates 陣列裡		
 	        JsonNode candidate = root.path("candidates").get(0);
 	        
 	        // 檢查 API 是否有回傳內容（有時會因為安全過濾而回傳空內容）
 	        if (candidate.path("content").path("parts").isMissingNode()) {
 	            throw new Exception("Gemini 3 拒絕回應或圖片無法辨識，請更換圖片再試");
 	        }
-
+	        
+	        //	確保回傳JSON符合格式
 	        String aiJsonText = candidate.path("content").path("parts").get(0).path("text").asText();
 
-	        // 【優化】更穩健的 JSON 清洗邏輯
+	        // JSON 清洗邏輯
 	        // 尋找第一個 '{' 和最後一個 '}'，確保只抓取 JSON 本體
 	        int start = aiJsonText.indexOf("{");
 	        int end = aiJsonText.lastIndexOf("}");
@@ -576,14 +609,24 @@ public class StoreService {
 	    }
 	}
 
+	
+//	壓縮
 	private byte[] compressImage(byte[] imageBytes) throws Exception {
 		try {
+			
+			//讀取資料包裝成串流			
 			ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes);
+			//	準備容器，用來裝壓縮過圖檔
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-			// size(1024, 1024) 會將長邊縮放至 1024，寬邊等比例縮小
-			// outputQuality(0.7) 壓縮率 70%，體積會掉非常多但文字依然清晰
-			Thumbnails.of(bais).size(1024, 1024).outputQuality(0.7).outputFormat("jpg").toOutputStream(baos);
+			
+			
+			/*壓縮參數
+			 size(1024, 1024) 會將長邊縮放至 1024，寬邊等比例縮小
+			 outputQuality(0.7) 壓縮率 70%，體積會掉非常多但文字依然清晰*/
+			Thumbnails.of(bais).size(1024, 1024)//大小
+			.outputQuality(0.7)//畫質
+			.outputFormat("jpg")//格式
+			.toOutputStream(baos);//輸出
 
 			return baos.toByteArray();
 		} catch (Exception e) {

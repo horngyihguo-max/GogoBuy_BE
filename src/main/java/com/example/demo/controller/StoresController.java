@@ -84,7 +84,7 @@ public class StoresController {
         return storeService.getAllStores();
     }
 	
-//	AI掃圖掃田店家
+//	AI掃圖掃填店家
 	@PostMapping("gogobuy/menuScan")
 	public ResponseEntity<?> scanMenu(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {

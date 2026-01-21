@@ -12,7 +12,6 @@ public class NoticeDTO {
     @DateTimeFormat(iso = ISO.DATE_TIME)
     private LocalDateTime time;
 
-    // Getter & Setter
     public String getMsg() { return msg; }
     public void setMsg(String msg) { this.msg = msg; }
     public Integer getMinutes() { return minutes; }
