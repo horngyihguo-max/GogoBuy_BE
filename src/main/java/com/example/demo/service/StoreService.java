@@ -63,6 +63,9 @@ public class StoreService {
 
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private ImageService imageService;
 
 	// Spring 會自動從 application.properties 抓取對應的值注入到變數
 	@Value("${gemini.api.key}")
@@ -239,6 +242,11 @@ public class StoreService {
 
 //    店家已存在
 		if (storesCreateDao.existsByPhone(req.getPhone()) > 0) {
+//			防孤兒圖片
+			if (req.getImage() != null) {
+		        imageService.deleteImage(req.getImage());
+		    }
+			
 			return new BasicRes(ResMessage.STORE_EXISTS.getCode(), //
 					ResMessage.STORE_EXISTS.getMessage());
 		}
@@ -276,8 +284,19 @@ public class StoreService {
 	// 店家修改
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes update(int storeId, StoresReq req) throws Exception {
+		//	檢查店家是否存在並暫存新店家	
+		Stores existingStore = storesSearchDao.getStoreById(storeId);
+	    if (existingStore == null) {
+	        throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
+	    }
+		
+		String oldImageUrl = existingStore.getImage();
+	    String newImageUrl = req.getImage();
+	    
+	    if (oldImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
+	        imageService.deleteImage(oldImageUrl);
+	    }
 		// 檢查
-		checkStoreExist(storeId);
 		checkStore(req);
 		checkHours(req.getOperatingHoursVoList());
 		checkMenu(req.getMenuVoList(), req.getMenuCategoriesVoList());
@@ -313,8 +332,15 @@ public class StoreService {
 //		物理全刪
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes deleteFullStore(int storeId) throws Exception {
-
-		checkStoreExist(storeId);
+		//		檢查店是否存在
+		Stores store = storesSearchDao.getStoreById(storeId);
+	    if (store == null) {
+	        return new BasicRes(ResMessage.STORE_NOT_FOUND.getCode(), ResMessage.STORE_NOT_FOUND.getMessage());
+	    }
+	    //	刪除該店的雲端圖片    
+	    if (store.getImage() != null) {
+	        imageService.deleteImage(store.getImage());
+	    }
 		// 刪除最底層的選項細項 (依賴於 groups)
 		storesUpdateDao.deleteOptionItemsByStoreId(storeId);
 
