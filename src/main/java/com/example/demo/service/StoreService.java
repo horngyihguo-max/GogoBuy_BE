@@ -276,6 +276,11 @@ public class StoreService {
 
 //		填入子表
 		saveSubTables(storeId, req);
+		
+//		更改圖片標籤
+		if (req.getImage() != null && !req.getImage().isEmpty()) {
+	        imageService.confirmImage(req.getImage());
+	    }
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
@@ -324,6 +329,11 @@ public class StoreService {
 
 		// 重新寫入子表資料
 		saveSubTables(storeId, req);
+		
+		//改新圖標籤		
+		if (newImageUrl != null && !newImageUrl.equals(oldImageUrl)) {
+	        imageService.confirmImage(newImageUrl);
+	    }
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
@@ -505,7 +515,7 @@ public class StoreService {
 	public String callGeminiApi(byte[] imageBytes) throws Exception {
 
 		// 1. 強制等待，避免觸發配額限制
-		Thread.sleep(2000);
+//		Thread.sleep(2000);
 
 		// 2. 壓縮圖片
 		byte[] processedImage = compressImage(imageBytes);
