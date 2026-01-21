@@ -22,8 +22,8 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 			+ "shipping_fee, split_type, announcement, type, temp_menu, recommend, recommend_description, limitation)"
 			+ "values(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13,?14)", nativeQuery = true)
 	public int addEvent(String hostId, int storesId, String event_name, String status, LocalDateTime endTime,
-			Integer totalOrderAmount, Integer shippingFee, String splitType, String announcement, String type,
-			String temp_menu, String recommend, String recommendDescription, Integer limitation);
+			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type,
+			String temp_menu, String recommend, String recommendDescription, int limitation);
 
 	// 查所屬團ID
 	@Query(value = "select* from groupbuy_events where id = ?", nativeQuery = true)
@@ -37,8 +37,8 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 			+ "split_type = ?8, announcement = ?9, type= ?10, temp_menu = ?11, "
 			+ "recommend = ?12, recommend_description = ?13 limitation = ?14 where id = ?15", nativeQuery = true)
 	public int updateEvent(String hostId, int storesId, String eventName, String status, LocalDateTime endTime,
-			Integer totalOrderAmount, Integer shippingFee, String splitType, String announcement, String type,
-			String tempMenu, String recommend, String recommendDescription, Integer limitation, int id);
+			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type,
+			String tempMenu, String recommend, String recommendDescription, int limitation, int id);
 
 	// 更新總金額
 	@Transactional

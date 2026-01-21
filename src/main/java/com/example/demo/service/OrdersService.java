@@ -168,7 +168,7 @@ public class OrdersService {
 //	    int count = ordersDao.countOrdersByEventId(eventId);
 	    Integer sum = ordersDao.sumSubtotalByEventId(eventId);
 	    // 處理查無資料時的狀況
-	    int totalAmount = (sum != null) ? sum : 0;
+	    int totalAmount = sum != null ? sum : 0;
 	    groupbuyEventsDao.updateEventStats(totalAmount, eventId);
 	}
 	
