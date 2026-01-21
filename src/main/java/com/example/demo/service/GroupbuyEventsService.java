@@ -98,7 +98,7 @@ public class GroupbuyEventsService {
 					ResMessage.TYPE_ERROR.getMessage());
 		}
 		// 金額門檻
-		if ( req.getLimitation() <= 0) {
+		if ( req.getLimitation() < 0) {
 			return new BasicRes(ResMessage.SPLIT_TYPE_ERROR.getCode(), //
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
 		}
@@ -174,6 +174,8 @@ public class GroupbuyEventsService {
 				}
 			}
 			// 將 ID 轉成字串
+			// mapper 是負責搬運與轉換資料的工具
+			// 序列化就是 Object 轉 Json 
 			String tempMenuJson = mapper.writeValueAsString(selectedIds);
 			String recommendJson = mapper.writeValueAsString(recommendIds);
 
@@ -380,4 +382,5 @@ public class GroupbuyEventsService {
 			return new GroupbuyEventsRes(500, "這裡失敗?");
 		}
 	}
+
 }
