@@ -72,10 +72,10 @@ public class GroupbuyEventsService {
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
 		}
 		// 檢查總金額
-		if (req.getAnnouncement() == null) {
-			return new BasicRes(ResMessage.ANNOUMCEMENT_ERROR.getCode(), //
-					ResMessage.ANNOUMCEMENT_ERROR.getMessage());
-		}
+//		if (req.getAnnouncement() == null) {
+//			return new BasicRes(ResMessage.ANNOUMCEMENT_ERROR.getCode(), //
+//					ResMessage.ANNOUMCEMENT_ERROR.getMessage());
+//		}
 		// 檢查總運費
 		if (req.getShippingFee() < 0) {
 			return new BasicRes(ResMessage.SHIPPING_FEE_ERROR.getCode(), //
@@ -168,6 +168,7 @@ public class GroupbuyEventsService {
 	        groupbuyEventsDao.addEvent(
 	            event.getHostId(),
 	            event.getStoresId(),
+	            event.getEventName(),
 	            event.getStatus().name(),         
 	            event.getEndTime(),
 	            event.getTotalOrderAmount(),
