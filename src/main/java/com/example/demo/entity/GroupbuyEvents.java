@@ -42,7 +42,7 @@ public class GroupbuyEvents {
 	private int totalOrderAmount;
 	
 	@Column(name = "shipping_fee")
-	private Integer shippingFee;
+	private int shippingFee;
 	
 	@Column(name = "split_type")
 	@Enumerated(EnumType.STRING)  
@@ -64,7 +64,7 @@ public class GroupbuyEvents {
 	private String recommendDescription;
 	
 	@Column(name = "limitation")
-	private Integer limitation;
+	private int limitation;
 	
 	@Column(name = "is_deleted")
 	private boolean deleted;
@@ -125,11 +125,11 @@ public class GroupbuyEvents {
 		this.totalOrderAmount = totalOrderAmount;
 	}
 
-	public Integer getShippingFee() {
+	public int getShippingFee() {
 		return shippingFee;
 	}
 
-	public void setShippingFee(Integer shippingFee) {
+	public void setShippingFee(int shippingFee) {
 		this.shippingFee = shippingFee;
 	}
 
@@ -181,11 +181,11 @@ public class GroupbuyEvents {
 		this.recommendDescription = recommendDescription;
 	}
 
-	public Integer getLimitation() {
+	public int getLimitation() {
 		return limitation;
 	}
 
-	public void setLimitation(Integer limitation) {
+	public void setLimitation(int limitation) {
 		this.limitation = limitation;
 	}
 
@@ -196,5 +196,6 @@ public class GroupbuyEvents {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
+
 
 }
