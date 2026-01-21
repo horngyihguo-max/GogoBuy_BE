@@ -1,12 +1,15 @@
 package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
@@ -81,5 +84,24 @@ public class StoresController {
         return storeService.getAllStores();
     }
 	
-	
+//	AI掃圖掃田店家
+	@PostMapping("gogobuy/menuScan")
+	public ResponseEntity<?> scanMenu(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body("請上傳圖片檔案");
+        }
+
+        try {
+            //  呼叫 Service 進行 AI 辨識，得到 StoresReq 物件
+            StoresReq recognizedData = storeService.aiAnalyzeMenu(file.getBytes());
+            
+            //  直接回傳給前端，狀態碼 200
+            return ResponseEntity.ok(recognizedData);
+            
+        } catch (Exception e) {
+            // 若 AI 辨識失敗或格式不對，回傳 500 與錯誤訊息
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("AI 辨識失敗：" + e.getMessage());
+        }
+    }
 }

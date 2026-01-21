@@ -3,23 +3,23 @@ package com.example.demo.vo;
 import java.util.List;
 
 public class MenuCategoriesVo {
-
+	
 	private int id;
-
-	private int storeId;
-
+	
+	private int storesId;
+	
 	private String name;
-
+	
 	private List<PriceLevelVo> priceLevel;
 
 	public MenuCategoriesVo() {
 		super();
 	}
 
-	public MenuCategoriesVo(int id, int storeId, String name, List<PriceLevelVo> priceLevel) {
+	public MenuCategoriesVo(int id, int storesId, String name, List<PriceLevelVo> priceLevel) {
 		super();
 		this.id = id;
-		this.storeId = storeId;
+		this.storesId = storesId;
 		this.name = name;
 		this.priceLevel = priceLevel;
 	}
@@ -32,12 +32,12 @@ public class MenuCategoriesVo {
 		this.id = id;
 	}
 
-	public int getStoreId() {
-		return storeId;
+	public int getStoresId() {
+		return storesId;
 	}
 
-	public void setStoreId(int storeId) {
-		this.storeId = storeId;
+	public void setStoresId(int storesId) {
+		this.storesId = storesId;
 	}
 
 	public String getName() {
@@ -56,4 +56,7 @@ public class MenuCategoriesVo {
 		this.priceLevel = priceLevel;
 	}
 
+
+
+ 
 }
