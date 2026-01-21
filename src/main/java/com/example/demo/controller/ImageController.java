@@ -25,7 +25,8 @@ public class ImageController {
     private final List<String> ALLOWED_TYPES = List.of("avatars", "stores", "menu");
     
     @PostMapping("/upload/{type}")
-    public String upload(@PathVariable String type, @RequestParam("file") MultipartFile file) throws IOException {
+    public String upload(
+    		@PathVariable("type") String type, @RequestParam("file") MultipartFile file) throws IOException {
     	
     	if (!ALLOWED_TYPES.contains(type)) {
     		throw new IllegalArgumentException("不支援的上傳類型");

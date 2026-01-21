@@ -524,7 +524,7 @@ public class StoreService {
 				            請確保 JSON 欄位完全符合以下結構：
 					            {
 				            "storesname": "店家名稱",
-				            "phone": "電話",
+				            "phone": "電話 (請移除括號、空格與橫線，僅保留純數字，例如 033605369 或 0912345678)"
 				            "address": "地址",
 				            "category": "fast",
 				            "type": "類型",

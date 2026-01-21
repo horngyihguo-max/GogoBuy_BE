@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dto.UserAccountDto;
@@ -147,11 +146,6 @@ public class UserController {
 		return userService.sendOtpByEmail(email);
 	}
 	
-	//	 更新大頭貼(圖床)
-	@PostMapping("gogobuy/user/change-avatar")
-	public BasicRes changeAvatar(@RequestParam("id") String id, 
-	        @RequestParam("file") MultipartFile file) {
-		return userService.changeAvatar(id, file);
-	}
+	
 
 }
