@@ -40,7 +40,7 @@ public class GroupbuyEventsService {
 	
 	public BasicRes addEvent(GroupbuyEventsReq req) {
 		// 檢查團長ID
-		if (req.getHostId() == null || req.getHostId().trim().isEmpty()) {
+		if (!StringUtils.hasText(req.getHostId())) {
 			return new BasicRes(ResMessage.HOST_ID_ERROR.getCode(), //
 					ResMessage.HOST_ID_ERROR.getMessage());
 		}
@@ -87,7 +87,7 @@ public class GroupbuyEventsService {
 					ResMessage.TYPE_ERROR.getMessage());
 		}
 		// 金額門檻
-		if (req.getLimitation() == 0) {
+		if ( req.getLimitation() <= 0) {
 			return new BasicRes(ResMessage.SPLIT_TYPE_ERROR.getCode(), //
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
 		}
@@ -138,16 +138,17 @@ public class GroupbuyEventsService {
 		// 新增資料
 		GroupbuyEvents event = new GroupbuyEvents();
 		event.setHostId(req.getHostId());
-	    event.setStoresId(req.getStoresId());
-	    event.setStatus(GroupbuyStatusEnum.OPEN); 
-	    event.setEndTime(req.getEndTime());
-	    event.setSplitType(req.getSplitType());
-	    event.setTotalOrderAmount(0);
-	    event.setShippingFee(req.getShippingFee() != null ? req.getShippingFee() : 0);
-	    event.setLimitation( req.getLimitation());
-	    event.setAnnouncement(req.getAnnouncement());
-	    event.setType(req.getType());
-	    event.setRecommendDescription(req.getRecommendDescription());
+		event.setStoresId(req.getStoresId());
+		event.setEventName(req.getEventName());
+		event.setStatus(GroupbuyStatusEnum.OPEN);
+		event.setEndTime(req.getEndTime());
+		event.setSplitType(req.getSplitType());
+		event.setTotalOrderAmount(0);
+		event.setShippingFee(req.getShippingFee());
+		event.setLimitation(req.getLimitation());
+		event.setAnnouncement(req.getAnnouncement());
+		event.setType(req.getType());
+		event.setRecommendDescription(req.getRecommendDescription());
 
 
 	    try {
