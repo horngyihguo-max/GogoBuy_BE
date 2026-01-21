@@ -72,7 +72,7 @@ public class ImageService {
                 // destroy 方法需要 public_id，options 通常傳空 Map
                 Map<?, ?> result = cloudinary.uploader().destroy(publicId, com.cloudinary.utils.ObjectUtils.emptyMap());
                 
-                // 3. 檢查結果 (選用：可印出 log 方便除錯)
+                // 3. 檢查結果 (印出 log 方便除錯)
                 if ("ok".equals(result.get("result"))) {
                     System.out.println("Cloudinary 圖片刪除成功: " + publicId);
                 } else {
