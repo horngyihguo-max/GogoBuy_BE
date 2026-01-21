@@ -26,12 +26,12 @@ public class WishController {
 	@Autowired
 	private WishService wishService;
 	
-	@GetMapping("gogobuy/all_wishes")
+	@GetMapping("gogobuy/wish/all_wishes")
 	public AllWishRes allWish() {
 		return wishService.allWish();
 	}
 	
-	@PostMapping("gogobuy/add_wishes")
+	@PostMapping("gogobuy/wish/add_wishes")
 	public BasicRes create(@Valid @RequestBody WishReq req) throws Exception {
 		return wishService.addWish(req);
 	}
@@ -40,17 +40,17 @@ public class WishController {
 	    return new BasicRes(ResMessage.WISH_TYPE_ERROR.getCode(), ResMessage.WISH_TYPE_ERROR.getMessage());
 	}
 	
-	@PostMapping("gogobuy/follow_wish")
+	@PostMapping("gogobuy/wish/follow_wish")
 	public BasicRes follow(@RequestParam("id") int id, @RequestParam("userId") String userId) {
 		return wishService.setfollowers(id, userId);
 	}
 	
-	@PostMapping("gogobuy/finish_wish")
+	@PostMapping("gogobuy/wish/finish_wish")
 	public BasicRes finish(@RequestParam("id") int id, @RequestParam("userId") String userId) throws Exception {
 		return wishService.finishWish(id, userId);
 	}
 	
-	@PostMapping("gogobuy/delete_wish")
+	@PostMapping("gogobuy/wish/delete_wish")
 	public BasicRes delete(@RequestParam("id") int id, @RequestParam("userId") String userId) throws Exception {
 		return wishService.delWish(id, userId);
 	}
