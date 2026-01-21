@@ -46,7 +46,7 @@ public class GroupbuyEventsService {
 	// 將重複的驗證邏輯提取出來
 	private BasicRes checkEvent(GroupbuyEventsReq req) {
 		// 檢查團長ID
-		if (req.getHostId() == null || req.getHostId().trim().isEmpty()) {
+		if (!StringUtils.hasText(req.getHostId())) {
 			return new BasicRes(ResMessage.HOST_ID_ERROR.getCode(), //
 					ResMessage.HOST_ID_ERROR.getMessage());
 		}
@@ -88,7 +88,7 @@ public class GroupbuyEventsService {
 					ResMessage.TOTALORDERAMOUNT_ERROR.getMessage());
 		}
 		// 檢查總運費
-		if (req.getShippingFee() == 0 || req.getShippingFee() < 0) {
+		if ( req.getShippingFee() < 0) {
 			return new BasicRes(ResMessage.SHIPPING_FEE_ERROR.getCode(), //
 					ResMessage.SHIPPING_FEE_ERROR.getMessage());
 		}
@@ -98,7 +98,7 @@ public class GroupbuyEventsService {
 					ResMessage.TYPE_ERROR.getMessage());
 		}
 		// 金額門檻
-		if (req.getLimitation() == 0 || req.getLimitation() < 0) {
+		if ( req.getLimitation() <= 0) {
 			return new BasicRes(ResMessage.SPLIT_TYPE_ERROR.getCode(), //
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
 		}
@@ -121,7 +121,7 @@ public class GroupbuyEventsService {
 		event.setEndTime(req.getEndTime());
 		event.setSplitType(req.getSplitType());
 		event.setTotalOrderAmount(0);
-		event.setShippingFee(req.getShippingFee() != null ? req.getShippingFee() : 0);
+		event.setShippingFee(req.getShippingFee());
 		event.setLimitation(req.getLimitation());
 		event.setAnnouncement(req.getAnnouncement());
 		event.setType(req.getType());

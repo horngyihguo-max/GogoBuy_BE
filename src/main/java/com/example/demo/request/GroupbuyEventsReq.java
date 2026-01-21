@@ -32,7 +32,7 @@ public class GroupbuyEventsReq {
     @NotNull(message = "是否開店")
     private GroupbuyStatusEnum status;
 
-    private Integer shippingFee = 0;     
+    private int shippingFee = 0;     
     
     @NotNull(message = "運費分攤方式必填")
     private SplitTypeEnum splitType;
@@ -47,10 +47,10 @@ public class GroupbuyEventsReq {
     
     private String recommendDescription;  
     
-    private Integer totalOrderAmount;
+    private int totalOrderAmount;
 
     @Min(value = 1, message = "成團門檻至少1元")
-    private Integer limitation = 0;
+    private int limitation = 0;
 
     private boolean deleted;
 
@@ -102,11 +102,11 @@ public class GroupbuyEventsReq {
 		this.status = status;
 	}
 
-	public Integer getShippingFee() {
+	public int getShippingFee() {
 		return shippingFee;
 	}
 
-	public void setShippingFee(Integer shippingFee) {
+	public void setShippingFee(int shippingFee) {
 		this.shippingFee = shippingFee;
 	}
 
@@ -158,19 +158,19 @@ public class GroupbuyEventsReq {
 		this.recommendDescription = recommendDescription;
 	}
 
-	public Integer getTotalOrderAmount() {
+	public int getTotalOrderAmount() {
 		return totalOrderAmount;
 	}
 
-	public void setTotalOrderAmount(Integer totalOrderAmount) {
+	public void setTotalOrderAmount(int totalOrderAmount) {
 		this.totalOrderAmount = totalOrderAmount;
 	}
 
-	public Integer getLimitation() {
+	public int getLimitation() {
 		return limitation;
 	}
 
-	public void setLimitation(Integer limitation) {
+	public void setLimitation(int limitation) {
 		this.limitation = limitation;
 	}
 
@@ -181,6 +181,8 @@ public class GroupbuyEventsReq {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
+
+
     
 	
 }
