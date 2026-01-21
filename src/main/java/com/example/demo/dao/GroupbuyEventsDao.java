@@ -35,7 +35,7 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "update groupbuy_events set " + "host_id = ?1, stores_id = ?2, event_name = ?3, status = ?4, "
 			+ "end_time = ?5, total_order_amount = ?6, shipping_fee = ?7, "
 			+ "split_type = ?8, announcement = ?9, type= ?10, temp_menu = ?11, "
-			+ "recommend = ?12, recommend_description = ?13 limitation = ?14 where id = ?15", nativeQuery = true)
+			+ "recommend = ?12, recommend_description = ?13, limitation = ?14 where id = ?15", nativeQuery = true)
 	public int updateEvent(String hostId, int storesId, String eventName, String status, LocalDateTime endTime,
 			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type,
 			String tempMenu, String recommend, String recommendDescription, int limitation, int id);

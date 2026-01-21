@@ -63,7 +63,7 @@ public class StoreService {
 
 	@Autowired
 	private RestTemplate restTemplate;
-	
+
 	@Autowired
 	private ImageService imageService;
 
@@ -74,7 +74,9 @@ public class StoreService {
 	@Value("${gemini.api.url}")
 	private String geminiUrl;
 
-//	檢查
+	/*
+	 * 以下為檢查邏輯
+	 */
 
 //	店家
 	private void checkStore(StoresReq req) throws Exception {
@@ -87,14 +89,14 @@ public class StoreService {
 		// - 手機：09xxxxxxxx (共10碼)
 		// - 市話：0x-xxxxxxx (共9碼) 或 0x-xxxxxxxx (共10碼，如台北/台中/高雄)
 		if (req.getPhone() == null || purePhone.isEmpty()) {
-		    throw new Exception("電話不能為空喵");
+			throw new Exception("電話不能為空喵");
 		}
 
 		// 使用正則表達式檢查格式與長度：
 		// ^0：必須以 0 開頭
 		// \d{8,9}：後面接 8 到 9 位數字 (總長 9~10 碼)
 		if (!purePhone.matches("^0\\d{8,9}$")) {
-		    throw new Exception(ResMessage.PHONE_SIZE_ERROR.getMessage());
+			throw new Exception(ResMessage.PHONE_SIZE_ERROR.getMessage());
 		}
 //	  	category類型驗證
 		if (!(req.getCategory().equals("fast") || req.getCategory().equals("slow"))) {
@@ -244,9 +246,9 @@ public class StoreService {
 		if (storesCreateDao.existsByPhone(req.getPhone()) > 0) {
 //			防孤兒圖片
 			if (req.getImage() != null) {
-		        imageService.deleteImage(req.getImage());
-		    }
-			
+				imageService.deleteImage(req.getImage());
+			}
+
 			return new BasicRes(ResMessage.STORE_EXISTS.getCode(), //
 					ResMessage.STORE_EXISTS.getMessage());
 		}
@@ -277,6 +279,11 @@ public class StoreService {
 //		填入子表
 		saveSubTables(storeId, req);
 
+//		更改圖片標籤
+		if (req.getImage() != null && !req.getImage().isEmpty()) {
+			imageService.confirmImage(req.getImage());
+		}
+
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
@@ -284,18 +291,18 @@ public class StoreService {
 	// 店家修改
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes update(int storeId, StoresReq req) throws Exception {
-		//	檢查店家是否存在並暫存新店家	
+		// 檢查店家是否存在並暫存新店家
 		Stores existingStore = storesSearchDao.getStoreById(storeId);
-	    if (existingStore == null) {
-	        throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
-	    }
-		
+		if (existingStore == null) {
+			throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
+		}
+
 		String oldImageUrl = existingStore.getImage();
-	    String newImageUrl = req.getImage();
-	    
-	    if (oldImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
-	        imageService.deleteImage(oldImageUrl);
-	    }
+		String newImageUrl = req.getImage();
+
+		if (oldImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
+			imageService.deleteImage(oldImageUrl);
+		}
 		// 檢查
 		checkStore(req);
 		checkHours(req.getOperatingHoursVoList());
@@ -325,6 +332,11 @@ public class StoreService {
 		// 重新寫入子表資料
 		saveSubTables(storeId, req);
 
+		// 改新圖標籤
+		if (newImageUrl != null && !newImageUrl.equals(oldImageUrl)) {
+			imageService.confirmImage(newImageUrl);
+		}
+
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
 	}
@@ -332,15 +344,15 @@ public class StoreService {
 //		物理全刪
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes deleteFullStore(int storeId) throws Exception {
-		//		檢查店是否存在
+		// 檢查店是否存在
 		Stores store = storesSearchDao.getStoreById(storeId);
-	    if (store == null) {
-	        return new BasicRes(ResMessage.STORE_NOT_FOUND.getCode(), ResMessage.STORE_NOT_FOUND.getMessage());
-	    }
-	    //	刪除該店的雲端圖片    
-	    if (store.getImage() != null) {
-	        imageService.deleteImage(store.getImage());
-	    }
+		if (store == null) {
+			return new BasicRes(ResMessage.STORE_NOT_FOUND.getCode(), ResMessage.STORE_NOT_FOUND.getMessage());
+		}
+		// 刪除該店的雲端圖片
+		if (store.getImage() != null) {
+			imageService.deleteImage(store.getImage());
+		}
 		// 刪除最底層的選項細項 (依賴於 groups)
 		storesUpdateDao.deleteOptionItemsByStoreId(storeId);
 
@@ -415,7 +427,7 @@ public class StoreService {
 					List.of(store));
 			// 營業時間
 			List<Map<String, Object>> hoursMap = storesSearchDao.getOperatingHoursByStoreId(storesId);
-			
+
 			res.setOperatingHoursVoList(mapper.convertValue(hoursMap, new TypeReference<List<StoreOperatingHoursVo>>() {
 			}));
 
@@ -425,11 +437,11 @@ public class StoreService {
 			for (Map<String, Object> map : categoriesMap) {
 				MenuCategoriesVo catVo = new MenuCategoriesVo();
 				catVo.setStoresId(storesId);
-				
+
 				if (map.get("id") != null) {
-			        catVo.setId((Integer) map.get("id"));
-			    }
-				
+					catVo.setId((Integer) map.get("id"));
+				}
+
 				catVo.setName((String) map.get("name"));
 				// 手動將 price_level 字串轉為 List
 				String priceLevelStr = (String) map.get("priceLevel");
@@ -505,7 +517,7 @@ public class StoreService {
 	public String callGeminiApi(byte[] imageBytes) throws Exception {
 
 		// 1. 強制等待，避免觸發配額限制
-		Thread.sleep(2000);
+//		Thread.sleep(2000);
 
 		// 2. 壓縮圖片
 		byte[] processedImage = compressImage(imageBytes);
@@ -513,11 +525,10 @@ public class StoreService {
 		// 3. 確保使用壓縮後的圖轉 Base64
 		String base64Image = Base64.getEncoder().encodeToString(processedImage);
 
-		// 4. URL 
+		// 4. URL
 		String cleanUrl = geminiUrl.trim();
-	    String cleanKey = geminiApiKey.trim();
-	    String finalUrl = cleanUrl + "?key=" + cleanKey;
-
+		String cleanKey = geminiApiKey.trim();
+		String finalUrl = cleanUrl + "?key=" + cleanKey;
 
 		String prompt = """
 								你是一個專業的菜單辨識員。請分析圖片並「僅」以 JSON 格式回傳資料。
@@ -540,93 +551,91 @@ public class StoreService {
 				category可以是fast或slow,請依據是否為餐飲業來判斷
 					            """;
 
-		Map<String, Object> requestBody = Map.of(//
-			    "contents", List.of(//內容層
-			        Map.of("parts", List.of(//媒體陣列
-			            Map.of("text", prompt),//提示詞
-			            Map.of("inline_data", Map.of(//傳送圖片的標準格式
-			                "mime_type", "image/jpeg", //定義格式
-			                "data", base64Image//壓縮後轉成 Base64 編碼的圖片字串
-			            ))
-			        ))
-			    ),"generationConfig", Map.of(//設定層
-			            "response_mime_type", "application/json", // 強制 AI 回傳純 JSON 字串
-			            "temperature", 0.1 // 降低隨機性 範圍通常是 0.0 到 2.0
-			    )
-			);
+		Map<String, Object> requestBody = //
+				Map.of("contents", List.of(// 內容層
+						Map.of("parts", List.of(// 媒體陣列
+								Map.of("text", prompt), // 提示詞
+								Map.of("inline_data", Map.of(// 傳送圖片的標準格式
+										"mime_type", "image/jpeg", // 定義格式
+										"data", base64Image// 壓縮後轉成 Base64 編碼的圖片字串
+								))))), "generationConfig", Map.of(// 設定層
+										"response_mime_type", "application/json", // 強制 AI 回傳純 JSON 字串
+										"temperature", 0.1 // 降低隨機性 範圍通常是 0.0 到 2.0
+				));
 
-		//	告訴GOOGLE伺服器要傳送的資料格式(避免415 Unsupported Media Type)
+		// 告訴GOOGLE伺服器要傳送的資料格式(避免415 Unsupported Media Type)
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		
-		//	將要傳送的內容貼上標籤(JSON)
+
+		// 將要傳送的內容貼上標籤(JSON)
 		HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
-		//AI回答		
+		// AI回答
 		return restTemplate.postForObject(finalUrl, entity, String.class);
 
 	}
 
 	public StoresReq aiAnalyzeMenu(byte[] imageBytes) throws Exception {
-	    String rawResponse = callGeminiApi(imageBytes);
+		String rawResponse = callGeminiApi(imageBytes);
 
-	    try {
-			//讀取樹狀結構			
-	        JsonNode root = mapper.readTree(rawResponse);
-			//	Gemini 的回傳結構中，答案放在 candidates 陣列裡		
-	        JsonNode candidate = root.path("candidates").get(0);
-	        
-	        // 檢查 API 是否有回傳內容（有時會因為安全過濾而回傳空內容）
-	        if (candidate.path("content").path("parts").isMissingNode()) {
-	            throw new Exception("Gemini 3 拒絕回應或圖片無法辨識，請更換圖片再試");
-	        }
-	        
-	        //	確保回傳JSON符合格式
-	        String aiJsonText = candidate.path("content").path("parts").get(0).path("text").asText();
+		try {
+			// 讀取樹狀結構
+			JsonNode root = mapper.readTree(rawResponse);
+			// Gemini 的回傳結構中，答案放在 candidates 陣列裡
+			JsonNode candidate = root.path("candidates").get(0);
 
-	        // JSON 清洗邏輯
-	        // 尋找第一個 '{' 和最後一個 '}'，確保只抓取 JSON 本體
-	        int start = aiJsonText.indexOf("{");
-	        int end = aiJsonText.lastIndexOf("}");
-	        if (start == -1 || end == -1) {
-	            throw new Exception("AI 回傳的內容不包含合法的 JSON 結構");
-	        }
-	        String cleanedJson = aiJsonText.substring(start, end + 1);
+			// 檢查 API 是否有回傳內容（有時會因為安全過濾而回傳空內容）
+			if (candidate.path("content").path("parts").isMissingNode()) {
+				throw new Exception("Gemini 3 拒絕回應或圖片無法辨識，請更換圖片再試");
+			}
 
-	        // 4. 轉換為 StoresReq 物件
-	        StoresReq req = mapper.readValue(cleanedJson, StoresReq.class);
+			// 確保回傳JSON符合格式
+			String aiJsonText = candidate.path("content").path("parts").get(0).path("text").asText();
 
-	        // 5. 確保關鍵欄位有預設值
-	        if (req.getCategory() == null) req.setCategory("fast");
-	        if (req.getStoresname() == null) req.setStoresname("未命名店家");
+			// JSON 清洗邏輯
+			// 尋找第一個 '{' 和最後一個 '}'，確保只抓取 JSON 本體
+			int start = aiJsonText.indexOf("{");
+			int end = aiJsonText.lastIndexOf("}");
+			if (start == -1 || end == -1) {
+				throw new Exception("AI 回傳的內容不包含合法的 JSON 結構");
+			}
+			String cleanedJson = aiJsonText.substring(start, end + 1);
 
-	        return req;
+			// 4. 轉換為 StoresReq 物件
+			StoresReq req = mapper.readValue(cleanedJson, StoresReq.class);
 
-	    } catch (Exception e) {
-	        // 增加詳細錯誤輸出，方便調試
-	        System.err.println("解析異常回傳內容：" + rawResponse);
-	        throw new Exception("AI 辨識解析失敗: " + e.getMessage());
-	    }
+			// 5. 確保關鍵欄位有預設值
+			if (req.getCategory() == null)
+				req.setCategory("fast");
+			if (req.getStoresname() == null)
+				req.setStoresname("未命名店家");
+
+			return req;
+
+		} catch (Exception e) {
+			// 增加詳細錯誤輸出，方便調試
+			System.err.println("解析異常回傳內容：" + rawResponse);
+			throw new Exception("AI 辨識解析失敗: " + e.getMessage());
+		}
 	}
 
-	
 //	壓縮
 	private byte[] compressImage(byte[] imageBytes) throws Exception {
 		try {
-			
-			//讀取資料包裝成串流			
+
+			// 讀取資料包裝成串流
 			ByteArrayInputStream bais = new ByteArrayInputStream(imageBytes);
-			//	準備容器，用來裝壓縮過圖檔
+			// 準備容器，用來裝壓縮過圖檔
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			
-			
-			/*壓縮參數
-			 size(1024, 1024) 會將長邊縮放至 1024，寬邊等比例縮小
-			 outputQuality(0.7) 壓縮率 70%，體積會掉非常多但文字依然清晰*/
-			Thumbnails.of(bais).size(1024, 1024)//大小
-			.outputQuality(0.7)//畫質
-			.outputFormat("jpg")//格式
-			.toOutputStream(baos);//輸出
+
+			/*
+			 * 壓縮參數 size(1024, 1024) 會將長邊縮放至 1024，寬邊等比例縮小 outputQuality(0.7) 壓縮率
+			 * 70%，體積會掉非常多但文字依然清晰
+			 */
+			Thumbnails.of(bais).size(1024, 1024)// 大小
+					.outputQuality(0.7)// 畫質
+					.outputFormat("jpg")// 格式
+					.toOutputStream(baos);// 輸出
 
 			return baos.toByteArray();
 		} catch (Exception e) {

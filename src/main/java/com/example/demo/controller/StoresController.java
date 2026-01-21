@@ -85,7 +85,7 @@ public class StoresController {
     }
 	
 //	AI掃圖掃填店家
-	@PostMapping("gogobuy/menuScan")
+	@PostMapping("gogobuy/store/menuScan")
 	public ResponseEntity<?> scanMenu(@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("請上傳圖片檔案");
