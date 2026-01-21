@@ -52,6 +52,12 @@ public class Stores {
 	@Column(name = "force_closed")
 	private boolean force_closed;
 
+	@Column(name = "lng")
+	private double lng;
+	
+	@Column(name = "lat")
+	private double lat;
+
 	public int getId() {
 		return id;
 	}
@@ -140,7 +146,7 @@ public class Stores {
 		this.publish = publish;
 	}
 
-	public String getCreated_by() {
+	public String getCreatedBy() {
 		return createdBy;
 	}
 
@@ -156,6 +162,27 @@ public class Stores {
 		this.force_closed = force_closed;
 	}
 
+	public double getLng() {
+		return lng;
+	}
+
+	public void setLng(double lng) {
+		this.lng = lng;
+	}
+
+	public double getLat() {
+		return lat;
+	}
+
+	public void setLat(double lat) {
+		this.lat = lat;
+	}
+	
+	
+
+	
+	
+	
 }
 
 

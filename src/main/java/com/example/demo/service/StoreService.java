@@ -29,6 +29,7 @@ import com.example.demo.entity.ProductOptionGroups;
 import com.example.demo.entity.Stores;
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.GoogleMapRes;
 import com.example.demo.response.StoresRes;
 import com.example.demo.vo.FeeDescriptionVo;
 import com.example.demo.vo.MenuCategoriesVo;
@@ -66,6 +67,10 @@ public class StoreService {
 
 	@Autowired
 	private ImageService imageService;
+	
+	@Autowired
+	private GoogleMapService googleMapService;
+	
 
 	// Spring 會自動從 application.properties 抓取對應的值注入到變數
 	@Value("${gemini.api.key}")
@@ -232,7 +237,24 @@ public class StoreService {
 			}
 		}
 	}
+	
+	
+	private void getLatLng(Stores store, String address) throws Exception {
+	    // 呼叫 Service 取得結果
+	    GoogleMapRes googleMapRes = googleMapService.googleMapAddress(address);
 
+	    // 檢查狀態碼是否為 200 (成功)
+	    if (googleMapRes != null && googleMapRes.getCode() == 200) {
+	        store.setLat(googleMapRes.getLat());
+	        store.setLng(googleMapRes.getLng());
+	    } else {
+	        // 如果定位失敗，拋出異常讓事務回滾，或是給予預設提示
+	        String errorMsg = (googleMapRes != null) ? googleMapRes.getMessage() : "定位服務無回應";
+	        throw new Exception("地址定位失敗：" + errorMsg);
+	    }
+	}
+	
+	
 	// 回滾
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes create(StoresReq req) throws Exception {
@@ -256,6 +278,7 @@ public class StoreService {
 //		傳店家表取店家ID
 		Stores store = new Stores();
 		String feeStr = mapper.writeValueAsString(req.getFee_description());
+		
 
 		store.setName(req.getStoresname());
 		store.setPhone(req.getPhone());
@@ -268,6 +291,10 @@ public class StoreService {
 		store.setPublish(req.isPublish());
 		store.setCreatedBy(req.getCreatedBy());
 
+
+//		由地址取得經緯度
+		getLatLng(store, req.getAddress());
+		
 		store = storesCreateDao.save(store);
 
 //		storesCreateDao.addStore(req.getStoresname(), req.getPhone(), req.getAddress(), //
@@ -297,6 +324,10 @@ public class StoreService {
 			throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
 		}
 
+		//		新地址的經緯度(有改才查)
+		if (!existingStore.getAddress().equals(req.getAddress())) {
+	        getLatLng(existingStore, req.getAddress());
+	    }
 		String oldImageUrl = existingStore.getImage();
 		String newImageUrl = req.getImage();
 
@@ -314,12 +345,15 @@ public class StoreService {
 			return new BasicRes(ResMessage.STORE_EXISTS.getCode(), //
 					ResMessage.STORE_EXISTS.getMessage());
 		}
+		
 
 		// 更新店家主表資訊
 		String feeStr = mapper.writeValueAsString(req.getFee_description());
 		storesUpdateDao.updateStore(storeId, req.getStoresname(), req.getPhone(), req.getAddress(), //
 				req.getCategory(), req.getType(), req.getMemo(), //
-				req.getImage(), feeStr, req.isPublish());
+				req.getImage(), feeStr, req.isPublish(),//
+				existingStore.getLng(),//
+	            existingStore.getLat());
 
 		// 清除舊有的子表資料 (先刪除有外鍵關聯的底層資料)
 		// 順序：OptionItems -> OptionGroups -> Menu -> Categories -> Hours

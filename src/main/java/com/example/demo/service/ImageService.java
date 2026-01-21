@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
+import com.example.demo.response.BasicRes;
 
 @Service
 public class ImageService {
@@ -102,6 +104,35 @@ public class ImageService {
 		} catch (Exception e) {//
 			System.err.println("標籤更新失敗: " + e.getMessage());//
 		}
+	}
+	
+	
+//	前端後台手動刪除冗圖
+	public BasicRes safeCleanupTempImages() throws Exception {
+	    // 搜尋標籤為 temp 且建立超過 24 小時 (1d) 的圖片
+	    String expression = "tags:temp AND created_at < 1d"; 
+
+	    Map<?, ?> searchResult = cloudinary.search()
+	            .expression(expression)
+	            .execute();
+
+	    List<Map<?, ?>> resources = (List<Map<?, ?>>) searchResult.get("resources");
+
+	    // 檢查是否有需要清理的圖片
+	    if (resources == null || resources.isEmpty()) {
+	        return new BasicRes(200, "目前沒有需要清理的過期暫存圖片喵");
+	    }
+
+	    // 提取所有 Public ID
+	    List<String> publicIds = resources.stream()
+	            .map(r -> (String) r.get("public_id"))
+	            .toList();
+
+	    // 執行 Cloudinary 批次刪除
+	    // 注意：deleteResources 屬於 Admin API，建議此方法不要頻繁呼叫
+	    cloudinary.api().deleteResources(publicIds, com.cloudinary.utils.ObjectUtils.emptyMap());
+
+	    return new BasicRes(200, "清理成功喵！已移除 " + publicIds.size() + " 張過期暫存圖片喵!");
 	}
 
 }

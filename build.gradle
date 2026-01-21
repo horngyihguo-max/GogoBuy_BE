@@ -63,9 +63,10 @@ dependencies {
 	
 	// Cloudinary SDK
     implementation 'com.cloudinary:cloudinary-http44:1.36.0'
+    
+    // Google Maps Java SDK
+    implementation 'com.google.maps:google-maps-services:2.2.0'
 	
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
