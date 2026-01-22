@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.example.demo.Projection.GroupbuyEventsProjection;
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
@@ -356,9 +357,9 @@ public class GroupbuyEventsService {
 	// 回傳全部開團的
 	public GroupbuyEventsRes getAll() {
 		try {
-			List<GroupbuyEvents> list = groupbuyEventsDao.getAll();
+			List<GroupbuyEventsProjection> list = groupbuyEventsDao.getAll();
 			if (list == null) {
-				return new GroupbuyEventsRes(200, "目前暫無任何開團資料");
+				return new GroupbuyEventsRes(400, "目前暫無任何開團資料");
 			}
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "搜尋成功");
 			res.setGroupbuyEvents(list);
@@ -369,7 +370,7 @@ public class GroupbuyEventsService {
 	}
 
 	// 回傳暱稱有的開團
-	public GroupbuyEventsRes getGroupbuyEventByStoresName(String hostNickname) {
+	public GroupbuyEventsRes getGroupbuyEventByNickName(String hostNickname) {
 		List<GroupsSearchView> nicknameEventsList = groupsSearchViewDao.getGroupbuyEventByStoresName(hostNickname);
 		if (nicknameEventsList == null ) {
 			return new GroupbuyEventsRes(200, "查無此開團者的開團資料");

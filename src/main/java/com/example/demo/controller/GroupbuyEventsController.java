@@ -72,10 +72,10 @@ public class GroupbuyEventsController {
 	}
 
 	// 暱稱查詢開團紀錄
-	@GetMapping("gogobuy/getGroupbuyEventByStoresName")
+	@GetMapping("gogobuy/getGroupbuyEventByNickName")
 	public GroupbuyEventsRes getGroupbuyEventByStoresName(
 			@RequestParam(name = "host_nickname", required = false) String hostNickname) {
-		return groupbuyEventsService.getGroupbuyEventByStoresName(hostNickname);
+		return groupbuyEventsService.getGroupbuyEventByNickName(hostNickname);
 	}
 	
 	@GetMapping("gogobuy/googleMapAddress")

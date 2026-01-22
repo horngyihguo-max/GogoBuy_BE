@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.Projection.GroupbuyEventsProjection;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Menu;
 
@@ -61,8 +62,8 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public List<Menu> getMenuByStoresId(int storesId);
 
 	// 查詢全部的開團
-	@Query(value = "select * from groupbuy_events where is_deleted = false", nativeQuery = true)
-	public List<GroupbuyEvents> getAll();
+	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id", nativeQuery = true)
+	public List<GroupbuyEventsProjection> getAll();
 
 	// 用店家Id找符合的團
 	@Query(value = "select * from groupbuy_events  where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
