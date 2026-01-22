@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.request.GroupbuyEventsReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
+import com.example.demo.service.GoogleMapService;
 import com.example.demo.service.GroupbuyEventsService;
 
 import jakarta.validation.Valid;
@@ -23,6 +24,9 @@ public class GroupbuyEventsController {
 
 	@Autowired
 	private GroupbuyEventsService groupbuyEventsService;
+	
+	@Autowired
+	private GoogleMapService googleMapService;
 
 	// 新增
 	@PostMapping("gogobuy/addEvent")
@@ -72,5 +76,10 @@ public class GroupbuyEventsController {
 	public GroupbuyEventsRes getGroupbuyEventByStoresName(
 			@RequestParam(name = "host_nickname", required = false) String hostNickname) {
 		return groupbuyEventsService.getGroupbuyEventByStoresName(hostNickname);
+	}
+	
+	@GetMapping("gogobuy/googleMapAddress")
+	public BasicRes googleMapAddress(@RequestParam(name = "address") String address) {
+		return googleMapService.googleMapAddress(address);
 	}
 }
