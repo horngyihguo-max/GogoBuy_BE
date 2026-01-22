@@ -11,17 +11,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 //加上這行，null 的欄位就不會出現在 JSON 裡
-@JsonInclude(Include.NON_NULL) 
+@JsonInclude(Include.NON_NULL)
 public class GroupbuyEventsRes extends BasicRes {
 
 	private List<GroupbuyEvents> groupbuyEvents;
-	
+
 	private List<Orders> orders;
-	
+
 	private List<PersonalOrder> personalOrder;
-	
+
 	private List<Menu> menuList;
-	
+
 	private List<GroupsSearchView> groupsSearchViewList;
 
 	public List<GroupbuyEvents> getGroupbuyEvents() {
@@ -91,10 +91,4 @@ public class GroupbuyEventsRes extends BasicRes {
 		this.groupsSearchViewList = groupsSearchViewList;
 	}
 
-
-
-
-
-	
-	
 }
