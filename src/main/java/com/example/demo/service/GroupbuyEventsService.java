@@ -8,12 +8,14 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.GroupsSearchViewDao;
+import com.example.demo.dao.OrdersDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
@@ -37,11 +39,12 @@ public class GroupbuyEventsService {
 
 	@Autowired
 	private GroupbuyEventsDao groupbuyEventsDao;
-	
+
 	@Autowired
 	private GroupsSearchViewDao groupsSearchViewDao;
-
-	private ObjectMapper mapper = new ObjectMapper();
+	
+	@Autowired
+	private OrdersDao ordersDao;
 
 	// 將重複的驗證邏輯提取出來
 	private BasicRes checkEvent(GroupbuyEventsReq req) {
@@ -88,7 +91,7 @@ public class GroupbuyEventsService {
 					ResMessage.TOTALORDERAMOUNT_ERROR.getMessage());
 		}
 		// 檢查總運費
-		if ( req.getShippingFee() < 0) {
+		if (req.getShippingFee() < 0) {
 			return new BasicRes(ResMessage.SHIPPING_FEE_ERROR.getCode(), //
 					ResMessage.SHIPPING_FEE_ERROR.getMessage());
 		}
@@ -98,7 +101,7 @@ public class GroupbuyEventsService {
 					ResMessage.TYPE_ERROR.getMessage());
 		}
 		// 金額門檻
-		if ( req.getLimitation() < 0) {
+		if (req.getLimitation() < 0) {
 			return new BasicRes(ResMessage.SPLIT_TYPE_ERROR.getCode(), //
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
 		}
@@ -175,9 +178,9 @@ public class GroupbuyEventsService {
 			}
 			// 將 ID 轉成字串
 			// mapper 是負責搬運與轉換資料的工具
-			// 序列化就是 Object 轉 Json 
-			String tempMenuJson = mapper.writeValueAsString(selectedIds);
-			String recommendJson = mapper.writeValueAsString(recommendIds);
+			// 序列化就是 Object 轉 Json
+			String tempMenuJson = selectedIds.toString();
+			String recommendJson = recommendIds.toString();
 
 			// 存入物件
 			event.setTempMenuList(tempMenuJson);
@@ -209,12 +212,6 @@ public class GroupbuyEventsService {
 		if (event == null) {
 			return new BasicRes(ResMessage.EVENTS_NOT_FOUND.getCode(), ResMessage.EVENTS_NOT_FOUND.getMessage());
 		}
-		if (req.isDeleted()) {
-			event.setDeleted(true);
-			groupbuyEventsDao.save(event);
-			return new BasicRes(200, "已成功取消（軟刪除）");
-		}
-
 		try {
 			// 此店家的全部菜單
 			List<Map<String, Object>> Menu = storesSearchDao.getMenuByStoreId(req.getStoresId());
@@ -262,8 +259,8 @@ public class GroupbuyEventsService {
 			}
 
 			// 轉成純 ID 的 JSON 字串
-			String tempMenuJson = mapper.writeValueAsString(selectedIds);
-			String recommendJson = mapper.writeValueAsString(recommendIds);
+			String tempMenuJson = selectedIds.toString();
+			String recommendJson = recommendIds.toString();
 
 			groupbuyEventsDao.updateEvent(//
 					req.getHostId(), //
@@ -285,7 +282,26 @@ public class GroupbuyEventsService {
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
+	
+	// 軟刪除
+	@Transactional
+	public BasicRes deleteEvent(int eventsId) {
+        // 檢查該活動是否存在且尚未被刪除
+        GroupbuyEvents event = groupbuyEventsDao.findById(eventsId);
+        if (event == null ) {
+            return new BasicRes(404, "找不到該團購活動或活動已被刪除");
+        }
+        // 2. 執行活動的軟刪除
+        int deletedEvent = groupbuyEventsDao.delete(eventsId);
 
+        if (deletedEvent > 0) {
+           //順便刪除子表
+            ordersDao.deleteAllOrdersByEventId(eventsId);
+            return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
+        }
+        return new BasicRes(500, "刪除活動失敗，請稍後再試");
+    }
+	
 	// 回傳開團者的訂單紀錄
 	public GroupbuyEventsRes getGroupbuyEventById(String hostId) {
 		try {
@@ -369,9 +385,9 @@ public class GroupbuyEventsService {
 	}
 
 	// 回傳暱稱有的開團
-	public GroupbuyEventsRes getGroupbuyEventByStoresName(String hostNickname) {
-		List<GroupsSearchView> nicknameEventsList = groupsSearchViewDao.getGroupbuyEventByStoresName(hostNickname);
-		if (nicknameEventsList == null ) {
+	public GroupbuyEventsRes getGroupbuyEventByNickname(String hostNickname) {
+		List<GroupsSearchView> nicknameEventsList = groupsSearchViewDao.getGroupbuyEventByNickname(hostNickname);
+		if (nicknameEventsList == null) {
 			return new GroupbuyEventsRes(200, "查無此開團者的開團資料");
 		}
 		try {

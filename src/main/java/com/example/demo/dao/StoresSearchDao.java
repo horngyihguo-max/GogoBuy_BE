@@ -47,5 +47,9 @@ public List<Stores> findStoresByNameLike(String name);
     // (給EVENT)   依值搜尋(多個)品項
     @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
     List<Menu> getMenuByMenuId(List<Integer> menuId);
-       
+    
+    // 用 storeId 取得地址
+    @Query(value = "select address from stores where id = ?1", nativeQuery = true)
+    String findAddressByStoreId(int id);
+    
 }
