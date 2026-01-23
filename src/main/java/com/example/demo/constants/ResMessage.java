@@ -10,6 +10,7 @@ public enum ResMessage {
 	PHONE_SIZE_ERROR(400,"電話長度錯誤"),
 	CATEGORY_ERROR(400,"大類型的類型錯誤(不存在)"),
 	STORE_EXISTS(400,"店家(電話)已存在"),
+	STORE_NULL_ERROR(400,"店家列表為空"),
 	STORE_NOT_FOUND(404,"找不到該店家"),
 	INPUT_IS_EMPTY(400,"請輸入搜尋關鍵字"),
 	OUT_OF_TIMES_REMAINING(400, "超過許願次數"),

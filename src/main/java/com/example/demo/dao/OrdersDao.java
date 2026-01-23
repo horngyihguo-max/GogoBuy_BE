@@ -60,7 +60,15 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 
 	// userId 檢索 order 所有的跟團紀錄
 	@Query(value = "select * from orders where user_id = ?1 and is_deleted = false ", nativeQuery = true)
-	public List<Orders> getEventIdByUserId(String userId);
+	public List<Orders> getOrdersByUserId(String userId);
+	
+	// userId 檢索 eventsId 訂單
+	@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
+	public List<Orders> getEventIdByUserId(String userId , int eventsId);
+	
+	// 檢查 user_id 是否已在特定團購下過單
+	@Query(value = "select count(*) from orders where user_id = ?1 and events_id = ?2 and is_deleted = false", nativeQuery = true)
+	public int CheckOrderByUserIdAndEventsId(String userId, int eventsId);
 
 	// 根據 eventsId 去查詢 shippingFee
 	@Query(value = "select shipping_fee from groupbuy_events where id = ?1 ", nativeQuery = true)
@@ -83,4 +91,5 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Modifying
 	@Query(value = "update orders set pickup_status = 'PICKED_UP' where events_id = ?1  and user_id = ?2 and is_deleted = false", nativeQuery = true)
 	public void updateStatusByEventAndUser(int eventsId, String userId);
+	
 }
