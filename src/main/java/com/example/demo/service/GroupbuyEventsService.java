@@ -42,7 +42,7 @@ public class GroupbuyEventsService {
 
 	@Autowired
 	private GroupsSearchViewDao groupsSearchViewDao;
-	
+
 	@Autowired
 	private OrdersDao ordersDao;
 
@@ -281,49 +281,49 @@ public class GroupbuyEventsService {
 		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
-	
+
 	// 團長手動結單
 	@Transactional
 	public BasicRes updateStatus(String status, int id, String hostId) {
-	    GroupbuyEvents event = groupbuyEventsDao.findById(id);
-	    if (event == null) {
-	        return new BasicRes(404, "找不到該團購活動");
-	    }
-	    if (!event.getHostId().equals(hostId)) {
-	        return new BasicRes(403, "權限不足，只有團長可以結單");
-	    }
-	    if (event.getStatus() == GroupbuyStatusEnum.FINISHED) {
-	        return new BasicRes(400, "此團已經是結單狀態");
-	    }
-	    
-	    // 更新資料庫狀態
-	    int updateStatus = groupbuyEventsDao.updateStatus( GroupbuyStatusEnum.FINISHED.name(),id,hostId);
-	    
-	    if (updateStatus > 0) {
-	        return new BasicRes(200, "結單成功");
-	    }
-	    return new BasicRes(500, "結單失敗");
+		GroupbuyEvents event = groupbuyEventsDao.findById(id);
+		if (event == null) {
+			return new BasicRes(404, "找不到該團購活動");
+		}
+		if (!event.getHostId().equals(hostId)) {
+			return new BasicRes(403, "權限不足，只有團長可以結單");
+		}
+		if (event.getStatus() == GroupbuyStatusEnum.FINISHED) {
+			return new BasicRes(400, "此團已經是結單狀態");
+		}
+
+		// 更新資料庫狀態
+		int updateStatus = groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.FINISHED.name(), id, hostId);
+
+		if (updateStatus > 0) {
+			return new BasicRes(200, "結單成功");
+		}
+		return new BasicRes(500, "結單失敗");
 	}
-	
+
 	// 軟刪除
 	@Transactional
 	public BasicRes deleteEvent(int eventsId) {
-        // 檢查該活動是否存在且尚未被刪除
-        GroupbuyEvents event = groupbuyEventsDao.findById(eventsId);
-        if (event == null ) {
-            return new BasicRes(404, "找不到該團購活動或活動已被刪除");
-        }
-        // 2. 執行活動的軟刪除
-        int deletedEvent = groupbuyEventsDao.delete(eventsId);
+		// 檢查該活動是否存在且尚未被刪除
+		GroupbuyEvents event = groupbuyEventsDao.findById(eventsId);
+		if (event == null) {
+			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
+		}
+		// 2. 執行活動的軟刪除
+		int deletedEvent = groupbuyEventsDao.delete(eventsId);
 
-        if (deletedEvent > 0) {
-           //順便刪除子表
-            ordersDao.deleteAllOrdersByEventId(eventsId);
-            return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
-        }
-        return new BasicRes(500, "刪除活動失敗，請稍後再試");
-    }
-	
+		if (deletedEvent > 0) {
+			// 順便刪除子表
+			ordersDao.deleteAllOrdersByEventId(eventsId);
+			return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
+		}
+		return new BasicRes(500, "刪除活動失敗，請稍後再試");
+	}
+
 	// 回傳開團者的訂單紀錄
 	public GroupbuyEventsRes getGroupbuyEventById(String hostId) {
 		try {
@@ -344,9 +344,10 @@ public class GroupbuyEventsService {
 		try {
 			// 先去抓商店的菜單ID
 			List<Menu> menus = storesSearchDao.getMenuByMenuId(menuList);
-			/* 因為寫 return new GroupbuyEventsRes(200, "menuId 搜尋成功", menus);會有問題
-			 * 所以改用 set 將查詢到的 menus 塞到 res 的 menuList 
-			*/
+			/*
+			 * 因為寫 return new GroupbuyEventsRes(200, "menuId 搜尋成功", menus);會有問題 所以改用 set
+			 * 將查詢到的 menus 塞到 res 的 menuList
+			 */
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "menuId 搜尋成功");
 			res.setMenuList(menus);
 			return res;
