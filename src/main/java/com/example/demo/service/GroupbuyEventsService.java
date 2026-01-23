@@ -26,6 +26,7 @@ import com.example.demo.entity.User;
 import com.example.demo.request.GroupbuyEventsReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class GroupbuyEventsService {
@@ -44,6 +45,8 @@ public class GroupbuyEventsService {
 	
 	@Autowired
 	private OrdersDao ordersDao;
+	
+	ObjectMapper mapper = new ObjectMapper();
 
 	// 將重複的驗證邏輯提取出來
 	private BasicRes checkEvent(GroupbuyEventsReq req) {
@@ -177,8 +180,8 @@ public class GroupbuyEventsService {
 			// 將 ID 轉成字串
 			// mapper 是負責搬運與轉換資料的工具
 			// 序列化就是 Object 轉 Json
-			String tempMenuJson = selectedIds.toString();
-			String recommendJson = recommendIds.toString();
+			String tempMenuJson = mapper.writeValueAsString(selectedIds);
+			String recommendJson = mapper.writeValueAsString(recommendIds);
 
 			// 存入物件
 			event.setTempMenuList(tempMenuJson);
@@ -257,8 +260,8 @@ public class GroupbuyEventsService {
 			}
 
 			// 轉成純 ID 的 JSON 字串
-			String tempMenuJson = selectedIds.toString();
-			String recommendJson = recommendIds.toString();
+			String tempMenuJson = mapper.writeValueAsString(selectedIds);
+			String recommendJson = mapper.writeValueAsString(recommendIds);
 
 			groupbuyEventsDao.updateEvent(//
 					req.getHostId(), //
@@ -323,7 +326,7 @@ public class GroupbuyEventsService {
         return new BasicRes(500, "刪除活動失敗，請稍後再試");
     }
 	
-	// 回傳開團者的訂單紀錄
+	// 回傳開團者的開團紀錄
 	public GroupbuyEventsRes getGroupbuyEventById(String hostId) {
 		try {
 			if (!StringUtils.hasText(hostId)) {
