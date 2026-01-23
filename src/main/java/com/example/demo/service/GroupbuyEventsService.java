@@ -313,7 +313,7 @@ public class GroupbuyEventsService {
         if (event == null ) {
             return new BasicRes(404, "找不到該團購活動或活動已被刪除");
         }
-        // 軟刪除主表
+        // 2. 執行活動的軟刪除
         int deletedEvent = groupbuyEventsDao.delete(eventsId);
 
         if (deletedEvent > 0) {

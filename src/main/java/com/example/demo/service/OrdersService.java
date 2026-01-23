@@ -151,8 +151,9 @@ public class OrdersService {
 		if (orders == null) {
 			return new BasicRes(404, "找不到該筆訂單");
 		}
-		if ( checkEvent(req).getCode() != ResMessage.SUCCESS.getCode()) {
-			return  checkEvent(req);
+		BasicRes checkResult = checkEvent(req);
+		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
+			return checkResult;
 		}
 		try {
 			String jsonString = req.getSelectedOptionList().toString();
@@ -217,6 +218,7 @@ public class OrdersService {
 				return new GroupbuyEventsRes(400, "輸入正確的user_id");
 			}
 			List<Orders> ordersList = ordersDao.getEventIdByUserId(userId);
+			// 先建立物件，再用 Setter 塞入 List
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "user_id 搜尋成功");
 			res.setOrders(ordersList);
 			return res;
