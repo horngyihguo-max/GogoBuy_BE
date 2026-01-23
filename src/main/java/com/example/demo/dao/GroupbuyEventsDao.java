@@ -23,42 +23,53 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 			+ "shipping_fee, split_type, announcement, type, temp_menu, recommend, recommend_description, limitation)"
 			+ "values(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13,?14)", nativeQuery = true)
 	public int addEvent(String hostId, int storesId, String event_name, String status, LocalDateTime endTime,
-			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type,
-			String temp_menu, String recommend, String recommendDescription, int limitation);
+			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type, String temp_menu,
+			String recommend, String recommendDescription, int limitation);
 
 	// 查所屬團ID
-	@Query(value = "select* from groupbuy_events where id = ?", nativeQuery = true)
+	@Query(value = "select* from groupbuy_events where id = ?1", nativeQuery = true)
 	public GroupbuyEvents findById(int id);
 
 	// 更新團
 	@Transactional
 	@Modifying
-	@Query(value = "update groupbuy_events set " + "host_id = ?1, stores_id = ?2, event_name = ?3, status = ?4, "
+	@Query(value = "update groupbuy_events set host_id = ?1, stores_id = ?2, event_name = ?3, status = ?4, "
 			+ "end_time = ?5, total_order_amount = ?6, shipping_fee = ?7, "
 			+ "split_type = ?8, announcement = ?9, type= ?10, temp_menu = ?11, "
 			+ "recommend = ?12, recommend_description = ?13, limitation = ?14 where id = ?15", nativeQuery = true)
 	public int updateEvent(String hostId, int storesId, String eventName, String status, LocalDateTime endTime,
-			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type,
-			String tempMenu, String recommend, String recommendDescription, int limitation, int id);
+			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type, String tempMenu,
+			String recommend, String recommendDescription, int limitation, int id);
 
 	// 更新總金額
 	@Transactional
 	@Modifying
 	@Query(value = "update groupbuy_events set total_order_amount = ?1 where id = ?2 and is_deleted = false ", nativeQuery = true)
-	public int updateEventStats(int totalOrderAmount, int id);
+	public int updateTotalAmount(int totalOrderAmount, int id);
+
+	// 手動結單更新
+	@Transactional
+	@Modifying
+	@Query(value = "update groupbuy_events set status = ?1 where id = ?2 and host_id = ?3 and is_deleted = false ", nativeQuery = true)
+	public int updateStatus(String status, int id, String hostId);
+
+	// 自動比較結單時間並結單
+	@Modifying
+	@Query(value = "update groupbuy_events set status = ?1 where end_time <= ?2 and status = ?3 and is_deleted = false", nativeQuery = true)
+	public int autoUpdateEventsStatus(String targetStatus, LocalDateTime now, String currentStatus);
 
 	// 軟刪除
 	@Transactional
 	@Modifying
-	@Query(value = "update  groupbuy_events set is_deleted = ?2 where events_id = ?1", nativeQuery = true)
-	public int delete(String eventsId, boolean delete);
+	@Query(value = "update groupbuy_events set is_deleted = true where events_id = ?1 and is_deleted = false", nativeQuery = true)
+	public int delete(int eventsId);
 
 	// 用 hostId 檢索主表
 	@Query(value = "select * from groupbuy_events  where host_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<GroupbuyEvents> getGroupbuyEventById(String hostId);
 
 	// 用 storesId 查詢菜單
-	@Query(value = "select * from menu  where stores_id = ?1 ", nativeQuery = true)
+	@Query(value = "select * from menu where stores_id = ?1 ", nativeQuery = true)
 	public List<Menu> getMenuByStoresId(int storesId);
 
 	// 查詢全部的開團
@@ -66,9 +77,7 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public List<GroupbuyEventsProjection> getAll();
 
 	// 用店家Id找符合的團
-	@Query(value = "select * from groupbuy_events  where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
+	@Query(value = "select * from groupbuy_events where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<GroupbuyEvents> getGroupbuyEventByStoresId(int storesId);
-	
-	
 
 }

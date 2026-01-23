@@ -24,7 +24,7 @@ public class GroupbuyEventsController {
 
 	@Autowired
 	private GroupbuyEventsService groupbuyEventsService;
-	
+
 	@Autowired
 	private GoogleMapService googleMapService;
 
@@ -72,14 +72,24 @@ public class GroupbuyEventsController {
 	}
 
 	// 暱稱查詢開團紀錄
-	@GetMapping("gogobuy/getGroupbuyEventByNickName")
-	public GroupbuyEventsRes getGroupbuyEventByStoresName(
+	@GetMapping("gogobuy/getGroupbuyEventByNickname")
+	public GroupbuyEventsRes getGroupbuyEventByNickname(
 			@RequestParam(name = "host_nickname", required = false) String hostNickname) {
-		return groupbuyEventsService.getGroupbuyEventByNickName(hostNickname);
+		return groupbuyEventsService.getGroupbuyEventByNickname(hostNickname);
 	}
-	
+
+	// 用google取經緯度
 	@GetMapping("gogobuy/googleMapAddress")
 	public BasicRes googleMapAddress(@RequestParam(name = "address") String address) {
 		return googleMapService.googleMapAddress(address);
 	}
+	
+	//團長手動結單
+	@PostMapping("gogobuy/updateStatus")
+	public BasicRes updateStatus(@Valid @RequestParam(name = "status") String status, 
+			@RequestParam(name = "id") int id, 
+			@RequestParam(name = "host_id") String hostId) {
+		return groupbuyEventsService.updateStatus(status, id, hostId);
+	}
+	
 }

@@ -2,16 +2,13 @@ package com.example.demo.dao;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Orders;
 
 @Repository
@@ -33,50 +30,57 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	// 更新
 	@Transactional
 	@Modifying
-	@Query(value = "update orders set " + "events_id = :eventsId, " + "user_id = :userId, " + "menu_id = :menuId, "
-			+ "quantity = :quantity, " + "selected_option = :selectedOption, " + "personal_memo = :personalMemo, "
-			+ "pickup_status = :pickupStatus, " + "pickup_time = :pickupTime, " + "subtotal = :subtotal, "
-			+ "weight = :weight " + "where id = :id", nativeQuery = true)
-	public int updateOrders(@Param("eventsId") int eventsId, @Param("userId") String userId,
-			@Param("menuId") int menuId, @Param("quantity") int quantity,
-			@Param("selectedOption") String selectedOption, @Param("personalMemo") String personalMemo,
-			@Param("pickupStatus") String pickupStatus, @Param("pickupTime") LocalDateTime pickupTime,
-			@Param("subtotal") int subtotal, @Param("weight") int weight, @Param("id") int id);
+	@Query(value = "update orders set events_id = ?1, user_id =?2, menu_id = ?3, quantity = ?4, selected_option = ?5,"
+			+ "personal_memo = ?6, pickup_status = ?7, pickup_time = ?8, subtotal = ?9, "
+			+ "weight = ?10 where id =?11 ", nativeQuery = true)
+	public int updateOrders(int eventsId, String userId, int menuId, int quantity, String selectedOption,
+			String personalMemo, String pickupStatus, LocalDateTime pickupTime, int subtotal, int weight, int id);
 
 	// 統計人數
-	@Query(value = "select count (*) from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
-	int countOrdersByEventId(int eventId);
+	@Query(value = "select count(*) from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
+	public int countOrdersByEventId(int eventId);
 
 	// 統計總金額
-	@Query(value = "select sum(subtotal) from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
-	Integer sumSubtotalByEventId(int eventId);
-
-	// 查訂單ID
-	@Query(value = "select* from orders where id = ?", nativeQuery = true)
-	public Orders finById(int id);
+	@Transactional
+	// ifnull 如果是null 就會寫 0
+	@Query(value = "select ifnull(sum(subtotal),0) from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
+	public int sumSubtotalByEventId(int eventId);
 
 	// 查詢userId在該團的總重量
-	@Query(value = "select sum(weight) from orders where events_id = ?1 AND user_id = ?2 and is_deleted = false", nativeQuery = true)
-	Double sumWeightByEventAndUser(int eventId, String userId);
+	@Query(value = "select weight from orders where events_id = ?1 AND user_id = ?2 and is_deleted = false", nativeQuery = true)
+	public Double sumWeightByEventIdAndUserId(int eventId, String userId);
 
 	// 查詢該團所有人的總重量
 	@Query(value = "select sum(weight) from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
-	Double sumTotalWeightByEvent(int eventId);
+	public Double sumTotalWeightByEventId(int eventId);
 
 	// 查詢userId在該團的商品小計總額
 	@Query(value = "select sum(subtotal) from orders where events_id = ?1 and user_id = ?2 and is_deleted = false", nativeQuery = true)
-	Integer sumSubtotalByEventAndUser(int eventId, String userId);
+	public int sumSubtotalByEventIdAndUserId(int eventId, String userId);
 
-	// 軟刪除
-	@Transactional
-	@Modifying
-	@Query(value = "update  orders set is_deleted = ?2 where user_id = ?1", nativeQuery = true)
-	public int delete(String userId, boolean delete);
-
-	// userId 跟得團
-	// userId 檢索 order 
+	// userId 檢索 order 所有的跟團紀錄
 	@Query(value = "select * from orders where user_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getEventIdByUserId(String userId);
-	
-	
+
+	// 根據 eventsId 去查詢 shippingFee
+	@Query(value = "select shipping_fee from groupbuy_events where id = ?1 ", nativeQuery = true)
+	public int getShippingFeeByEventId(int id);
+
+	// 軟刪除 eventId跟userId找的特定欄位
+	@Transactional
+	@Modifying
+	@Query(value = "update orders set is_deleted = true where user_id = ?1 and events_id = ?2 and is_deleted = false", nativeQuery = true)
+	public int deleteOrderByUserIdAndEventsId(String userId, int eventsId);
+
+	// 軟刪除全部子表
+	@Transactional
+	@Modifying
+	@Query(value = "update orders set is_deleted = true where events_id = ?1 and is_deleted = false", nativeQuery = true)
+	public void deleteAllOrdersByEventId(int eventsId);
+
+	// 更新領取狀態
+	@Transactional
+	@Modifying
+	@Query(value = "update orders set pickup_status = 'PICKED_UP' where events_id = ?1  and user_id = ?2 and is_deleted = false", nativeQuery = true)
+	public void updateStatusByEventAndUser(int eventsId, String userId);
 }
