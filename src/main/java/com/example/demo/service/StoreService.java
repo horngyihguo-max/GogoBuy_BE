@@ -206,7 +206,7 @@ public class StoreService {
 		for (MenuVo vo : menuVoList) {
 			String unusualStr = mapper.writeValueAsString(vo.getUnusual());
 			storesCreateDao.addMenu(storeId, vo.getCategoryId(), vo.getName(), vo.getDescription(), //
-					vo.getBasePrice(), vo.getImage(), true, unusualStr);
+					vo.getBasePrice(), vo.getImage(), vo.isAvailable(), unusualStr);
 		}
 //		填入品項類別
 		List<MenuCategoriesVo> MenuCategoriesVoList = req.getMenuCategoriesVoList();
