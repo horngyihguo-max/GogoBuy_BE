@@ -75,7 +75,7 @@ public class PersonalOrderService {
 		}
 	}
 
-	// 更新
+	// 更新結單狀態
 	public BasicRes updatePersonalOrder(personalOrderReq req) {
 		try {
 			// 查詢該筆「結算單」是否存在

@@ -67,10 +67,9 @@ public class StoreService {
 
 	@Autowired
 	private ImageService imageService;
-	
+
 	@Autowired
 	private GoogleMapService googleMapService;
-	
 
 	// Spring 會自動從 application.properties 抓取對應的值注入到變數
 	@Value("${gemini.api.key}")
@@ -206,7 +205,8 @@ public class StoreService {
 		for (MenuVo vo : menuVoList) {
 			String unusualStr = mapper.writeValueAsString(vo.getUnusual());
 			storesCreateDao.addMenu(storeId, vo.getCategoryId(), vo.getName(), vo.getDescription(), //
-					vo.getBasePrice(), vo.getImage(), true, unusualStr);
+														// 這邊有問題
+					vo.getBasePrice(), vo.getImage(), vo.isAvailable(), unusualStr);
 		}
 //		填入品項類別
 		List<MenuCategoriesVo> MenuCategoriesVoList = req.getMenuCategoriesVoList();
@@ -237,24 +237,22 @@ public class StoreService {
 			}
 		}
 	}
-	
-	
-	private void getLatLng(Stores store, String address) throws Exception {
-	    // 呼叫 Service 取得結果
-	    GoogleMapRes googleMapRes = googleMapService.googleMapAddress(address);
 
-	    // 檢查狀態碼是否為 200 (成功)
-	    if (googleMapRes != null && googleMapRes.getCode() == 200) {
-	        store.setLat(googleMapRes.getLat());
-	        store.setLng(googleMapRes.getLng());
-	    } else {
-	        // 如果定位失敗，拋出異常讓事務回滾，或是給予預設提示
-	        String errorMsg = (googleMapRes != null) ? googleMapRes.getMessage() : "定位服務無回應";
-	        throw new Exception("地址定位失敗：" + errorMsg);
-	    }
+	private void getLatLng(Stores store, String address) throws Exception {
+		// 呼叫 Service 取得結果
+		GoogleMapRes googleMapRes = googleMapService.googleMapAddress(address);
+
+		// 檢查狀態碼是否為 200 (成功)
+		if (googleMapRes != null && googleMapRes.getCode() == 200) {
+			store.setLat(googleMapRes.getLat());
+			store.setLng(googleMapRes.getLng());
+		} else {
+			// 如果定位失敗，拋出異常讓事務回滾，或是給予預設提示
+			String errorMsg = (googleMapRes != null) ? googleMapRes.getMessage() : "定位服務無回應";
+			throw new Exception("地址定位失敗：" + errorMsg);
+		}
 	}
-	
-	
+
 	// 回滾
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes create(StoresReq req) throws Exception {
@@ -278,7 +276,6 @@ public class StoreService {
 //		傳店家表取店家ID
 		Stores store = new Stores();
 		String feeStr = mapper.writeValueAsString(req.getFee_description());
-		
 
 		store.setName(req.getStoresname());
 		store.setPhone(req.getPhone());
@@ -291,10 +288,9 @@ public class StoreService {
 		store.setPublish(req.isPublish());
 		store.setCreatedBy(req.getCreatedBy());
 
-
 //		由地址取得經緯度
 		getLatLng(store, req.getAddress());
-		
+
 		store = storesCreateDao.save(store);
 
 //		storesCreateDao.addStore(req.getStoresname(), req.getPhone(), req.getAddress(), //
@@ -324,10 +320,10 @@ public class StoreService {
 			throw new Exception(ResMessage.STORE_NOT_FOUND.getMessage());
 		}
 
-		//		新地址的經緯度(有改才查)
+		// 新地址的經緯度(有改才查)
 		if (!existingStore.getAddress().equals(req.getAddress())) {
-	        getLatLng(existingStore, req.getAddress());
-	    }
+			getLatLng(existingStore, req.getAddress());
+		}
 		String oldImageUrl = existingStore.getImage();
 		String newImageUrl = req.getImage();
 
@@ -345,15 +341,14 @@ public class StoreService {
 			return new BasicRes(ResMessage.STORE_EXISTS.getCode(), //
 					ResMessage.STORE_EXISTS.getMessage());
 		}
-		
 
 		// 更新店家主表資訊
 		String feeStr = mapper.writeValueAsString(req.getFee_description());
 		storesUpdateDao.updateStore(storeId, req.getStoresname(), req.getPhone(), req.getAddress(), //
 				req.getCategory(), req.getType(), req.getMemo(), //
-				req.getImage(), feeStr, req.isPublish(),//
-				existingStore.getLng(),//
-	            existingStore.getLat());
+				req.getImage(), feeStr, req.isPublish(), //
+				existingStore.getLng(), //
+				existingStore.getLat());
 
 		// 清除舊有的子表資料 (先刪除有外鍵關聯的底層資料)
 		// 順序：OptionItems -> OptionGroups -> Menu -> Categories -> Hours
@@ -542,7 +537,11 @@ public class StoreService {
 	public StoresRes getAllStores() {
 
 		List<Stores> storesList = storesSearchDao.getAllStores();
-		return new StoresRes(ResMessage.STORE_NOT_FOUND.getCode(), "共" + storesList.size() + "筆資料", storesList);
+		if (storesList == null) {
+			return new StoresRes(ResMessage.STORE_NULL_ERROR.getCode(), ResMessage.STORE_NULL_ERROR.getMessage());
+		}
+
+		return new StoresRes(ResMessage.SUCCESS.getCode(), "共" + storesList.size() + "筆資料", storesList);
 	}
 
 //	AI填菜單

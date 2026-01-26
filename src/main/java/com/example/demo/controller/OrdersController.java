@@ -35,10 +35,17 @@ public class OrdersController {
 		return ordersService.updateOrders(req.getId(), req);
 	}
 
+	// 查詢跟團者的開團
+	@GetMapping("gogobuy/getOrdersIdByUserId")
+	public GroupbuyEventsRes getOrdersIdByUserId(@Valid @RequestParam(name = "user_id") String userId) {
+		return ordersService.getOrdersByUserId(userId);
+	}
+
 	// 查詢跟團者的訂單
 	@GetMapping("gogobuy/getEventIdByUserId")
-	public GroupbuyEventsRes getEventIdByUserId(@RequestParam(name = "user_id") String userId) {
-		return ordersService.getEventIdByUserId(userId);
+	public GroupbuyEventsRes getEventIdByUserId(@Valid @RequestParam(name = "user_id") String userId,
+			@RequestParam(name = "events_id") int eventsId) {
+		return ordersService.getEventIdByUserId(userId, eventsId);
 	}
 
 	// 回傳計算完的平均運費
@@ -46,12 +53,11 @@ public class OrdersController {
 	public ShippingFeeRes getShippingFeeByEventId(@RequestParam(name = "events_id") int eventsId) {
 		return ordersService.getShippingFeeByEventId(eventsId);
 	}
-	
+
 	// 軟刪除
 	@PostMapping("gogobuy/deleteOrderByUserIdAndEventsId")
-	public BasicRes deleteOrderByUserIdAndEventsId (
-			@RequestParam(name = "user_id") String userId, //
+	public BasicRes deleteOrderByUserIdAndEventsId(@RequestParam(name = "user_id") String userId, //
 			@RequestParam(name = "events_id") int eventsId) {
-		return ordersService.deleteOrderByUserIdAndEventsId (userId, eventsId);
+		return ordersService.deleteOrderByUserIdAndEventsId(userId, eventsId);
 	}
 }

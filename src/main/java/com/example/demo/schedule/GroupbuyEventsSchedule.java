@@ -17,7 +17,7 @@ public class GroupbuyEventsSchedule {
     private GroupbuyEventsDao groupbuyEventsDao;
 	
     // "0 * * * * *" 代表「每分鐘的第一秒」執行一次
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     @Transactional
     public void autoUpdateEventsStatus() {
         // 在 DAO (SQL) 裡面做比較，找到「時間小於現在」且「狀態還是 OPEN」的團
