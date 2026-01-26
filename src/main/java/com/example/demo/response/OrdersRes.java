@@ -128,12 +128,10 @@ public class OrdersRes extends BasicRes {
 
 	public OrdersRes() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public OrdersRes(int code, String message) {
 		super(code, message);
-		// TODO Auto-generated constructor stub
 	}
 
 	public OrdersRes(int code, String message, int id, int eventsId, String userId, int menuId, int quantity,
@@ -154,8 +152,5 @@ public class OrdersRes extends BasicRes {
 		this.weight = weight;
 	}
 
-	
 
-	
-	
 }

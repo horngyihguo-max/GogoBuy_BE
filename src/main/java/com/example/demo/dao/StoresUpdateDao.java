@@ -20,7 +20,7 @@ public interface StoresUpdateDao extends JpaRepository<Stores, Integer> {
 	@Modifying
 	@Transactional
 	@Query(value = "UPDATE stores SET name = ?2, phone = ?3, address = ?4, category = ?5, "//
-			+ "type = ?6, memo = ?7, image = ?8, fee_description = ?9, is_public = ?10, lng = ?11, lat = ?12"//
+			+ "type = ?6, memo = ?7, image = ?8, fee_description = ?9, is_public = ?10, lng = ?11, lat = ?12 "//
 			+ "WHERE id = ?1", nativeQuery = true)
 	public int updateStore(int id, String name, String phone, String address, String category, String type, String memo,
 			String image, String fee_description, boolean is_public, double lng, double lat);
@@ -42,8 +42,8 @@ public interface StoresUpdateDao extends JpaRepository<Stores, Integer> {
 	// 更新菜單品項
 	@Modifying
 	@Transactional
-	@Query(value = "UPDATE menu SET name = ?2, base_price = ?3, unusual = ?4 WHERE id = ?1", nativeQuery = true)
-	public int updateMenu(int menuId, String name, int basePrice, String unusual);
+	@Query(value = "UPDATE menu SET name = ?2, base_price = ?3, unusual = ?4, is_available = ?5 WHERE id = ?1", nativeQuery = true)
+	public int updateMenu(int menuId, String name, int basePrice, String unusual, boolean available);
 
 	// 更新品項類別群組 (例如: 尺寸級距)
 	@Modifying

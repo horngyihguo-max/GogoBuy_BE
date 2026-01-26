@@ -82,4 +82,9 @@ public class GroupbuyEventsRes extends BasicRes {
 		this.groupsSearchViewList = groupsSearchViewList;
 	}
 
+	public GroupbuyEventsRes(int code, String message, List<Orders> orders) {
+	    super(code, message);
+	    this.orders = orders;
+	}
+
 }
