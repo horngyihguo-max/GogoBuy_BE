@@ -5,10 +5,12 @@ import java.util.Map;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Stores;
+import com.example.demo.projection.StoreDistanceProjection;
 
 @Repository
 public interface StoresSearchDao extends JpaRepository<Stores, Integer>{
@@ -56,5 +58,29 @@ public List<Stores> findStoresByNameLike(String name);
     // 用 storeId 取得地址
     @Query(value = "select address from stores where id = ?1", nativeQuery = true)
     String findAddressByStoreId(int id);
+    
+    //   找飯店(?  (附近)
+
+    @Query(value = "SELECT * FROM (" +
+            "  SELECT id, name, address, phone, image, category, " +
+            "  ROUND((6371 * acos(cos(radians(:lat)) * cos(radians(lat)) * cos(radians(lng) - radians(:lng)) " +
+            "  + sin(radians(:lat)) * sin(radians(lat)))), 3) AS distance " +
+            "  FROM stores " +
+            "  WHERE is_deleted = false AND is_public = true " + // 確保資料庫有 is_public 欄位
+            "  AND lat BETWEEN :minLat AND :maxLat " +
+            "  AND lng BETWEEN :minLng AND :maxLng " +
+            ") AS temp_table " +
+            "WHERE distance <= :radius " +
+            "ORDER BY distance ASC", nativeQuery = true)
+    List<StoreDistanceProjection> findNearbyWithDistance(
+        @Param("lat") double lat, 
+        @Param("lng") double lng, 
+        @Param("radius") double radius,
+        @Param("minLat") double minLat,
+        @Param("maxLat") double maxLat,
+        @Param("minLng") double minLng,
+        @Param("maxLng") double maxLng
+    );
+    
     
 }

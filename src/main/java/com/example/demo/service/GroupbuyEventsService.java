@@ -24,6 +24,7 @@ import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Stores;
 import com.example.demo.entity.User;
+import com.example.demo.projection.GroupbuyEventsProjection;
 import com.example.demo.request.GroupbuyEventsReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;

@@ -27,6 +27,7 @@ import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.StoresUpdateDao;
 import com.example.demo.entity.ProductOptionGroups;
 import com.example.demo.entity.Stores;
+import com.example.demo.projection.StoreDistanceProjection;
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GoogleMapRes;
@@ -203,9 +204,14 @@ public class StoreService {
 //		填入品項
 		List<MenuVo> menuVoList = req.getMenuVoList();
 		for (MenuVo vo : menuVoList) {
-			String unusualStr = mapper.writeValueAsString(vo.getUnusual());
+			//	空值防呆		
+			Object unusualObj = vo.getUnusual() != null ? vo.getUnusual() : new HashMap<>();
+			String unusualStr = mapper.writeValueAsString(unusualObj);
 			storesCreateDao.addMenu(storeId, vo.getCategoryId(), vo.getName(), vo.getDescription(), //
 					vo.getBasePrice(), vo.getImage(), vo.isAvailable(), unusualStr);
+			if (vo.getImage() != null && !vo.getImage().isEmpty()) {
+	            imageService.confirmImage(vo.getImage());
+	        }
 		}
 //		填入品項類別
 		List<MenuCategoriesVo> MenuCategoriesVoList = req.getMenuCategoriesVoList();
@@ -251,8 +257,29 @@ public class StoreService {
 			throw new Exception("地址定位失敗：" + errorMsg);
 		}
 	}
+	
+	
+	// 專門為「用戶搜尋」服務的座標處理
+	private double[] resolveUserLocation(Double lat, Double lng, String address) throws Exception {
+	    // 情況 A：用戶開啟定位，直接傳入座標 (優先度最高)
+	    if (lat != null && lat != 0 && lng != null && lng != 0) {
+	        return new double[]{lat, lng};
+	    }
+	    
+	    // 情況 B：用戶手動輸入搜尋地址 (如：「台北 101」、「台中火車站」)
+	    if (address != null && !address.trim().isEmpty()) {
+	        // 借用一個暫時的 Stores 物件來承接 getLatLng 的結果
+	        Stores tempLoc = new Stores();
+	        getLatLng(tempLoc, address);
+	        return new double[]{tempLoc.getLat(), tempLoc.getLng()};
+	    }
+
+	    // 情況 C：兩者都沒有，無法搜尋
+	    throw new Exception("請開啟定位或輸入搜尋地址喵");
+	}
 
 	// 回滾
+//	創建店家
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes create(StoresReq req) throws Exception {
 
@@ -310,6 +337,10 @@ public class StoreService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
+	
+	
+	
+	
 	// 店家修改
 	@Transactional(rollbackFor = Exception.class)
 	public BasicRes update(int storeId, StoresReq req) throws Exception {
@@ -327,7 +358,12 @@ public class StoreService {
 		String newImageUrl = req.getImage();
 
 		if (oldImageUrl != null && !oldImageUrl.equals(newImageUrl)) {
-			imageService.deleteImage(oldImageUrl);
+		    try {
+		        imageService.deleteImage(oldImageUrl); 
+		    } catch (Exception e) {
+		        // 捕捉但不拋出，確保資料庫更新能繼續
+		        System.err.println("舊圖片刪除失敗，但商店更新繼續執行: " + e.getMessage());
+		    }
 		}
 		// 檢查
 		checkStore(req);
@@ -348,6 +384,35 @@ public class StoreService {
 				req.getImage(), feeStr, req.isPublish(), //
 				existingStore.getLng(), //
 				existingStore.getLat());
+		
+		
+		//  收集舊菜單的所有圖片網址
+		List<Map<String, Object>> oldMenu = storesSearchDao.getMenuByStoreId(storeId);
+		List<String> oldImages = oldMenu.stream()
+		    .map(m -> (String) m.get("image"))
+		    .filter(img -> img != null && !img.isEmpty())
+		    .toList();
+
+		// 收集新 Request 裡所有的圖片網址
+		List<String> newImages = req.getMenuVoList().stream()
+		    .map(MenuVo::getImage)
+		    .filter(img -> img != null && !img.isEmpty())
+		    .toList();
+
+		// 找出「出現在舊名單、但沒出現在新名單」的圖片（代表這些圖被換掉或刪除了）
+		for (String oldImg : oldImages) {
+		    if (!newImages.contains(oldImg)) {
+		        try {
+		            imageService.deleteImage(oldImg);
+		        } catch (Exception e) {
+		            System.err.println("舊品項圖片刪除失敗: " + oldImg);
+		        }
+		    }
+		}
+		// 改新圖標籤
+		if (newImageUrl != null && !newImageUrl.equals(oldImageUrl)) {
+			imageService.confirmImage(newImageUrl);
+		}
 
 		// 清除舊有的子表資料 (先刪除有外鍵關聯的底層資料)
 		// 順序：OptionItems -> OptionGroups -> Menu -> Categories -> Hours
@@ -360,10 +425,6 @@ public class StoreService {
 		// 重新寫入子表資料
 		saveSubTables(storeId, req);
 
-		// 改新圖標籤
-		if (newImageUrl != null && !newImageUrl.equals(oldImageUrl)) {
-			imageService.confirmImage(newImageUrl);
-		}
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
@@ -498,6 +559,9 @@ public class StoreService {
 					// 解析為 Map，保留 JSON 的鍵值結構
 					mVo.setUnusual(mapper.readValue(unusualStr, new TypeReference<Map<String, Object>>() {
 					}));
+				}
+				else {
+				    mVo.setUnusual(java.util.Collections.emptyMap());
 				}
 				menuVoList.add(mVo);
 			}
@@ -675,4 +739,38 @@ public class StoreService {
 			return imageBytes;
 		}
 	}
+	
+	
+//	O公里內店家
+	
+	public StoresRes getNearbyStores(Double lat, Double lng, String address, double radius) {
+	    try {
+	        // 解析實際搜尋的座標
+	        double[] targetCoords = resolveUserLocation(lat, lng, address);
+	        double finalLat = targetCoords[0];
+	        double finalLng = targetCoords[1];
+
+	        // 計算經緯度邊界框 (Bounding Box) 以優化 SQL 效能
+	        double latOffset = radius / 111.0;
+	        double lngOffset = radius / (111.0 * Math.cos(Math.toRadians(finalLat)));
+
+	        double minLat = finalLat - latOffset;
+	        double maxLat = finalLat + latOffset;
+	        double minLng = finalLng - lngOffset;
+	        double maxLng = finalLng + lngOffset;
+
+	        // 呼叫 DAO 進行距離排序搜尋
+	        List<StoreDistanceProjection> projections = storesSearchDao.findNearbyWithDistance(
+	            finalLat, finalLng, radius, minLat, maxLat, minLng, maxLng
+	        );
+
+	        String locationMsg = (address != null && !address.isEmpty()) ? address : "當前定位";
+	        return new StoresRes(ResMessage.SUCCESS.getCode(), 
+	                             "於 [" + locationMsg + "] 半徑 " + radius + " 公里內共搜尋到 " + projections.size() + " 筆", 
+	                             projections, true);
+	    } catch (Exception e) {
+	        return new StoresRes(500, "搜尋失敗: " + e.getMessage());
+	    }
+	}
+	
 }
