@@ -38,7 +38,7 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
 		String provider = "GOOGLE";
 
 		// 2. 判斷是否需要自動註冊
-		if (userDao.getUser(email) == null) {
+		if (userDao.getUserByEmail(email) == null) {
 			userDao.addGoogleUser(UUID.randomUUID().toString(), email, encoder.encode(password), nickname, phone,
 					avatarUrl, provider);
 		}
@@ -58,7 +58,7 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
         String avatarUrl = principal.getAttribute("picture");
 
 		// 2. 去資料庫查看看有沒有這個 Email
-		User user = userDao.getUser(email);
+		User user = userDao.getUserByEmail(email);
 
 		if (user != null) {
             res.put("status", "success");

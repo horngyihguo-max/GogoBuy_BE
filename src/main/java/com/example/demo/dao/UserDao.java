@@ -1,6 +1,7 @@
 package com.example.demo.dao;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.User;
+import com.example.demo.entity.UserInfo;
 
 @Repository
 public interface UserDao extends JpaRepository<User, String> {
@@ -24,11 +26,15 @@ public interface UserDao extends JpaRepository<User, String> {
 //	透過 Email 查詢用戶
 	@Query(value = "Select * from user where email = ?", nativeQuery = true)
 	public User getUserByEmail(String email);
-	
+
 //	透過 ID 查詢用戶
 	@Query(value = "Select * from user where id = ?", nativeQuery = true)
 	public User getUserById(String id);
 
+//	查詢用戶
+	@Query(value = "Select * from user", nativeQuery = true)
+	public List<UserInfo> getAllUser();
+	
 //	更改使用者個人資訊(暱稱、大頭貼、統編)
 	@Modifying
 	@Transactional
@@ -60,8 +66,6 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Query(value = "update user SET otp_code = ?2, otp_expiry=?3 where email = ?1", nativeQuery = true)
 	public int sendOtpByEmail(String email, String otpCode, LocalDateTime otpExpiry);
 
-
-	
 //	修改信箱
 	@Transactional
 	@Modifying
@@ -76,17 +80,14 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Modifying
 	@Query(value = "UPDATE user set otp_code = NULL, otp_expiry = NULL WHERE otp_expiry < ?", nativeQuery = true)
 	int clearExpiredOtp(@Param("now") LocalDateTime now);
-	
 
-//	查詢用戶
-	@Query(value = "Select * from user where email = ?", nativeQuery = true)
-	public User getUser(String email);
-	
+
 
 //	新增Google用戶
 	@Transactional
 	@Modifying
 	@Query(value = "insert into user(id, email, password, nickname, phone, avatar_url, provider) "//
 			+ " values (?1, ?2, ?3, ?4, ?5, ?6, ?7)", nativeQuery = true)
-	public int addGoogleUser(String id, String email, String password, String nickname, String phone , String avatarUrl, String provider);
+	public int addGoogleUser(String id, String email, String password, String nickname, String phone, String avatarUrl,
+			String provider);
 }

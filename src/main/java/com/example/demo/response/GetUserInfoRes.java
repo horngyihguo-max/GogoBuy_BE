@@ -1,8 +1,5 @@
 package com.example.demo.response;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-
 public class GetUserInfoRes extends BasicRes {
 
 	private String id;

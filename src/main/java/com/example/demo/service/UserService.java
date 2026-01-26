@@ -23,6 +23,7 @@ import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.GetUserInfoListRes;
 import com.example.demo.response.GetUserInfoRes;
 import com.example.demo.response.LoginRes;
 
@@ -90,6 +91,10 @@ public class UserService {
 
 		return new LoginRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage(), user.getId());
+	}
+	
+	public GetUserInfoListRes getAllUser() {
+		return new GetUserInfoListRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), userDao.getAllUser());
 	}
 
 	public GetUserInfoRes getUser(String id) {

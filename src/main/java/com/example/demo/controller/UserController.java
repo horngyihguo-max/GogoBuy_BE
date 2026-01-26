@@ -22,6 +22,8 @@ import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.GetUserInfoListRes;
+import com.example.demo.response.GetUserInfoRes;
 import com.example.demo.service.GoogleOAuth2Service;
 import com.example.demo.service.UserService;
 
@@ -72,6 +74,11 @@ public class UserController {
 	@GetMapping("gogobuy/user/get-user")
 	public BasicRes getUser(@RequestParam("id") String id) {
 		return userService.getUser(id);
+	}
+
+	@GetMapping("gogobuy/user/get-all-user")
+	public GetUserInfoListRes getAllUser() {
+		return userService.getAllUser();
 	}
 
 	/*
@@ -145,7 +152,5 @@ public class UserController {
 	public BasicRes sendOtpByEmail(@RequestBody String email) {
 		return userService.sendOtpByEmail(email);
 	}
-	
-	
 
 }

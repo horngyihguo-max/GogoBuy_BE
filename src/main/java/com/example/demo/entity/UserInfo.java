@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "user")
-public class User {
+public class UserInfo {
 
 	@Id
 	@Column(name = "id")
@@ -24,22 +24,11 @@ public class User {
 	@Column(name = "role")
 	private String role;
 
-	public String getRole() {
-		return role;
-	}
-
-	public void setRole(String role) {
-		this.role = role;
-	}
-
 	@Column(name = "phone")
 	private String phone;
 
 	@Column(name = "avatar_url")
 	private String avatarUrl;
-
-	@Column(name = "password")
-	private String password;
 
 	@Column(name = "exp")
 	private int exp;
@@ -50,30 +39,6 @@ public class User {
 	@Column(name = "provider")
 	private String provider;
 
-	public String getProvider() {
-		return provider;
-	}
-
-	public void setProvider(String provider) {
-		this.provider = provider;
-	}
-
-	public int getTimesRemaining() {
-		return timesRemaining;
-	}
-
-	public void setTimesRemaining(int timesRemaining) {
-		this.timesRemaining = timesRemaining;
-	}
-
-	public int getExp() {
-		return exp;
-	}
-
-	public void setExp(int exp) {
-		this.exp = exp;
-	}
-
 	@Column(name = "carrier")
 	private String carrier;
 
@@ -82,22 +47,6 @@ public class User {
 
 	@Column(name = "otp_expiry")
 	private LocalDateTime otpExpiry;
-
-	public String getOtpCode() {
-		return otpCode;
-	}
-
-	public void setOtpCode(String otpCode) {
-		this.otpCode = otpCode;
-	}
-
-	public LocalDateTime getOtpExpiry() {
-		return otpExpiry;
-	}
-
-	public void setOtpExpiry(LocalDateTime otpExpiry) {
-		this.otpExpiry = otpExpiry;
-	}
 
 	public String getId() {
 		return id;
@@ -123,6 +72,14 @@ public class User {
 		this.email = email;
 	}
 
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
 	public String getPhone() {
 		return phone;
 	}
@@ -139,12 +96,28 @@ public class User {
 		this.avatarUrl = avatarUrl;
 	}
 
-	public String getPassword() {
-		return password;
+	public int getExp() {
+		return exp;
 	}
 
-	public void setPassword(String password) {
-		this.password = password;
+	public void setExp(int exp) {
+		this.exp = exp;
+	}
+
+	public int getTimesRemaining() {
+		return timesRemaining;
+	}
+
+	public void setTimesRemaining(int timesRemaining) {
+		this.timesRemaining = timesRemaining;
+	}
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
 	}
 
 	public String getCarrier() {
@@ -153,6 +126,22 @@ public class User {
 
 	public void setCarrier(String carrier) {
 		this.carrier = carrier;
+	}
+
+	public String getOtpCode() {
+		return otpCode;
+	}
+
+	public void setOtpCode(String otpCode) {
+		this.otpCode = otpCode;
+	}
+
+	public LocalDateTime getOtpExpiry() {
+		return otpExpiry;
+	}
+
+	public void setOtpExpiry(LocalDateTime otpExpiry) {
+		this.otpExpiry = otpExpiry;
 	}
 
 }
