@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import com.example.demo.Projection.GroupbuyEventsProjection;
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
@@ -396,7 +397,7 @@ public class GroupbuyEventsService {
 	// 回傳全部開團的
 	public GroupbuyEventsRes getAll() {
 		try {
-			List<GroupbuyEvents> list = groupbuyEventsDao.getAll();
+			List<GroupbuyEventsProjection> list = groupbuyEventsDao.getAll();
 			if (list == null) {
 				return new GroupbuyEventsRes(200, "目前暫無任何開團資料");
 			}
