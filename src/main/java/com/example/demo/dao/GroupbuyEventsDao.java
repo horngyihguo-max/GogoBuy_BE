@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.Projection.GroupbuyEventsProjection;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Menu;
+import com.example.demo.projection.GroupbuyEventsProjection;
 
 @Repository
 public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer> {

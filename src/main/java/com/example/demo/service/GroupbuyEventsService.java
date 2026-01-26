@@ -23,6 +23,7 @@ import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Stores;
 import com.example.demo.entity.User;
+import com.example.demo.projection.GroupbuyEventsProjection;
 import com.example.demo.request.GroupbuyEventsReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
@@ -396,7 +397,7 @@ public class GroupbuyEventsService {
 	// 回傳全部開團的
 	public GroupbuyEventsRes getAll() {
 		try {
-			List<GroupbuyEvents> list = groupbuyEventsDao.getAll();
+			List<GroupbuyEventsProjection> list = groupbuyEventsDao.getAll();
 			if (list == null) {
 				return new GroupbuyEventsRes(200, "目前暫無任何開團資料");
 			}
