@@ -13,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.request.StoresReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.StoresRes;
 import com.example.demo.service.StoreService;
 
 import jakarta.validation.Valid;
@@ -104,4 +105,22 @@ public class StoresController {
                                  .body("AI 辨識失敗：" + e.getMessage());
         }
     }
+	
+	
+	//附近店家	
+	// 附近店家搜尋 (整合定位與地址)
+	@GetMapping("gogobuy/store/searchNearby")
+	public StoresRes getNearby(
+	        @RequestParam(name = "lat", required = false) Double lat,  // 改為 Double 支援 null
+	        @RequestParam(name = "lng", required = false) Double lng,  // 改為 Double 支援 null
+	        @RequestParam(name = "address", required = false) String address, // 新增地址參數
+	        @RequestParam(name = "radius", required = false, defaultValue = "5.0") double radius) {
+
+	    // 設定硬性上下限：最小 0 公里，最大 50 公里 (超出則設為 20)
+	    if (radius < 0) radius = 0;
+	    if (radius > 50.0) radius = 20.0;
+
+	    // 呼叫 Service
+	    return storeService.getNearbyStores(lat, lng, address, radius);
+	}
 }
