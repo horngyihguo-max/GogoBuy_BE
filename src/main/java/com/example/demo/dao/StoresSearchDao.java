@@ -33,7 +33,7 @@ public List<Stores> findStoresByNameLike(String name);
     public List<Map<String, Object>> getOperatingHoursByStoreId(int storeId);
 
     // 取得菜單品項
-    @Query(value = "SELECT stores_id as storesId, id, category_id as categoryId, name, description, base_price as basePrice, image, unusual FROM menu WHERE stores_id = ?1", nativeQuery = true)
+    @Query(value = "SELECT stores_id as storesId, id, category_id as categoryId, name, description, base_price as basePrice, image, is_available as available, unusual FROM menu WHERE stores_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getMenuByStoreId(int storeId);
 
     // 取得品項類別 (包含價格級距 JSON)
@@ -52,5 +52,9 @@ public List<Stores> findStoresByNameLike(String name);
     // (給EVENT)   依值搜尋(多個)品項
     @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
     List<Menu> getMenuByMenuId(List<Integer> menuId);
-       
+    
+    // 用 storeId 取得地址
+    @Query(value = "select address from stores where id = ?1", nativeQuery = true)
+    String findAddressByStoreId(int id);
+    
 }

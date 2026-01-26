@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import com.google.maps.GeoApiContext;
 
 @Configuration
-public class GoogleMapConfing {
+public class GoogleMapConfig {
 
 	@Bean
 	//工具人物件（GeoApiContext），讓它跟 Google 溝通
