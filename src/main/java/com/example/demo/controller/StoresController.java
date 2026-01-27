@@ -116,9 +116,9 @@ public class StoresController {
 	        @RequestParam(name = "address", required = false) String address, // 新增地址參數
 	        @RequestParam(name = "radius", required = false, defaultValue = "5.0") double radius) {
 
-	    // 設定硬性上下限：最小 0 公里，最大 50 公里 (超出則設為 20)
+	    // 設定硬性上下限：最小 0 公里，最大 20 公里 (超出則設為 20)
 	    if (radius < 0) radius = 0;
-	    if (radius > 50.0) radius = 20.0;
+	    if (radius > 20.0) radius = 20.0;
 
 	    // 呼叫 Service
 	    return storeService.getNearbyStores(lat, lng, address, radius);

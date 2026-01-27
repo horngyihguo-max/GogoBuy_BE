@@ -37,7 +37,7 @@ public class UserService {
 
 	@Autowired
 	private JavaMailSender mailSender;
-	
+
 	@Autowired
 	private ImageService imageService;
 
@@ -92,9 +92,10 @@ public class UserService {
 		return new LoginRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage(), user.getId());
 	}
-	
+
 	public GetUserInfoListRes getAllUser() {
-		return new GetUserInfoListRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(), userDao.getAllUser());
+		return new GetUserInfoListRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(),
+				userDao.getAllUser());
 	}
 
 	public GetUserInfoRes getUser(String id) {
@@ -105,8 +106,9 @@ public class UserService {
 		}
 		return new GetUserInfoRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage(), user.getId(), //
-				user.getNickname(), user.getEmail(), user.getPhone(), //
-				user.getAvatarUrl(), user.getCarrier(), user.getExp(), //
+				user.getNickname(), user.getEmail(), //
+				user.getPhone(), user.getAvatarUrl(), //
+				user.getCarrier(), user.getExp(), user.getRole(), //
 				user.getTimesRemaining(), user.getProvider());
 	}
 
@@ -373,29 +375,28 @@ public class UserService {
 	 * return new BasicRes(ResMessage.SUCCESS.getCode(), //
 	 * ResMessage.SUCCESS.getMessage()); }
 	 */
-	
+
 	@Transactional
 	public BasicRes changeAvatar(String id, MultipartFile file) {
-	    try {
-	        // 檢查用戶是否存在
-	        User user = userDao.getUserById(id);
-	        if (user == null) {
-	            return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
-	        }
+		try {
+			// 檢查用戶是否存在
+			User user = userDao.getUserById(id);
+			if (user == null) {
+				return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
+			}
 
-	        //  ImageService 進行 Cloudinary 上傳
-	        String newAvatarUrl = imageService.uploadImage(file, "avatars");
+			// ImageService 進行 Cloudinary 上傳
+			String newAvatarUrl = imageService.uploadImage(file, "avatars");
 
-	        // 更新資料庫
-	        userDao.updateProfile(user.getNickname(), newAvatarUrl, user.getCarrier(), id);
+			// 更新資料庫
+			userDao.updateProfile(user.getNickname(), newAvatarUrl, user.getCarrier(), id);
 
-	        return new BasicRes(ResMessage.SUCCESS.getCode(), "圖片上傳成功"); 
-	        
-	    } catch (IOException e) {
-	    	//	借400用
-	        return new BasicRes(ResMessage.REGISTRATION_ERROR.getCode(), "圖片上傳失敗");
-	    }
+			return new BasicRes(ResMessage.SUCCESS.getCode(), "圖片上傳成功");
+
+		} catch (IOException e) {
+			// 借400用
+			return new BasicRes(ResMessage.REGISTRATION_ERROR.getCode(), "圖片上傳失敗");
+		}
 	}
-	
-	
+
 }
