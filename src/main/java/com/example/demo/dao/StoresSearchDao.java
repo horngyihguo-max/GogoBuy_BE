@@ -88,5 +88,4 @@ public List<Stores> findStoresByNameLike(String name);
         @Param("maxLng") double maxLng
     );
     
-    
 }
