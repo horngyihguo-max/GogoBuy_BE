@@ -74,24 +74,23 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public List<Menu> getMenuByStoresId(int storesId);
 
 	// 查詢全部的開團
-		@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id where e.status = 'OPEN' and e.is_deleted = false", nativeQuery = true)
-		public List<GroupbuyEventsProjection> getAll();
-		
-	//eventsId 查詢 event
+	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id where e.status = 'OPEN' and e.is_deleted = false", nativeQuery = true)
+	public List<GroupbuyEventsProjection> getAll();
+
+	// eventsId 查詢 event
 	@Query(value = "select * from groupbuy_events where id= ?1 and is_deleted = false", nativeQuery = true)
 	public List<GroupbuyEvents> getEventsByEventsId(int id);
 
 	// 用店家Id找符合的團
 	@Query(value = "select * from groupbuy_events where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<GroupbuyEvents> getGroupbuyEventByStoresId(int storesId);
-	
+
 	// 查詢運費狀態
 	@Query(value = "select split_type from groupbuy_events where id = ?1 and is_deleted = false ", nativeQuery = true)
 	public String getSplitTypeById(int eventsId);
 
-	//查詢 時間已到 且 狀態OPEN 的活動
+	// 查詢 時間已到 且 狀態OPEN 的活動
 	@Query(value = "select * from groupbuy_events where status = 'OPEN' and end_time <= now() and is_deleted = false ", nativeQuery = true)
-	public List<GroupbuyEvents> findByEndTimeBeforeAndStatus(
-			@Param("status") String status, 
-		    @Param("now") LocalDateTime now);
+	public List<GroupbuyEvents> findByEndTimeBeforeAndStatus(@Param("status") String status,
+			@Param("now") LocalDateTime now);
 }

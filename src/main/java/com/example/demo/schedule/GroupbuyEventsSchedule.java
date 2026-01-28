@@ -13,6 +13,8 @@ import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.service.GroupbuyEventsService;
 
+import jakarta.transaction.Transactional;
+
 @Service
 
 public class GroupbuyEventsSchedule {

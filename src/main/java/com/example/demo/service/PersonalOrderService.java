@@ -9,15 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.constants.PaymentStatus;
-import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.OrdersDao;
 import com.example.demo.dao.PersonalOrderDao;
 import com.example.demo.dao.UserDao;
-import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.PersonalOrder;
 import com.example.demo.request.personalOrderReq;
-import com.example.demo.response.BasicRes;
 import com.example.demo.response.PersonalOrdersRes;
 import com.example.demo.response.ShippingFeeRes;
 
@@ -109,34 +106,34 @@ public class PersonalOrderService {
 				int totalPeople = orderList.size();
 				int baseFee = shippingFee / totalPeople;
 				int remainder = shippingFee % totalPeople;
-					// 隨機打亂名單，這樣隨機才公平
-					Collections.shuffle(orderList);
-					// 開始一個一個分配金額
-					for (int i = 0; i < orderList.size(); i++) {
-						int finalFee = 0;
-						if (i < remainder) {
-							finalFee = baseFee + 1;
-						} else {
-							finalFee = baseFee;
-						}
-						PersonalOrder personalOrder = orderList.get(i);
-						personalOrder.setPersonFee(finalFee);
-						personalOrder.setTotalSum(personalOrder.getTotalSum() + finalFee);
-						personalOrder.setPaymentTime(null);
+				// 隨機打亂名單，這樣隨機才公平
+				Collections.shuffle(orderList);
+				// 開始一個一個分配金額
+				for (int i = 0; i < orderList.size(); i++) {
+					int finalFee = 0;
+					if (i < remainder) {
+						finalFee = baseFee + 1;
+					} else {
+						finalFee = baseFee;
+					}
+					PersonalOrder personalOrder = orderList.get(i);
+					personalOrder.setPersonFee(finalFee);
+					personalOrder.setTotalSum(personalOrder.getTotalSum() + finalFee);
+					personalOrder.setPaymentTime(null);
 				}
-			} else if(paymentStatus.equals("WEIGHT")) {
-				double totalWeight =ordersDao.sumTotalWeightByEventId(eventsId);
+			} else if (paymentStatus.equals("WEIGHT")) {
+				double totalWeight = ordersDao.sumTotalWeightByEventId(eventsId);
 				if (totalWeight <= 0) {
 					return new ShippingFeeRes(400, "權重計算失敗：總重量為 0");
 				}
-				for (PersonalOrder po :orderList) {
-					double userTotalWeight=ordersDao.sumWeightByEventIdAndUserId(eventsId, po.getUserId());
+				for (PersonalOrder po : orderList) {
+					double userTotalWeight = ordersDao.sumWeightByEventIdAndUserId(eventsId, po.getUserId());
 					// 取整數 使用 Math.round 會根據小數點第一位判斷是否進位
-					int weightFee = (int) Math.round((double) userTotalWeight/ totalWeight * shippingFee);
+					int weightFee = (int) Math.round((double) userTotalWeight / totalWeight * shippingFee);
 
 					po.setTotalWeight(userTotalWeight);
 					po.setPersonFee(weightFee);
-					po.setTotalSum(po.getTotalSum() +weightFee);
+					po.setTotalSum(po.getTotalSum() + weightFee);
 					po.setPaymentTime(null);
 				}
 			}
