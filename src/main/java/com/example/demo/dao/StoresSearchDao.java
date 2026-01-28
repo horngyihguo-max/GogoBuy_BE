@@ -52,4 +52,7 @@ public List<Stores> findStoresByNameLike(String name);
     @Query(value = "select address from stores where id = ?1", nativeQuery = true)
     String findAddressByStoreId(int id);
     
+  //單個菜單(查價)
+    @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
+    Menu getMenuByMenuId(int menuId);
 }

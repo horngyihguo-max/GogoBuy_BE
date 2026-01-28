@@ -26,15 +26,12 @@ public class OredersReq {
 	
 	private String personalMemo;
 	
-	@NotNull(message = "訂單時間不能為空")
 	private LocalDateTime orderTime;
 	
-	@NotNull(message = "支付狀態必填")
 	private PickupStatusEnum pickupStatus;
 	
 	private LocalDateTime pickupTime;
 	
-	@NotNull(message = "創建時間必填")
 	private int subtotal;
 	
 	private double weight;

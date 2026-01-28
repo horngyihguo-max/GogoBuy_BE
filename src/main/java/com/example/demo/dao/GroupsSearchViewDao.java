@@ -14,4 +14,8 @@ public interface GroupsSearchViewDao extends JpaRepository<GroupsSearchView, Int
 		@Query(value = "select * from groups_search_view where host_nickname like %?%", nativeQuery = true)
 		public List<GroupsSearchView> getGroupbuyEventByNickname (String hostNickname);
 
+	// eventId 查詢 hostNickname
+		@Query(value = "select host_nickname from groups_search_view where event_id =?1 ", nativeQuery = true)
+		public List<GroupsSearchView> getNicknameByEventId (int eventId);
+		
 }

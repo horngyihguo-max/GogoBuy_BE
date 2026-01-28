@@ -12,20 +12,24 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
+import com.example.demo.constants.PaymentStatus;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.GroupsSearchViewDao;
 import com.example.demo.dao.OrdersDao;
+import com.example.demo.dao.PersonalOrderDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
+import com.example.demo.entity.Orders;
 import com.example.demo.entity.Stores;
 import com.example.demo.entity.User;
 import com.example.demo.request.GroupbuyEventsReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
+import com.example.demo.response.ShippingFeeRes;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -45,6 +49,12 @@ public class GroupbuyEventsService {
 	
 	@Autowired
 	private OrdersDao ordersDao;
+	
+	@Autowired
+    private PersonalOrderDao personalOrderDao;
+	
+	@Autowired
+    private PersonalOrderService personalOrderService;
 	
 	ObjectMapper mapper = new ObjectMapper();
 
@@ -286,7 +296,7 @@ public class GroupbuyEventsService {
 	
 	// 團長手動結單
 	@Transactional
-	public BasicRes updateStatus(String status, int id, String hostId) {
+	public BasicRes HostCloseEvent( int id, String hostId) {
 	    GroupbuyEvents event = groupbuyEventsDao.findById(id);
 	    if (event == null) {
 	        return new BasicRes(404, "找不到該團購活動");
@@ -297,14 +307,51 @@ public class GroupbuyEventsService {
 	    if (event.getStatus() == GroupbuyStatusEnum.FINISHED) {
 	        return new BasicRes(400, "此團已經是結單狀態");
 	    }
-	    
-	    // 更新資料庫狀態
-	    int updateStatus = groupbuyEventsDao.updateStatus( GroupbuyStatusEnum.FINISHED.name(),id,hostId);
-	    
-	    if (updateStatus > 0) {
-	        return new BasicRes(200, "結單成功");
-	    }
-	    return new BasicRes(500, "結單失敗");
+	    BasicRes autoClose = closeEvent(id,  hostId);
+	    return autoClose;
+	}
+	 
+	// 結單功能
+	@Transactional
+	public BasicRes  closeEvent(int id, String userId) {
+		// 手動結單完查詢所屬活動的跟團者做自動生產addPersonOrder資料
+		  List<Orders> ordersInfoList = ordersDao.getUserAllByEventsId(id);
+		  // 檢查
+		  if(ordersInfoList==null || ordersInfoList.isEmpty()) {
+			  return new BasicRes(400, "查無此 ordersInfoList 資料");
+		  }
+		  List<String> userIdList = ordersDao.getUserIdByEventsId(id);
+		  for(String userIdStr : userIdList) {
+			// 計算該用戶個人的數據
+			  //此用戶的全部小計
+			    int userSubtotal = ordersDao.sumSubtotalByEventIdAndUserId(id, userIdStr);
+			    //此用戶的全部重量
+			    Double userWeight = ordersDao.sumWeightByEventIdAndUserId(id, userIdStr);
+			    // 新增
+			    personalOrderDao.addPersonalOrder(
+			    		id, 
+			    		userIdStr, 
+			    		userWeight, 
+			    		0,
+			    		userSubtotal,
+			    		PaymentStatus.UNPAID.name());
+			}
+		  //此用戶的運費計算
+		  ShippingFeeRes feeRes = personalOrderService.getShippingFeeByEventId(id, userId);
+		  if (feeRes.getCode() == 200) {
+		        // 更新活動狀態為 FINISHED
+		        groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.FINISHED.name(), id, userId);
+		        return new BasicRes(200, "結單成功，帳單已產生並完成運費分攤");
+		    } else {
+		        return new BasicRes(400, "帳單已產生但運費計算出錯：" + feeRes.getMessage());
+		    }
+	}
+	
+	// 排程結單
+	@Transactional
+	public BasicRes autoCloseEvent(int id, String userId) {
+		  BasicRes autoClose = closeEvent(id,  userId);
+		    return autoClose;
 	}
 	
 	// 軟刪除
@@ -333,9 +380,7 @@ public class GroupbuyEventsService {
 				return new GroupbuyEventsRes(400, "輸入正確的host_id");
 			}
 			List<GroupbuyEvents> eventsList = groupbuyEventsDao.getGroupbuyEventById(hostId);
-			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "host_id 搜尋成功");
-			res.setGroupbuyEvents(eventsList);
-			return res;
+			return new GroupbuyEventsRes(200, "host_id 搜尋成功", eventsList, null, null, null);
 		} catch (Exception e) {
 			return new GroupbuyEventsRes(500, "host_id 搜尋失敗");
 		}
@@ -421,6 +466,15 @@ public class GroupbuyEventsService {
 		} catch (Exception e) {
 			return new GroupbuyEventsRes(500, "這裡失敗?");
 		}
+	}
+	
+	// 回傳eventsId的活動
+	public GroupbuyEventsRes getEventsByEventsId(int id) {
+		List<GroupbuyEvents> geList = groupbuyEventsDao.getEventsByEventsId(id);
+		if(geList == null) {
+			return new GroupbuyEventsRes(404, "查無此資料");
+		}
+		return new GroupbuyEventsRes(200, "成功查詢資料", geList, null, null, null) ;
 	}
 
 }

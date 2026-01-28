@@ -24,6 +24,8 @@ public class GroupbuyEventsRes extends BasicRes {
 
 	private List<GroupsSearchView> groupsSearchViewList;
 
+
+
 	public List<GroupbuyEvents> getGroupbuyEvents() {
 		return groupbuyEvents;
 	}
@@ -95,5 +97,8 @@ public class GroupbuyEventsRes extends BasicRes {
 	    super(code, message);
 	    this.orders = orders;
 	}
+
+
+	
 
 }

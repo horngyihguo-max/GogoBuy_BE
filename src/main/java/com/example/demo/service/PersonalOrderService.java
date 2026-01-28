@@ -1,13 +1,14 @@
 package com.example.demo.service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.constants.PaymentStatus;
-import com.example.demo.constants.PickupStatusEnum;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.OrdersDao;
@@ -17,6 +18,8 @@ import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.PersonalOrder;
 import com.example.demo.request.personalOrderReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.PersonalOrdersRes;
+import com.example.demo.response.ShippingFeeRes;
 
 @Service
 @Transactional
@@ -30,60 +33,32 @@ public class PersonalOrderService {
 
 	@Autowired
 	private OrdersDao ordersDao;
-	
-
 
 	@Autowired
 	private PersonalOrderDao personalOrderDao;
 
-	private BasicRes checkEvent(personalOrderReq req) {
-		// 檢查有無所屬團ID
-		GroupbuyEvents events = groupbuyEventsDao.findById(req.getEventsId());
-		if (events == null) {
-			return new BasicRes(ResMessage.EVENTS_NOT_FOUND.getCode(), ResMessage.EVENTS_NOT_FOUND.getMessage());
-		}
-		// 檢查跟團者ID
-		if (userDao.getUserById(req.getUserId()) == null) {
-			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
-		}
-		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
-	}
+	// 結單後生成
+	public void addPersonalOrder(int eventId, String userId, int totalSum, double totalWeight, int personFee) {
+		PersonalOrder addpo = new PersonalOrder();
+		addpo.setEventsId(eventId);
+		addpo.setUserId(userId);
+		addpo.setTotalSum(totalSum);
+		addpo.setTotalWeight(totalWeight);
+		addpo.setPersonFee(personFee);
+		addpo.setPaymentStatus(PaymentStatus.UNPAID);
 
-	// 新增
-	public BasicRes addPersonalOrder(personalOrderReq req) {
-		BasicRes checkResult = checkEvent(req);
-		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
-			return checkResult;
-		}
-		PersonalOrder po = personalOrderDao.findByEventsIdAndUserId(req.getEventsId(), req.getUserId());
-		if (po != null) {
-			return new BasicRes(400, "該用戶在此活動中已存在結算單");
-		}
-
-		try {
-			PersonalOrder personalOrder = new PersonalOrder();
-			personalOrder.setEventsId(req.getEventsId());
-			personalOrder.setUserId(req.getUserId());
-			personalOrder.setTotalWeight(req.getTotalWeight());
-			personalOrder.setPersonFee(req.getPersonFee());
-			personalOrder.setTotalSum(req.getTotalSum());
-			personalOrder.setPaymentStatus(PaymentStatus.UNPAID);
-			personalOrderDao.save(personalOrder);
-			return new BasicRes(200, "個人結算單建立成功");
-		} catch (Exception e) {
-			return new BasicRes(500, "資料庫寫入異常，請檢查欄位格式");
-		}
+		personalOrderDao.save(addpo);
 	}
 
 	// 更新結單狀態
-	public BasicRes updatePersonalOrder(personalOrderReq req) {
+	public PersonalOrdersRes updatePersonalOrder(personalOrderReq req) {
 		try {
 			// 查詢該筆「結算單」是否存在
 			PersonalOrder order = personalOrderDao.findByEventsIdAndUserId(req.getEventsId(), req.getUserId());
 			if (order == null) {
-				return new BasicRes(404, "找不到此結算單資料");
+				return new PersonalOrdersRes(404, "找不到此結算單資料");
 			}
-			
+
 			order.setTotalWeight(req.getTotalWeight());
 			order.setPersonFee(req.getPersonFee());
 			order.setTotalSum(req.getTotalSum());
@@ -91,22 +66,84 @@ public class PersonalOrderService {
 			// 狀態與時間邏輯處理
 			PaymentStatus paymentStatus = req.getPaymentStatus();
 			if (paymentStatus != null) {
-	            // 處理支付時間紀錄
-	            if (paymentStatus == PaymentStatus.PAID) {
-	                if (order.getPaymentTime() == null) {
-	                    order.setPaymentTime(LocalDateTime.now());
-	                }
-	            }
-	            
-	            if (paymentStatus == PaymentStatus.CONFIRMED ) {
-	                ordersDao.updateStatusByEventAndUser(req.getEventsId(), req.getUserId());
-	            }
-	            order.setPaymentStatus(paymentStatus);
-	        }
-	        personalOrderDao.save(order);
-			return new BasicRes(200, "更新成功");
+				// 處理支付時間紀錄
+				if (paymentStatus == PaymentStatus.PAID) {
+					if (order.getPaymentTime() == null) {
+						order.setPaymentTime(LocalDateTime.now());
+					}
+				}
+
+				if (paymentStatus == PaymentStatus.CONFIRMED) {
+					ordersDao.updateStatusByEventAndUser(req.getEventsId(), req.getUserId());
+				}
+				order.setPaymentStatus(paymentStatus);
+			}
+			personalOrderDao.save(order);
+			return new PersonalOrdersRes(200, "更新成功");
 		} catch (Exception e) {
-			return new BasicRes(500, "更新系統異常: " + e.getMessage());
+			return new PersonalOrdersRes(500, "更新系統異常: " + e.getMessage());
+		}
+	}
+
+	// 計算平分拆帳
+	public ShippingFeeRes getShippingFeeByEventId(int eventsId, String userId) {
+		try {
+			// 找此單的運費是多少
+			Integer shippingFee = ordersDao.getShippingFeeByEventId(eventsId);
+			// 用list存此單的userId
+			List<PersonalOrder> orderList = personalOrderDao.findUserIdByEventsId(eventsId);
+			// 檢查List有沒有人
+			if (orderList.isEmpty()) {
+				return new ShippingFeeRes(200, "目前無人跟團，運費總額為：" + shippingFee);
+			}
+			// 檢查list有沒有金額是0的
+			for (PersonalOrder po : orderList) {
+				if (po.getTotalSum() == 0) {
+					return new ShippingFeeRes(400, "錯誤：成員 " + po.getUserId() + " 的商品金額為 0");
+				}
+			}
+
+			// 計算平分運費相關
+			String paymentStatus = groupbuyEventsDao.getSplitTypeById(eventsId);
+			if (paymentStatus.equals("EQUAL")) {
+				int totalPeople = orderList.size();
+				int baseFee = shippingFee / totalPeople;
+				int remainder = shippingFee % totalPeople;
+					// 隨機打亂名單，這樣隨機才公平
+					Collections.shuffle(orderList);
+					// 開始一個一個分配金額
+					for (int i = 0; i < orderList.size(); i++) {
+						int finalFee = 0;
+						if (i < remainder) {
+							finalFee = baseFee + 1;
+						} else {
+							finalFee = baseFee;
+						}
+						PersonalOrder personalOrder = orderList.get(i);
+						personalOrder.setPersonFee(finalFee);
+						personalOrder.setTotalSum(personalOrder.getTotalSum() + finalFee);
+						personalOrder.setPaymentTime(null);
+				}
+			} else if(paymentStatus.equals("WEIGHT")) {
+				double totalWeight =ordersDao.sumTotalWeightByEventId(eventsId);
+				if (totalWeight <= 0) {
+					return new ShippingFeeRes(400, "權重計算失敗：總重量為 0");
+				}
+				for (PersonalOrder po :orderList) {
+					double userTotalWeight=ordersDao.sumWeightByEventIdAndUserId(eventsId, po.getUserId());
+					// 取整數 使用 Math.round 會根據小數點第一位判斷是否進位
+					int weightFee = (int) Math.round((double) userTotalWeight/ totalWeight * shippingFee);
+
+					po.setTotalWeight(userTotalWeight);
+					po.setPersonFee(weightFee);
+					po.setTotalSum(po.getTotalSum() +weightFee);
+					po.setPaymentTime(null);
+				}
+			}
+			personalOrderDao.saveAll(orderList);
+			return new ShippingFeeRes(200, "運費計算與分配成功！");
+		} catch (Exception e) {
+			return new ShippingFeeRes(500, "系統計算出錯：" + e.getMessage());
 		}
 	}
 }
