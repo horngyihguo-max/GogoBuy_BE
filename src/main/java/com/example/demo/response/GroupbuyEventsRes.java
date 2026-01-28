@@ -24,7 +24,13 @@ public class GroupbuyEventsRes extends BasicRes {
 
 	private List<GroupsSearchView> groupsSearchViewList;
 
+<<<<<<< HEAD
 	public List<?> getGroupbuyEvents() {
+=======
+
+
+	public List<GroupbuyEvents> getGroupbuyEvents() {
+>>>>>>> 555357c409098fdc01bf930a94e6a02ed4bcc1cb
 		return groupbuyEvents;
 	}
 
@@ -86,5 +92,8 @@ public class GroupbuyEventsRes extends BasicRes {
 	    super(code, message);
 	    this.orders = orders;
 	}
+
+
+	
 
 }

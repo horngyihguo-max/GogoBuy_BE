@@ -55,14 +55,14 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	public Double sumTotalWeightByEventId(int eventId);
 
 	// 查詢userId在該團的商品小計總額
-	@Query(value = "select sum(subtotal) from orders where events_id = ?1 and user_id = ?2 and is_deleted = false", nativeQuery = true)
-	public int sumSubtotalByEventIdAndUserId(int eventId, String userId);
+	@Query(value = "select subtotal from orders where events_id = ?1 and user_id = ?2 and is_deleted = false", nativeQuery = true)
+	public Integer sumSubtotalByEventIdAndUserId(int eventId, String userId);
 
 	// userId 檢索 order 所有的跟團紀錄
 	@Query(value = "select * from orders where user_id = ?1 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getOrdersByUserId(String userId);
 	
-	// userId 檢索 eventsId 訂單
+	// userId 和 eventsId 找訂單所有商品
 	@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getEventIdByUserId(String userId , int eventsId);
 	
@@ -72,7 +72,7 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 
 	// 根據 eventsId 去查詢 shippingFee
 	@Query(value = "select shipping_fee from groupbuy_events where id = ?1 ", nativeQuery = true)
-	public int getShippingFeeByEventId(int id);
+	public Integer getShippingFeeByEventId(int id);
 
 	// 軟刪除 eventId跟userId找的特定欄位
 	@Transactional
@@ -89,7 +89,25 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	// 更新領取狀態
 	@Transactional
 	@Modifying
-	@Query(value = "update orders set pickup_status = 'PICKED_UP' where events_id = ?1  and user_id = ?2 and is_deleted = false", nativeQuery = true)
+	@Query(value = "update orders set pickup_status = 'PICKED_UP',pickup_time = now() where events_id = ?1  and user_id = ?2 and is_deleted = false", nativeQuery = true)
 	public void updateStatusByEventAndUser(int eventsId, String userId);
 	
+	// 用 eventsId  查詢 subTotal 
+	@Query(value = "select subtotal from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
+	public Integer getSubTotalByEventsId(int eventsId);
+	
+	//找有誰是這個eventsId的不重複跟團者
+	@Query(value = "select user_id as userId from orders where events_id = ?1 and is_deleted = false  group by user_id", nativeQuery = true)
+	public List<String> getUserIdByEventsId(int eventsId);
+	
+	//找這個eventsId的跟團者的資料
+	//拿來做自動生產
+	@Query(value = "select * from orders where events_id =?1 and is_deleted = false ", nativeQuery = true)
+	public List<Orders> getUserAllByEventsId(int eventsId);
+	
+	//用 userId 查詢 selectedOption 
+	@Query(value = "select selected_option from orders where user_id =?1 and is_deleted = false ", nativeQuery = true)
+	public List<Orders> getselectedOptionByUserId(int userId);
+	
+	// 購物車 eventsId和userId 刪 orders
 }

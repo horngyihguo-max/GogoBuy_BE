@@ -14,12 +14,10 @@ public class ShippingFeeRes extends BasicRes {
 
 	public ShippingFeeRes() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	public ShippingFeeRes(int code, String message) {
 		super(code, message);
-		// TODO Auto-generated constructor stub
 	}
 
 	public ShippingFeeRes(int code, String message, double shippingFee) {
