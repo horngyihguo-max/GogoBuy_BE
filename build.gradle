@@ -50,21 +50,25 @@ dependencies {
     //implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     
     //送出認證信
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-    
-    // Google Maps Java SDK
-    implementation 'com.google.maps:google-maps-services:2.2.0'
+        implementation 'org.springframework.boot:spring-boot-starter-mail'
 	
+
 	// cache
 	implementation 'org.springframework.boot:spring-boot-starter-cache'
 	// caffeine cache
 	implementation 'com.github.ben-manes.caffeine:caffeine'
 	
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// 圖片處理
+	implementation 'net.coobird:thumbnailator:0.4.20'
 	
+	// Cloudinary SDK
+    implementation 'com.cloudinary:cloudinary-http44:1.36.0'
+    
+    // Google Maps Java SDK
+    implementation 'com.google.maps:google-maps-services:2.2.0'
 	
 
+	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 

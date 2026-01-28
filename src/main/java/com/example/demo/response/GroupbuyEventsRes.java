@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public class GroupbuyEventsRes extends BasicRes {
 
-	private List<GroupbuyEvents> groupbuyEvents;
+	private List<?> groupbuyEvents;
 
 	private List<Orders> orders;
 
@@ -24,13 +24,17 @@ public class GroupbuyEventsRes extends BasicRes {
 
 	private List<GroupsSearchView> groupsSearchViewList;
 
+<<<<<<< HEAD
 
 
 	public List<GroupbuyEvents> getGroupbuyEvents() {
+=======
+	public List<?> getGroupbuyEvents() {
+>>>>>>> origin/Mickey
 		return groupbuyEvents;
 	}
 
-	public void setGroupbuyEvents(List<GroupbuyEvents> groupbuyEvents) {
+	public void setGroupbuyEvents(List<?> groupbuyEvents) {
 		this.groupbuyEvents = groupbuyEvents;
 	}
 
@@ -58,29 +62,20 @@ public class GroupbuyEventsRes extends BasicRes {
 		this.menuList = menuList;
 	}
 
-	public GroupbuyEventsRes() {
-		super();
-	}
-
-	public GroupbuyEventsRes(int code, String message) {
-		super(code, message);
-	}
-
-	public GroupbuyEventsRes(int code, String message, List<GroupbuyEvents> groupbuyEvents, List<Orders> orders,
-			List<PersonalOrder> personalOrder, List<Menu> menuList) {
-		super(code, message);
-		this.groupbuyEvents = groupbuyEvents;
-		this.orders = orders;
-		this.personalOrder = personalOrder;
-		this.menuList = menuList;
-	}
-
 	public List<GroupsSearchView> getGroupsSearchViewList() {
 		return groupsSearchViewList;
 	}
 
 	public void setGroupsSearchViewList(List<GroupsSearchView> groupsSearchViewList) {
 		this.groupsSearchViewList = groupsSearchViewList;
+	}
+
+	public GroupbuyEventsRes() {
+		super();
+	}
+
+	public GroupbuyEventsRes(int code, String message) {
+		super(code, message);
 	}
 
 	public GroupbuyEventsRes(int code, String message, List<GroupbuyEvents> groupbuyEvents, List<Orders> orders,

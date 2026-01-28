@@ -41,6 +41,10 @@ public class StoresReq {
 	
 	private String createdBy;
 	
+	private Double lng;
+	
+	private Double lat;
+	
 	@Valid
 	private List<StoreOperatingHoursVo>operatingHoursVoList;
 	@Valid
@@ -50,7 +54,7 @@ public class StoresReq {
 	@Valid
 	private List<ProductOptionGroupsVo> productOptionGroupsVoList;
 	@Valid
-	private List<ProductOptionItemsVo> ProductOptionItemsVoList;
+	private List<ProductOptionItemsVo> productOptionItemsVoList;
 
 
 	public String getStoresname() {
@@ -159,11 +163,11 @@ public class StoresReq {
 	}
 
 	public List<ProductOptionItemsVo> getProductOptionItemsVoList() {
-		return ProductOptionItemsVoList;
+		return productOptionItemsVoList;
 	}
 
 	public void setProductOptionItemsVoList(List<ProductOptionItemsVo> productOptionItemsVoList) {
-		ProductOptionItemsVoList = productOptionItemsVoList;
+		this.productOptionItemsVoList = productOptionItemsVoList;
 	}
 
 	public String getCreatedBy() {
@@ -172,6 +176,22 @@ public class StoresReq {
 
 	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
+	}
+
+	public Double getLng() {
+		return lng;
+	}
+
+	public void setLng(Double lng) {
+		this.lng = lng;
+	}
+
+	public Double getLat() {
+		return lat;
+	}
+
+	public void setLat(Double lat) {
+		this.lat = lat;
 	}
 
 	

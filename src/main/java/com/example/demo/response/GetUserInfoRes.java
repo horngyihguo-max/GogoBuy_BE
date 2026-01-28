@@ -1,8 +1,5 @@
 package com.example.demo.response;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-
 public class GetUserInfoRes extends BasicRes {
 
 	private String id;
@@ -14,12 +11,33 @@ public class GetUserInfoRes extends BasicRes {
 	private String phone;
 
 	private String avatarUrl;
+	
+	private String role;
 
 	private String carrier;
 
 	private int exp;
 
+
 	private int timesRemaining;
+
+	private String provider;
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
 
 	public String getId() {
 		return id;
@@ -94,16 +112,18 @@ public class GetUserInfoRes extends BasicRes {
 	}
 
 	public GetUserInfoRes(int code, String message, String id, String nickname, String email, String phone,
-			String avatarUrl, String carrier, int exp, int timesRemaining) {
+			String avatarUrl, String carrier, int exp, String role, int timesRemaining, String provider) {
 		super(code, message);
 		this.id = id;
 		this.nickname = nickname;
 		this.email = email;
 		this.phone = phone;
 		this.avatarUrl = avatarUrl;
+		this.role = role;
 		this.carrier = carrier;
 		this.exp = exp;
 		this.timesRemaining = timesRemaining;
+		this.provider = provider;
 	}
 
 }

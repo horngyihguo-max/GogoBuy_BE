@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Menu;
+import com.example.demo.projection.GroupbuyEventsProjection;
 
 @Repository
 public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer> {

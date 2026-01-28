@@ -13,6 +13,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "groupbuy_events")
@@ -21,53 +22,64 @@ public class GroupbuyEvents {
 	@Id
 	@Column(name = "id")
 	private int id;
-	
+
 	@Column(name = "host_id")
 	private String hostId;
-	
+
 	@Column(name = "stores_id")
 	private int storesId;
-	
+
 	@Column(name = "event_name")
 	private String eventName;
-	
+
 	@Column(name = "status")
-	@Enumerated(EnumType.STRING)  
+	@Enumerated(EnumType.STRING)
 	private GroupbuyStatusEnum status;
-	
+
 	@Column(name = "end_time")
 	private LocalDateTime endTime;
-	
+
 	@Column(name = "total_order_amount")
 	private int totalOrderAmount;
-	
+
 	@Column(name = "shipping_fee")
 	private int shippingFee;
-	
+
 	@Column(name = "split_type")
-	@Enumerated(EnumType.STRING)  
+	@Enumerated(EnumType.STRING)
 	private SplitTypeEnum splitType;
-	
+
 	@Column(name = "announcement")
 	private String announcement;
-	
+
 	@Column(name = "type")
 	private String type;
-	
+
 	@Column(name = "temp_menu")
 	private String tempMenuList;
-	
+
 	@Column(name = "recommend")
 	private String recommendList;
-	
+
 	@Column(name = "recommend_description")
 	private String recommendDescription;
-	
+
 	@Column(name = "limitation")
 	private int limitation;
-	
+
 	@Column(name = "is_deleted")
 	private boolean deleted;
+
+	@Transient // 代表此欄位不屬於資料庫表，僅供程式內部使用
+	private String nickname;
+
+	public String getNickname() {
+		return nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
 
 	public int getId() {
 		return id;
@@ -196,6 +208,5 @@ public class GroupbuyEvents {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-
 
 }
