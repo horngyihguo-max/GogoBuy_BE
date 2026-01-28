@@ -152,5 +152,8 @@ public class OrdersRes extends BasicRes {
 		this.weight = weight;
 	}
 
-
+	public OrdersRes(int code, String message, int subtotal) {
+		super(code, message);
+		this.subtotal = subtotal;
+	}
 }

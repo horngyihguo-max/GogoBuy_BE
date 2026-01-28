@@ -87,4 +87,7 @@ public class GroupbuyEventsRes extends BasicRes {
 	    this.orders = orders;
 	}
 
+
+	
+
 }

@@ -83,4 +83,7 @@ public List<Stores> findStoresByNameLike(String name);
     );
     
     
+  //單個菜單(查價)
+    @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
+    Menu getMenuByMenuId(int menuId);
 }

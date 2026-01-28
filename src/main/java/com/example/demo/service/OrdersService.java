@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -16,12 +15,13 @@ import com.example.demo.dao.OrdersDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
 import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
 import com.example.demo.response.OrdersRes;
-import com.example.demo.response.ShippingFeeRes;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
@@ -39,7 +39,7 @@ public class OrdersService {
 
 	@Autowired
 	private StoresSearchDao storesSearchDao;
-	
+
 	ObjectMapper mapper = new ObjectMapper();
 
 	private BasicRes checkEvent(OredersReq req) {
@@ -100,20 +100,44 @@ public class OrdersService {
 		if (req.getQuantity() == 0) {
 			return new BasicRes(ResMessage.QUANTITY_FOUND.getCode(), ResMessage.QUANTITY_FOUND.getMessage());
 		}
-		// 檢查訂單創建時間
-		if (req.getOrderTime() == null) {
-			return new BasicRes(ResMessage.END_TIME_ERROR.getCode(), ResMessage.END_TIME_ERROR.getMessage());
-		}
 		// 檢查領取狀態
 		if (req.getPickupStatus() == null) {
 			return new BasicRes(ResMessage.PICKUP_STATUS_ERROR.getCode(), ResMessage.PICKUP_STATUS_ERROR.getMessage());
 		}
 
-		// 檢查小計
-		if (req.getSubtotal() == 0) {
-			return new BasicRes(ResMessage.PICKUP_TIME_ERROR.getCode(), ResMessage.PICKUP_TIME_ERROR.getMessage());
-		}
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
+	}
+
+	// 計算個人subtotal
+	private OrdersRes getSubtotal(OredersReq req) {
+		try {
+	        // 取得該品項底價 
+	        Menu menu = storesSearchDao.getMenuByMenuId(req.getMenuId());
+	        if (menu == null) {
+	            return new OrdersRes(404, "找不到對應的菜單品項", 0);
+	        }
+	        // 商品單價
+	        int basePrice = menu.getBasePrice(); 
+	        int totalExtraPrice = 0; 
+
+	        // 累加所有選中的加價項目
+	        List<Map<String, Object>> opListPrice = req.getSelectedOptionList();
+	        if (opListPrice != null) {
+	            for (Map<String, Object> op : opListPrice) {
+	                Object extraPriceObject = op.get("extraPrice");
+	                if (extraPriceObject != null) {
+	                    totalExtraPrice += Integer.parseInt(extraPriceObject.toString());
+	                }
+	            }
+	        }
+
+	        // 計算單價與小計
+	        int unitPrice = basePrice + totalExtraPrice; 
+	        int subtotal = unitPrice * req.getQuantity();
+	        return new OrdersRes(200, "個人小記計算成功", subtotal);
+	    } catch (Exception e) {
+	        return new OrdersRes(500, "計算過程發生錯誤: " + e.getMessage(), 0);
+	    }
 	}
 
 	// 新增
@@ -121,25 +145,24 @@ public class OrdersService {
 		if (checkEvent(req).getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkEvent(req);
 		}
-		// 檢查有沒 UserId 跟 EventsId 是否重複
-		int checkCount = ordersDao.CheckOrderByUserIdAndEventsId(req.getUserId(), req.getEventsId());
-	    if (checkCount > 0) {
-	        return new BasicRes(400, "您已參加過此團購，不可重複下單");
-	    }
 		Orders orders = new Orders();
-		try {
-			String jsonString = mapper.writeValueAsString(req.getSelectedOptionList());
-			orders.setSelectedOption(jsonString);
-		} catch (Exception e) {
-			return new BasicRes(400, "選項格式轉換失敗");
+		OrdersRes subtotal = getSubtotal(req);
+		if (subtotal.getCode() == 200) {
+			orders.setSubtotal(subtotal.getSubtotal());
+			String jsonString;
+			try {
+				jsonString = mapper.writeValueAsString(req.getSelectedOptionList());
+				orders.setSelectedOption(jsonString);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
 		}
 		orders.setEventsId(req.getEventsId());
 		orders.setUserId(req.getUserId());
 		orders.setMenuId(req.getMenuId());
 		orders.setQuantity(req.getQuantity());
 		orders.setPersonalMemo(req.getPersonalMemo());
-		orders.setSubtotal(req.getSubtotal());
-		orders.setOrderTime(req.getOrderTime());
+		orders.setOrderTime(LocalDateTime.now());
 		orders.setPickupStatus(req.getPickupStatus());
 		orders.setPickupTime(req.getPickupTime());
 		orders.setWeight(req.getWeight());
@@ -158,12 +181,13 @@ public class OrdersService {
 		if (checkEvent(req).getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkEvent(req);
 		}
+		OrdersRes subtotal = getSubtotal(req);
 		try {
 			String jsonString = mapper.writeValueAsString(req.getSelectedOptionList());
 			orders.setSelectedOption(jsonString);
 			orders.setQuantity(req.getQuantity());
 			orders.setPersonalMemo(req.getPersonalMemo());
-			orders.setSubtotal(req.getSubtotal());
+			orders.setSubtotal(subtotal.getSubtotal());
 			orders.setPickupStatus(req.getPickupStatus());
 			orders.setPickupTime(req.getPickupTime());
 			orders.setWeight(req.getWeight());
@@ -189,7 +213,7 @@ public class OrdersService {
 			return new GroupbuyEventsRes(500, "host_id 搜尋失敗");
 		}
 	}
-	
+
 	// 軟刪除
 	public BasicRes deleteOrderByUserIdAndEventsId(String userId, int eventsId) {
 		if (!StringUtils.hasText(userId) || eventsId <= 0) {
@@ -211,25 +235,6 @@ public class OrdersService {
 		groupbuyEventsDao.updateTotalAmount(totalAmount, eventId);
 	}
 
-	// 計算平分拆帳
-	public ShippingFeeRes getShippingFeeByEventId(int eventsId) {
-		try {
-			int shippingFee = ordersDao.getShippingFeeByEventId(eventsId);
-			if (shippingFee == 0) {
-				return new ShippingFeeRes(200, "目前免運");
-			}
-			// 取得目前總人數
-			int orderCount = ordersDao.countOrdersByEventId(eventsId);
-			// 計算平分金額
-			int splitFee = (orderCount > 0) ? (shippingFee / orderCount) : shippingFee;
-			ShippingFeeRes res = new ShippingFeeRes(200, "平均運費是 :" + splitFee);
-			res.setShippingFee(splitFee);
-			return res;
-		} catch (Exception e) {
-			return new ShippingFeeRes(500, "找不到 ");
-		}
-	}
-
 	// 查詢跟團者有的開團
 	public GroupbuyEventsRes getOrdersByUserId(String userId) {
 		try {
@@ -243,21 +248,22 @@ public class OrdersService {
 		} catch (Exception e) {
 			return new GroupbuyEventsRes(500, "找不到 " + userId + "訂單");
 		}
-		
+
 	}
+
 	// 查詢跟團者的特定訂單
-			public GroupbuyEventsRes getEventIdByUserId(String userId , int eventsId) {
-				try {
-					if (!StringUtils.hasText(userId) && eventsId == 0) {
-						return new GroupbuyEventsRes(400, "輸入正確的user_id 或 events_id");
-					}
-					List<Orders> orders = ordersDao.getEventIdByUserId(userId,eventsId);
-					if(orders == null || orders.isEmpty()) {
-						return new GroupbuyEventsRes(404, "找不到此用戶 " + userId + "訂單" + eventsId);
-					}
-					return new GroupbuyEventsRes(200, "成功找到", orders);
-				} catch(Exception e) {
-					return new GroupbuyEventsRes(500,"系統錯誤");
-				}
+	public GroupbuyEventsRes getEventIdByUserId(String userId, int eventsId) {
+		try {
+			if (!StringUtils.hasText(userId) && eventsId == 0) {
+				return new GroupbuyEventsRes(400, "輸入正確的user_id 或 events_id");
 			}
+			List<Orders> orders = ordersDao.getEventIdByUserId(userId, eventsId);
+			if (orders == null || orders.isEmpty()) {
+				return new GroupbuyEventsRes(404, "找不到此用戶 " + userId + "訂單" + eventsId);
+			}
+			return new GroupbuyEventsRes(200, "成功找到", orders);
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "系統錯誤");
+		}
+	}
 }
