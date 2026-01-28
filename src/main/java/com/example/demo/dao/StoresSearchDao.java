@@ -50,18 +50,19 @@ public List<Stores> findStoresByNameLike(String name);
     @Query(value = "SELECT id, group_id as groupId, name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
     public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
     
+    //單個菜單(查價)    
+    @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
+    public Menu getMenuByMenuId(int menuId);
     
     // (給EVENT)   依值搜尋(多個)品項
     @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
-    List<Menu> getMenuByMenuId(List<Integer> menuId);
+    public List<Menu> getMenuByMenuId(List<Integer> menuId);
     
     // 用 storeId 取得地址
     @Query(value = "select address from stores where id = ?1", nativeQuery = true)
     String findAddressByStoreId(int id);
     
-  //單個菜單(查價)
-    @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
-    Menu getMenuByMenuId(int menuId);
+
     //   找飯店(?  (附近)
 
     @Query(value = "SELECT * FROM (" +
@@ -69,7 +70,7 @@ public List<Stores> findStoresByNameLike(String name);
             "  ROUND((6371 * acos(cos(radians(:lat)) * cos(radians(lat)) * cos(radians(lng) - radians(:lng)) " +
             "  + sin(radians(:lat)) * sin(radians(lat)))), 3) AS distance " +
             "  FROM stores " +
-            "  WHERE is_deleted = false AND is_public = true " + // 確保資料庫有 is_public 欄位
+            "  WHERE is_deleted = false AND is_public = true " + 
             "  AND lat BETWEEN :minLat AND :maxLat " +
             "  AND lng BETWEEN :minLng AND :maxLng " +
             ") AS temp_table " +
@@ -85,5 +86,5 @@ public List<Stores> findStoresByNameLike(String name);
         @Param("maxLng") double maxLng
     );
     
-    
+
 }

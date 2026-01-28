@@ -26,8 +26,11 @@ public class GroupbuyEventsSchedule {
     private GroupbuyEventsService groupbuyEventsService;
 	
     // "0 * * * * *" 代表「每分鐘的第一秒」執行一次
+
     @Scheduled(cron = "0 0 * * * *")
     @Transactional
+    @Scheduled(cron = "0 * * * * *")
+
     public void autoUpdateEventsStatus() {
     	
     	// 查詢狀態 open 且 結單時間結束的

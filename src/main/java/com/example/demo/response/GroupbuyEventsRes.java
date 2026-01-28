@@ -25,6 +25,8 @@ public class GroupbuyEventsRes extends BasicRes {
 
 	private List<GroupsSearchView> groupsSearchViewList;
 
+
+
 	public List<?> getGroupbuyEvents() {
 		return groupbuyEvents;
 	}
