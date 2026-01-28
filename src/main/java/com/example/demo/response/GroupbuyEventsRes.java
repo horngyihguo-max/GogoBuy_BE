@@ -7,6 +7,7 @@ import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
 import com.example.demo.entity.PersonalOrder;
+import com.example.demo.projection.GroupbuyEventsProjection;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -24,13 +25,12 @@ public class GroupbuyEventsRes extends BasicRes {
 
 	private List<GroupsSearchView> groupsSearchViewList;
 
-<<<<<<< HEAD
+
 	public List<?> getGroupbuyEvents() {
-=======
 
 
 	public List<GroupbuyEvents> getGroupbuyEvents() {
->>>>>>> 555357c409098fdc01bf930a94e6a02ed4bcc1cb
+
 		return groupbuyEvents;
 	}
 
@@ -78,7 +78,7 @@ public class GroupbuyEventsRes extends BasicRes {
 		super(code, message);
 	}
 
-	public GroupbuyEventsRes(int code, String message, List<GroupbuyEvents> groupbuyEvents, List<Orders> orders,
+	public GroupbuyEventsRes(int code, String message, List<?> groupbuyEvents, List<Orders> orders,
 			List<PersonalOrder> personalOrder, List<Menu> menuList, List<GroupsSearchView> groupsSearchViewList) {
 		super(code, message);
 		this.groupbuyEvents = groupbuyEvents;
@@ -89,11 +89,8 @@ public class GroupbuyEventsRes extends BasicRes {
 	}
 
 	public GroupbuyEventsRes(int code, String message, List<Orders> orders) {
-	    super(code, message);
-	    this.orders = orders;
+		super(code, message);
+		this.orders = orders;
 	}
-
-
-	
 
 }

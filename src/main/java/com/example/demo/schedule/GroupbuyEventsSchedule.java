@@ -13,6 +13,8 @@ import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.service.GroupbuyEventsService;
 
+import jakarta.transaction.Transactional;
+
 @Service
 
 public class GroupbuyEventsSchedule {
@@ -24,12 +26,11 @@ public class GroupbuyEventsSchedule {
     private GroupbuyEventsService groupbuyEventsService;
 	
     // "0 * * * * *" 代表「每分鐘的第一秒」執行一次
-<<<<<<< HEAD
+
     @Scheduled(cron = "0 0 * * * *")
     @Transactional
-=======
     @Scheduled(cron = "0 * * * * *")
->>>>>>> 555357c409098fdc01bf930a94e6a02ed4bcc1cb
+
     public void autoUpdateEventsStatus() {
     	
     	// 查詢狀態 open 且 結單時間結束的

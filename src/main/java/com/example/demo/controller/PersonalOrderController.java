@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.request.personalOrderReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.PersonalOrdersRes;
 import com.example.demo.response.ShippingFeeRes;
 import com.example.demo.service.PersonalOrderService;
 
@@ -19,7 +18,7 @@ import jakarta.validation.Valid;
 @CrossOrigin
 @RestController
 public class PersonalOrderController {
-	
+
 	@Autowired
 	private PersonalOrderService personalOrderService;
 
@@ -33,16 +32,16 @@ public class PersonalOrderController {
 	public BasicRes updatePersonalOrder(@Valid @RequestBody personalOrderReq req) {
 		return personalOrderService.updatePersonalOrder(req);
 	}
-	
+
 //	//
 //	public PersonalOrdersRes updateTotalSum(int eventsId, String userId, personalOrderReq req) {
 //		return personalOrderService.updatePersonalOrder(req);
 //	}
-	
-	//更新平均運費
+
+	// 更新平均運費
 	@GetMapping("gogobuy/getShippingFeeByEventId")
-	public ShippingFeeRes getShippingFeeByEventId(@Valid @RequestParam(name = "events_id") int eventsId
-			,@RequestParam(name = "user_id") String userId	) {
+	public ShippingFeeRes getShippingFeeByEventId(@Valid @RequestParam(name = "events_id") int eventsId,
+			@RequestParam(name = "user_id") String userId) {
 		return personalOrderService.getShippingFeeByEventId(eventsId, userId);
 	}
 }
