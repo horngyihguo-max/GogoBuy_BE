@@ -34,7 +34,7 @@ public interface GroupbuyEventsProjection {
 
 	Integer getLimitation();
 
-	Boolean getDeleted();
+	boolean getDeleted();
 
 	String getNickname();
 }
