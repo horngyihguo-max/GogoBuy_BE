@@ -41,7 +41,7 @@ public class GroupbuyEventsController {
 	}
 
 	// 查詢開團者的開團紀錄
-	@GetMapping("gogobuy/getGroupbuyEventById")
+	@GetMapping("gogobuy/getGroupbuyEventByHostId")
 	public GroupbuyEventsRes getGroupbuyEventById(@RequestParam(name = "host_id", required = false) String hostId) {
 		return groupbuyEventsService.getGroupbuyEventById(hostId);
 	}

@@ -78,8 +78,9 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public List<GroupbuyEventsProjection> getAll();
 
 	// eventsId 查詢 event
-	@Query(value = "select * from groupbuy_events where id= ?1 and is_deleted = false", nativeQuery = true)
-	public List<GroupbuyEvents> getEventsByEventsId(int id);
+	// eventsId 查詢 event
+	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id WHERE e.id = ?1 AND e.is_deleted = false", nativeQuery = true)
+	public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
 
 	// 用店家Id找符合的團
 	@Query(value = "select * from groupbuy_events where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
