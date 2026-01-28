@@ -25,12 +25,16 @@ public class GroupbuyEventsRes extends BasicRes {
 
 	private List<GroupsSearchView> groupsSearchViewList;
 
+<<<<<<< HEAD
 
 	public List<?> getGroupbuyEvents() {
 
 
 	public List<GroupbuyEvents> getGroupbuyEvents() {
 
+=======
+	public List<?> getGroupbuyEvents() {
+>>>>>>> origin/Mickey
 		return groupbuyEvents;
 	}
 
