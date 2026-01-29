@@ -18,13 +18,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.constants.ResMessage;
+import com.example.demo.dao.MenuCategoryRepository;
 import com.example.demo.dao.ProductOptionGroupsDao;
 import com.example.demo.dao.StoresCreateDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.StoresUpdateDao;
+import com.example.demo.entity.MenuCategories;
 import com.example.demo.entity.ProductOptionGroups;
 import com.example.demo.entity.Stores;
 import com.example.demo.projection.StoreDistanceProjection;
@@ -71,6 +74,10 @@ public class StoreService {
 
 	@Autowired
 	private GoogleMapService googleMapService;
+	
+	@Autowired
+	private MenuCategoryRepository menuCategoryRepository;
+	
 
 	// Spring 會自動從 application.properties 抓取對應的值注入到變數
 	@Value("${gemini.api.key}")
@@ -146,32 +153,43 @@ public class StoreService {
 	}
 
 //品項
-	private void checkMenu(List<MenuVo> menuList, List<MenuCategoriesVo> categoriesList) throws Exception {
-		if (menuList != null) {
-			for (MenuVo vo : menuList) {
-				if (vo.getName() == null || vo.getName().trim().isEmpty())
-					throw new Exception("商品名不可為空");
-				if (vo.getBasePrice() < 0)
-					throw new Exception("商品價格不可為負");
-				if (vo.getCategoryId() < 0) {
-					throw new Exception("不存在的商品規格(<0)");
-				}
-			}
+	private void checkMenu(List<MenuCategoriesVo> categoriesList) throws Exception {
+		if (categoriesList == null || categoriesList.isEmpty()) {
+			throw new Exception("你的商品沒有類別喵");
 		}
-		if (categoriesList != null) {
-			for (MenuCategoriesVo vo : categoriesList) {
-				if (vo.getName() == null || vo.getName().trim().isEmpty())
-					throw new Exception("類別名不可為空");
-				if (vo.getPriceLevel() != null) {
-					for (PriceLevelVo p : vo.getPriceLevel()) {
-						if (p.getName() == null || p.getName().trim().isEmpty())
-							throw new Exception("規格名不可為空");
-						if (p.getPrice() < 0)
-							throw new Exception("級距價格不可為負");
-					}
-				}
-			}
-		}
+		for (MenuCategoriesVo vo : categoriesList) {
+	        // 檢查類別名稱
+	        if (!StringUtils.hasText(vo.getName())) {
+	            throw new Exception("類別名稱不可為空喵");
+	        }
+
+	        //  檢查該類別下的「規格/價位級距」 (PriceLevel)
+	        if (vo.getPriceLevel() != null) {
+	            for (PriceLevelVo priceLevel : vo.getPriceLevel()) {
+	                if (!StringUtils.hasText(priceLevel.getName())) {
+	                    throw new Exception("類別 [" + vo.getName() + "] 內的規格名不可為空喵!");
+	                }
+	                if (priceLevel.getPrice() < 0) {
+	                    throw new Exception("規格 [" + priceLevel.getName() + "] 的價格不可為負數喵!");
+	                }
+	            }
+	        }
+
+	        // 檢查該類別底下的「品項列表」 (MenuVo)
+	        List<MenuVo> menuList = vo.getMenuVo();
+	        if (menuList != null) {
+	            for (MenuVo menuVo : menuList) {
+	                // 檢查品名
+	                if (!StringUtils.hasText(menuVo.getName())) {
+	                    throw new Exception("類別 [" + vo.getName() + "] 中有商品的名稱為空喵!");
+	                }
+	                // 檢查基礎價格
+	                if (menuVo.getBasePrice() < 0) {
+	                    throw new Exception("商品 [" + menuVo.getName() + "] 的價格不可為負數喵!");
+	                }
+	            }
+	        }
+	    }
 	}
 
 //選項(群組)
@@ -201,24 +219,56 @@ public class StoreService {
 		for (StoreOperatingHoursVo vo : operatingHoursvoList) {
 			storesCreateDao.addOperatingHours(storeId, vo.getWeek(), vo.getOpenTime(), vo.getCloseTime());
 		}
-//		填入品項
-		List<MenuVo> menuVoList = req.getMenuVoList();
-		for (MenuVo vo : menuVoList) {
-			//	空值防呆		
-			Object unusualObj = vo.getUnusual() != null ? vo.getUnusual() : new HashMap<>();
-			String unusualStr = mapper.writeValueAsString(unusualObj);
-			storesCreateDao.addMenu(storeId, vo.getCategoryId(), vo.getName(), vo.getDescription(), //
-					vo.getBasePrice(), vo.getImage(), vo.isAvailable(), unusualStr);
-			if (vo.getImage() != null && !vo.getImage().isEmpty()) {
-	            imageService.confirmImage(vo.getImage());
+		
+		// 填入品項類別及其所屬品項
+	    List<MenuCategoriesVo> menuCategoriesVoList = req.getMenuCategoriesVoList();
+	    if (menuCategoriesVoList != null) {
+	        for (MenuCategoriesVo catVo : menuCategoriesVoList) {
+	            
+	            // 存入類別並取得資料庫自動生成的 ID 
+	            String priceLevelListStr = mapper.writeValueAsString(catVo.getPriceLevel());
+	            int realCategoryId = categoryReturnId(storeId, catVo.getName(), priceLevelListStr);
+
+	            // 存入屬於此類別的品項 
+	            List<MenuVo> items = catVo.getMenuVo(); 
+	            if (items != null) {
+	                for (MenuVo menuVo : items) {
+	                    // 空值防呆
+	                    Object unusualObj = menuVo.getUnusual() != null ? menuVo.getUnusual() : new HashMap<>();
+	                    String unusualStr = mapper.writeValueAsString(unusualObj);
+	                    
+	                    // 關鍵：傳入剛剛拿到的 realCategoryId
+	                    storesCreateDao.addMenu(storeId, realCategoryId, menuVo.getName(), 
+	                            menuVo.getDescription(), menuVo.getBasePrice(), 
+	                            menuVo.getImage(), menuVo.isAvailable(), unusualStr);
+	                    
+	                    // 處理圖片確認
+	                    if (menuVo.getImage() != null && !menuVo.getImage().isEmpty()) {
+	                        imageService.confirmImage(menuVo.getImage());
+	                    }
+	                }
+	            }
 	        }
-		}
-//		填入品項類別
-		List<MenuCategoriesVo> MenuCategoriesVoList = req.getMenuCategoriesVoList();
-		for (MenuCategoriesVo vo : MenuCategoriesVoList) {
-			String priceLevelListStr = mapper.writeValueAsString(vo.getPriceLevel());
-			storesCreateDao.addCategory(storeId, vo.getName(), priceLevelListStr);
-		}
+	    }
+		
+////		填入品項
+//		List<MenuVo> menuVoList = req.getMenuVoList();
+//		for (MenuVo vo : menuVoList) {
+//			//	空值防呆		
+//			Object unusualObj = vo.getUnusual() != null ? vo.getUnusual() : new HashMap<>();
+//			String unusualStr = mapper.writeValueAsString(unusualObj);
+//			storesCreateDao.addMenu(storeId, vo.getCategoryId(), vo.getName(), vo.getDescription(), //
+//					vo.getBasePrice(), vo.getImage(), vo.isAvailable(), unusualStr);
+//			if (vo.getImage() != null && !vo.getImage().isEmpty()) {
+//	            imageService.confirmImage(vo.getImage());
+//	        }
+//		}
+////		填入品項類別
+//		List<MenuCategoriesVo> MenuCategoriesVoList = req.getMenuCategoriesVoList();
+//		for (MenuCategoriesVo vo : MenuCategoriesVoList) {
+//			String priceLevelListStr = mapper.writeValueAsString(vo.getPriceLevel());
+//			storesCreateDao.addCategory(storeId, vo.getName(), priceLevelListStr);
+//		}
 //		填入選項群組
 		List<ProductOptionGroupsVo> ProductOptionGroupsVoList = req.getProductOptionGroupsVoList();
 		for (ProductOptionGroupsVo vo : ProductOptionGroupsVoList) {
@@ -285,7 +335,7 @@ public class StoreService {
 
 		checkStore(req);
 		checkHours(req.getOperatingHoursVoList());
-		checkMenu(req.getMenuVoList(), req.getMenuCategoriesVoList());
+		checkMenu( req.getMenuCategoriesVoList());
 		checkOptions(req.getProductOptionGroupsVoList());
 
 //    店家已存在
@@ -368,7 +418,7 @@ public class StoreService {
 		// 檢查
 		checkStore(req);
 		checkHours(req.getOperatingHoursVoList());
-		checkMenu(req.getMenuVoList(), req.getMenuCategoriesVoList());
+		checkMenu( req.getMenuCategoriesVoList());
 		checkOptions(req.getProductOptionGroupsVoList());
 
 		// 檢查電話是否已被其他店家佔用 (排除目前的 storeId)
@@ -388,16 +438,43 @@ public class StoreService {
 		
 		//  收集舊菜單的所有圖片網址
 		List<Map<String, Object>> oldMenu = storesSearchDao.getMenuByStoreId(storeId);
-		List<String> oldImages = oldMenu.stream()
-		    .map(m -> (String) m.get("image"))
-		    .filter(img -> img != null && !img.isEmpty())
-		    .toList();
+		List<String> oldImages = new ArrayList<>();
+
+		//遍歷舊菜單
+		if (oldMenu != null) {
+		    for (Map<String, Object> menuMap : oldMenu) {
+		        Object imgObj = menuMap.get("image");
+		        // 確保轉成字串且不是空的
+		        if (imgObj != null) {
+		            String imgUrl = imgObj.toString();
+		            if (!imgUrl.isEmpty()) {
+		                oldImages.add(imgUrl);
+		            }
+		        }
+		    }
+		}
 
 		// 收集新 Request 裡所有的圖片網址
-		List<String> newImages = req.getMenuVoList().stream()
-		    .map(MenuVo::getImage)
-		    .filter(img -> img != null && !img.isEmpty())
-		    .toList();
+		List<String> newImages = new ArrayList<>();
+
+		// 類別
+		if (req.getMenuCategoriesVoList() != null) {
+		    for (MenuCategoriesVo catVo : req.getMenuCategoriesVoList()) {
+		        
+		        // 品項清單
+		        List<MenuVo> menuList = catVo.getMenuVo(); // 取得該類別的品項
+		        if (menuList != null) {
+		            for (MenuVo menuVo : menuList) {
+		                
+		                // 檢查品項有沒有圖片
+		                String imgUrl = menuVo.getImage();
+		                if (imgUrl != null && !imgUrl.isEmpty()) {
+		                    newImages.add(imgUrl);
+		                }
+		            }
+		        }
+		    }
+		}
 
 		// 找出「出現在舊名單、但沒出現在新名單」的圖片（代表這些圖被換掉或刪除了）
 		for (String oldImg : oldImages) {
@@ -588,6 +665,16 @@ public class StoreService {
 						});
 				res.setFeeDescriptionVoList(fees);
 			}
+			
+			for (MenuCategoriesVo cat : categoriesVoList) {
+			    List<MenuVo> itemsForThisCat = new ArrayList<>();
+			    for (MenuVo item : menuVoList) {
+			        if (item.getCategoryId() == cat.getId()) {
+			            itemsForThisCat.add(item);
+			        }
+			    }
+			    cat.setMenuVo(itemsForThisCat); // 把屬於該類別的品項塞進去
+			}
 
 			return res;
 
@@ -638,8 +725,7 @@ public class StoreService {
 				            "memo": "備註",
 				            "fee_description": [{ "km": 2, "fee": 30 }],
 				            "operatingHoursVoList": [{ "week": 1, "openTime": "09:00", "closeTime": "21:00" }],
-				            "menuCategoriesVoList": [{ "name": "類別名稱", "priceLevel": [{ "name": "規格", "price": 100 }] }],
-				            "menuVoList": [{ "name": "品名", "description": "描述", "basePrice": 80, "unusual": {} }],
+				            "menuCategoriesVoList": [{ "name": "類別", "menuVo": [{ "name": "品名", "description": "描述", "basePrice": 80, "unusual": {} }],"priceLevel": [{ "name": "規格", "price": 100 }] }]
 				            "productOptionGroupsVoList": [{ "name": "選項群組", "items": [{ "name": "項目", "extraPrice": 0 }] }]
 				        }
 				unusual欄位可以留空,如有產品特殊規格、價格(熱飲、與同類型商品加大不同價)視必要性填入
@@ -771,6 +857,20 @@ public class StoreService {
 	    } catch (Exception e) {
 	        return new StoresRes(500, "搜尋失敗: " + e.getMessage());
 	    }
+	}
+	
+
+
+	private int categoryReturnId(int storeId, String name, String priceLevel) {
+	    MenuCategories categories = new MenuCategories(); // 確保這裡跟你 Entity 名稱一致
+	    categories.setStoreId(storeId);
+	    categories.setName(name);
+	    categories.setPriceLevel(priceLevel);
+
+	    // save() 方法會回傳存檔後的實體，裡面就包含自動生成的 ID
+	    categories = menuCategoryRepository.save(categories); 
+
+	    return categories.getId();
 	}
 	
 }

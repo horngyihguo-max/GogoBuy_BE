@@ -2,7 +2,6 @@ package com.example.demo.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.SplitTypeEnum;

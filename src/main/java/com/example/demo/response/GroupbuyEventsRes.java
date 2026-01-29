@@ -2,12 +2,11 @@ package com.example.demo.response;
 
 import java.util.List;
 
-import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.dto.CartDTO;
 import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
 import com.example.demo.entity.PersonalOrder;
-import com.example.demo.projection.GroupbuyEventsProjection;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -89,5 +88,15 @@ public class GroupbuyEventsRes extends BasicRes {
 		super(code, message);
 		this.orders = orders;
 	}
+	
+	private List<CartDTO> cartData;
+
+    public List<CartDTO> getCartData() {
+        return cartData;
+    }
+
+    public void setCartData(List<CartDTO> cartData) {
+        this.cartData = cartData;
+    }
 
 }
