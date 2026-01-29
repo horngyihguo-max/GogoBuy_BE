@@ -77,7 +77,7 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	// 查詢全部的開團
 	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id", nativeQuery = true)
 	public List<GroupbuyEventsProjection> getAll();
-
+	
 	// eventsId 查詢 event
 //	@Query(value = "select * from groups_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
 //	public List<GroupsSearchView> getEventsByEventsId(int id);
@@ -90,17 +90,6 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	
 //		@Query(value = "SELECT * FROM groupbuy_events  WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
 //		public List<GroupbuyEvents> getEventsByEventsId1(int id);
-
-//	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id where e.status = 'OPEN' and e.is_deleted = false", nativeQuery = true)
-//	public List<GroupbuyEventsProjection> getAll();
-
-//	// eventsId 查詢 event
-//	@Query(value = "select * from groupbuy_events where id= ?1 and is_deleted = false", nativeQuery = true)
-//	public List<GroupbuyEvents> getEventsByEventsId(int id);
-
-//	// 待修改
-//	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id", nativeQuery = true)
-//	public List<GroupbuyEventsProjection> getAll();
 
 	// 用店家Id找符合的團
 	@Query(value = "select * from groupbuy_events where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
