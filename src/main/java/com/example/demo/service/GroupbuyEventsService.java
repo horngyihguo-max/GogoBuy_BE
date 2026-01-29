@@ -468,8 +468,8 @@ public class GroupbuyEventsService {
 
 	// 回傳eventsId的活動
 	public GroupbuyEventsRes getEventsByEventsId(int id) {
-		List<GroupbuyEvents> list = groupbuyEventsDao.getEventsByEventsId(id);
-		if (list == null) {
+		List<GroupbuyEventsProjection> list = groupbuyEventsDao.getEventsByEventsId(id);
+		if (list == null || list.isEmpty()) {
 			return new GroupbuyEventsRes(404, "查無此資料");
 		}
 		return new GroupbuyEventsRes(200, "成功查詢資料", list, null, null, null, null);

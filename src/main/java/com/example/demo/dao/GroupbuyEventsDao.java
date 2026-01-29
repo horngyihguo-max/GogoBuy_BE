@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.projection.GroupbuyEventsProjection;
 
@@ -74,27 +75,21 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public List<Menu> getMenuByStoresId(int storesId);
 
 	// 查詢全部的開團
-
 	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id", nativeQuery = true)
 	public List<GroupbuyEventsProjection> getAll();
-
-//	@Query(value = "select * from groupbuy_events where status = 'OPEN' and is_deleted = false", nativeQuery = true)
-//	public List<GroupbuyEvents> getAll();
 	
-	//eventsId 查詢 event
-	@Query(value = "select * from groupbuy_events where id= ?1 and is_deleted = false", nativeQuery = true)
-	public List<GroupbuyEvents> getEventsByEventsId(int id);
-
-//	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id where e.status = 'OPEN' and e.is_deleted = false", nativeQuery = true)
-//	public List<GroupbuyEventsProjection> getAll();
-
-//	// eventsId 查詢 event
-//	@Query(value = "select * from groupbuy_events where id= ?1 and is_deleted = false", nativeQuery = true)
-//	public List<GroupbuyEvents> getEventsByEventsId(int id);
-
-//	// 待修改
-//	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id", nativeQuery = true)
-//	public List<GroupbuyEventsProjection> getAll();
+	// eventsId 查詢 event
+//	@Query(value = "select * from groups_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
+//	public List<GroupsSearchView> getEventsByEventsId(int id);
+	
+    @Query(value = "SELECT e.*, CASE WHEN e.is_deleted = 0 THEN false ELSE true END AS deleted, "
+            + "e.temp_menu AS tempMenuList, e.recommend AS recommendList, u.nickname AS nickname "
+            + "FROM groupbuy_events e JOIN user u ON e.host_id = u.id "
+            + "WHERE e.id = ?1 ", nativeQuery = true)
+    public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
+	
+//		@Query(value = "SELECT * FROM groupbuy_events  WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
+//		public List<GroupbuyEvents> getEventsByEventsId1(int id);
 
 	// 用店家Id找符合的團
 	@Query(value = "select * from groupbuy_events where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
