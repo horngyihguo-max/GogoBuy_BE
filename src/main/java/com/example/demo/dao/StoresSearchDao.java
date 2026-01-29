@@ -43,32 +43,45 @@ public interface StoresSearchDao extends JpaRepository<Stores, Integer> {
 	@Query(value = "SELECT stores_id as storesId, id, name, is_required as required, max_selection as maxSelection FROM product_option_groups WHERE stores_id = ?1", nativeQuery = true)
 	public List<Map<String, Object>> getOptionGroupsByStoreId(int storeId);
 
-	// 取得選項群組內的細項 (根據群組 ID)
-	@Query(value = "SELECT id, group_id as groupId, name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
-	public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
+    // 取得選項群組內的細項 (根據群組 ID)
+    @Query(value = "SELECT id, group_id as groupId, name, extra_price as extraPrice FROM product_option_items WHERE group_id = ?1", nativeQuery = true)
+    public List<Map<String, Object>> getOptionItemsByGroupId(int groupId);
+    
+    //單個菜單(查價)    
+    @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
+    public Menu getMenuByMenuId(int menuId);
+    
+    // (給EVENT)   依值搜尋(多個)品項
+    @Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
+    public List<Menu> getMenuByMenuId(List<Integer> menuId);
+    
+    // 用 storeId 取得地址
+    @Query(value = "select address from stores where id = ?1", nativeQuery = true)
+    String findAddressByStoreId(int id);
+    
 
-	// 單個菜單(查價)
-	@Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
-	public Menu getMenuByMenuId(int menuId);
+    //   找飯店(?  (附近)
 
-	// (給EVENT) 依值搜尋(多個)品項
-	@Query(value = "SELECT * FROM menu WHERE id IN (?1)", nativeQuery = true)
-	public List<Menu> getMenuByMenuId(List<Integer> menuId);
-
-	// 用 storeId 取得地址
-	@Query(value = "select address from stores where id = ?1", nativeQuery = true)
-	public String findAddressByStoreId(int id);
-
-	// 找飯店(? (附近)
-
-	@Query(value = "SELECT * FROM (" + "  SELECT id, name, address, phone, image, category, "
-			+ "  ROUND((6371 * acos(cos(radians(:lat)) * cos(radians(lat)) * cos(radians(lng) - radians(:lng)) "
-			+ "  + sin(radians(:lat)) * sin(radians(lat)))), 3) AS distance " + "  FROM stores "
-			+ "  WHERE is_deleted = false AND is_public = true " + "  AND lat BETWEEN :minLat AND :maxLat "
-			+ "  AND lng BETWEEN :minLng AND :maxLng " + ") AS temp_table " + "WHERE distance <= :radius "
-			+ "ORDER BY distance ASC", nativeQuery = true)
-	public List<StoreDistanceProjection> findNearbyWithDistance(@Param("lat") double lat, @Param("lng") double lng,
-			@Param("radius") double radius, @Param("minLat") double minLat, @Param("maxLat") double maxLat,
-			@Param("minLng") double minLng, @Param("maxLng") double maxLng);
+    @Query(value = "SELECT * FROM (" +
+            "  SELECT id, name, address, phone, image, category, " +
+            "  ROUND((6371 * acos(cos(radians(:lat)) * cos(radians(lat)) * cos(radians(lng) - radians(:lng)) " +
+            "  + sin(radians(:lat)) * sin(radians(lat)))), 3) AS distance " +
+            "  FROM stores " +
+            "  WHERE is_deleted = false AND is_public = true " + 
+            "  AND lat BETWEEN :minLat AND :maxLat " +
+            "  AND lng BETWEEN :minLng AND :maxLng " +
+            ") AS temp_table " +
+            "WHERE distance <= :radius " +
+            "ORDER BY distance ASC", nativeQuery = true)
+    List<StoreDistanceProjection> findNearbyWithDistance(
+        @Param("lat") double lat, 
+        @Param("lng") double lng, 
+        @Param("radius") double radius,
+        @Param("minLat") double minLat,
+        @Param("maxLat") double maxLat,
+        @Param("minLng") double minLng,
+        @Param("maxLng") double maxLng
+    );
+    
 
 }
