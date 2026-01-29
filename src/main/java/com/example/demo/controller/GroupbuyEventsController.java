@@ -102,4 +102,10 @@ public class GroupbuyEventsController {
 	public BasicRes deleteEventPhysically (@RequestParam(name = "id") int id) {
 		return groupbuyEventsService.deleteEventPhysically(id);
 	}
+	
+	//購物車
+	@GetMapping("gogobuy/event/getCart")
+	public GroupbuyEventsRes getCart(@Valid @RequestParam(name = "user_id") String usrerId) {
+		return groupbuyEventsService.getCart(usrerId);
+		}
 }
