@@ -107,6 +107,15 @@ public class OrdersService {
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
+	//
+	public BasicRes hardDelete(String userId, int eventsId) {
+		int orders = ordersDao.getOrderByUserIdAndEventsId(userId, eventsId);
+		if (orders == 0) {
+	        return new BasicRes(404, "找不到訂單或已刪除");
+	    }
+		ordersDao.hardDelete(userId, eventsId);
+		return new BasicRes(200, "成功刪除訂單");
+	}
 
 	// 計算個人subtotal
 	private OrdersRes getSubtotal(OredersReq req) {

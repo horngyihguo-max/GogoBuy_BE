@@ -65,7 +65,11 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	// userId 和 eventsId 找訂單所有商品
 	@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getEventIdByUserId(String userId , int eventsId);
-	
+
+	// userId 和 eventsId 找訂單所有商品
+		@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
+		public int getOrderByUserIdAndEventsId(String userId , int eventsId);
+		
 	// 檢查 user_id 是否已在特定團購下過單
 	@Query(value = "select count(*) from orders where user_id = ?1 and events_id = ?2 and is_deleted = false", nativeQuery = true)
 	public int CheckOrderByUserIdAndEventsId(String userId, int eventsId);
@@ -85,6 +89,12 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Modifying
 	@Query(value = "update orders set is_deleted = true where events_id = ?1 and is_deleted = false", nativeQuery = true)
 	public void deleteAllOrdersByEventId(int eventsId);
+	
+	//物理刪除order
+	@Transactional
+	@Modifying
+	@Query(value = "delete from orders where user_id = ?1 and events_id = ?2 ", nativeQuery = true)
+	public int hardDelete(String userId, int eventsId);
 
 	// 更新領取狀態
 	@Transactional
@@ -109,5 +119,4 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Query(value = "select selected_option from orders where user_id =?1 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getselectedOptionByUserId(int userId);
 	
-	// 購物車 eventsId和userId 刪 orders
 }
