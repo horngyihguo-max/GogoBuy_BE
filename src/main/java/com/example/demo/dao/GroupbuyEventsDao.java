@@ -85,7 +85,7 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "SELECT e.*, CASE WHEN e.is_deleted = 0 THEN false ELSE true END AS deleted, "
 			+ "e.temp_menu AS tempMenuList, e.recommend AS recommendList, u.nickname AS nickname "
 			+ "FROM groupbuy_events e JOIN user u ON e.host_id = u.id "
-			+ "WHERE e.id = ?1 AND e.is_deleted = false", nativeQuery = true)
+			+ "WHERE e.id = ?1", nativeQuery = true)
 	public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
 //	
 //		@Query(value = "SELECT * FROM groupbuy_events  WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
