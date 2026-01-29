@@ -6,7 +6,6 @@ import java.util.List;
 import com.example.demo.constants.ValidationMsg;
 import com.example.demo.vo.FeeDescriptionVo;
 import com.example.demo.vo.MenuCategoriesVo;
-import com.example.demo.vo.MenuVo;
 import com.example.demo.vo.ProductOptionGroupsVo;
 import com.example.demo.vo.ProductOptionItemsVo;
 import com.example.demo.vo.StoreOperatingHoursVo;
@@ -47,8 +46,8 @@ public class StoresReq {
 	
 	@Valid
 	private List<StoreOperatingHoursVo>operatingHoursVoList;
-	@Valid
-	private List<MenuVo> menuVoList;
+//	@Valid
+//	private List<MenuVo> menuVoList;
 	@Valid
 	private List<MenuCategoriesVo> menuCategoriesVoList;
 	@Valid
@@ -138,13 +137,13 @@ public class StoresReq {
 		this.operatingHoursVoList = operatingHoursVoList;
 	}
 
-	public List<MenuVo> getMenuVoList() {
-		return menuVoList;
-	}
-
-	public void setMenuVoList(List<MenuVo> menuVoList) {
-		this.menuVoList = menuVoList;
-	}
+//	public List<MenuVo> getMenuVoList() {
+//		return menuVoList;
+//	}
+//
+//	public void setMenuVoList(List<MenuVo> menuVoList) {
+//		this.menuVoList = menuVoList;
+//	}
 
 	public List<MenuCategoriesVo> getMenuCategoriesVoList() {
 		return menuCategoriesVoList;
