@@ -108,4 +108,9 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "select * from groupbuy_events where status = 'OPEN' and end_time <= now() and is_deleted = false ", nativeQuery = true)
 	public List<GroupbuyEvents> findByEndTimeBeforeAndStatus(@Param("status") String status,
 			@Param("now") LocalDateTime now);
+	
+	//物理刪除
+	@Modifying
+	@Query(value ="delete from groupbuy_events where id = ?1", nativeQuery = true)
+	public int deleteEvent(int id);
 }

@@ -96,4 +96,10 @@ public class GroupbuyEventsController {
 	public GroupbuyEventsRes getEventsByEventsId(@Valid @RequestParam(name = "id") int id) {
 		return groupbuyEventsService.getEventsByEventsId(id);
 	}
+	
+	//物理全刪(只有團)
+	@PostMapping("gogobuy/event/deleteEventPhysically")
+	public BasicRes deleteEventPhysically (@RequestParam(name = "id") int id) {
+		return groupbuyEventsService.deleteEventPhysically(id);
+	}
 }
