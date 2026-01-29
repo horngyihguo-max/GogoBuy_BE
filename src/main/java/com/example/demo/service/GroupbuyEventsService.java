@@ -474,5 +474,22 @@ public class GroupbuyEventsService {
 		}
 		return new GroupbuyEventsRes(200, "成功查詢資料", list, null, null, null, null);
 	}
-
+	
+	
+	//	刪除(只做為修改資料用 不串接)
+	@Transactional
+	public BasicRes deleteEventPhysically (int eventId) {
+		GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
+		if (event == null) {
+			return new BasicRes(404, "根本沒有這團喵");
+		}
+		
+		groupbuyEventsDao.deleteEvent(eventId);
+		
+		
+		return new BasicRes(200, "成功刪除團購喵");
+	}
+	
+	
+	
 }
