@@ -1,82 +1,52 @@
-package com.example.demo.entity;
+package com.example.demo.response;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.SplitTypeEnum;
+import com.example.demo.entity.GroupsSearchView;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+public class GroupsSearchViewRes extends BasicRes{
 
-@Entity
-@Table(name = "groups_search_view")
-public class GroupsSearchView {
-	
-	@Id
-	@Column(name = "event_id")
 	private int eventId;
-	
-	@Column(name = "event_name")
+
 	private String eventName;
 	
-	@Column(name = "host_nickname")
 	private String hostNickname;
 	
-	@Column(name = "store_id")
 	private int storeId;
 	
-	@Column(name = "event_status")
-	@Enumerated(EnumType.STRING)  
 	private GroupbuyStatusEnum eventStatus;
-	
-	@Column(name = "end_time")
+
 	private LocalDateTime endTime;
-	
-	@Column(name = "total_order_amount")
+
 	private int totalOrderAmount;
-	
-	@Column(name = "shipping_fee")
+
 	private Integer shippingFee;
-	
-	@Column(name = "split_type")
-	@Enumerated(EnumType.STRING)  
+
 	private SplitTypeEnum splitType;
-	
-	@Column(name = "announcement")
+
 	private String announcement;
 	
-	@Column(name = "event_type")
 	private String eventType;
-	
-	@Column(name = "temp_menu")
+
 	private String tempMenuList;
-	
-	@Column(name = "recommend")
+
 	private String recommendList;
-	
-	@Column(name = "recommend_description")
+
 	private String recommendDescription;
-	
-	@Column(name = "limitation")
+
 	private Integer limitation;
-	
-	@Column(name = "store_name")
+
 	private String storeName;
-	
-	@Column(name = "store_category")
+
 	private String storeCategory;
-	
-	@Column(name = "host_id")
+
 	private String hostId;
-	
-	@Column(name = "host_avatar")
+
 	private String hostAvatar;
-	
-	@Column(name = "is_deleted")
+
 	private boolean deleted;
 
 	public int getEventId() {
@@ -93,6 +63,14 @@ public class GroupsSearchView {
 
 	public void setEventName(String eventName) {
 		this.eventName = eventName;
+	}
+
+	public String getHostNickname() {
+		return hostNickname;
+	}
+
+	public void setHostNickname(String hostNickname) {
+		this.hostNickname = hostNickname;
 	}
 
 	public int getStoreId() {
@@ -215,14 +193,6 @@ public class GroupsSearchView {
 		this.hostId = hostId;
 	}
 
-	public String getHostNickname() {
-		return hostNickname;
-	}
-
-	public void setHostNickname(String hostNickname) {
-		this.hostNickname = hostNickname;
-	}
-
 	public String getHostAvatar() {
 		return hostAvatar;
 	}
@@ -239,6 +209,47 @@ public class GroupsSearchView {
 		this.deleted = deleted;
 	}
 
+	public GroupsSearchViewRes() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public GroupsSearchViewRes(int code, String message) {
+		super(code, message);
+		// TODO Auto-generated constructor stub
+	}
+
+	public GroupsSearchViewRes(int code, String message, int eventId, String eventName, String hostNickname,
+			int storeId, GroupbuyStatusEnum eventStatus, LocalDateTime endTime, int totalOrderAmount,
+			Integer shippingFee, SplitTypeEnum splitType, String announcement, String eventType, String tempMenuList,
+			String recommendList, String recommendDescription, Integer limitation, String storeName,
+			String storeCategory, String hostId, String hostAvatar, boolean deleted) {
+		super(code, message);
+		this.eventId = eventId;
+		this.eventName = eventName;
+		this.hostNickname = hostNickname;
+		this.storeId = storeId;
+		this.eventStatus = eventStatus;
+		this.endTime = endTime;
+		this.totalOrderAmount = totalOrderAmount;
+		this.shippingFee = shippingFee;
+		this.splitType = splitType;
+		this.announcement = announcement;
+		this.eventType = eventType;
+		this.tempMenuList = tempMenuList;
+		this.recommendList = recommendList;
+		this.recommendDescription = recommendDescription;
+		this.limitation = limitation;
+		this.storeName = storeName;
+		this.storeCategory = storeCategory;
+		this.hostId = hostId;
+		this.hostAvatar = hostAvatar;
+		this.deleted = deleted;
+	}
+
+	public GroupsSearchViewRes(int i, String string, List<GroupsSearchView> list) {
+		// TODO Auto-generated constructor stub
+	}
 	
 	
 }

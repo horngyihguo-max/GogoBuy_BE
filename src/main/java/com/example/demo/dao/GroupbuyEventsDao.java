@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.projection.GroupbuyEventsProjection;
 
@@ -74,21 +75,19 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public List<Menu> getMenuByStoresId(int storesId);
 
 	// 查詢全部的開團
-
 	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id", nativeQuery = true)
 	public List<GroupbuyEventsProjection> getAll();
 
 	// eventsId 查詢 event
-	// 使用 CASE 語句將 is_deleted 的值（0/1）轉換成 boolean 相容的值
-	// WHEN e.is_deleted = 0：判斷條件。如果 e.is_deleted 欄位的值等於 0（通常代表 "未刪除" 或 false）。
-	// THEN false：如果條件成立，則輸出 false。
-	// ELSE true：如果條件不成立（即 is_deleted 不為 0，通常是 1 代表 "已刪除" 或 true），則輸出 true。
-	@Query(value = "SELECT e.*, CASE WHEN e.is_deleted = 0 THEN false ELSE true END AS deleted, "
-			+ "e.temp_menu AS tempMenuList, e.recommend AS recommendList, u.nickname AS nickname "
-			+ "FROM groupbuy_events e JOIN user u ON e.host_id = u.id "
-			+ "WHERE e.id = ?1 AND e.is_deleted = false", nativeQuery = true)
-	public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
-//	
+//	@Query(value = "select * from groups_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
+//	public List<GroupsSearchView> getEventsByEventsId(int id);
+	
+    @Query(value = "SELECT e.*, CASE WHEN e.is_deleted = 0 THEN false ELSE true END AS deleted, "
+            + "e.temp_menu AS tempMenuList, e.recommend AS recommendList, u.nickname AS nickname "
+            + "FROM groupbuy_events e JOIN user u ON e.host_id = u.id "
+            + "WHERE e.id = ?1 ", nativeQuery = true)
+    public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
+	
 //		@Query(value = "SELECT * FROM groupbuy_events  WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
 //		public List<GroupbuyEvents> getEventsByEventsId1(int id);
 
