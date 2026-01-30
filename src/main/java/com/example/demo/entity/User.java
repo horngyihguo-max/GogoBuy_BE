@@ -21,6 +21,17 @@ public class User {
 	@Column(name = "email")
 	private String email;
 
+	@Column(name = "role")
+	private String role;
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
+
 	@Column(name = "phone")
 	private String phone;
 
@@ -29,6 +40,39 @@ public class User {
 
 	@Column(name = "password")
 	private String password;
+
+	@Column(name = "exp")
+	private int exp;
+
+	@Column(name = "times_remaining")
+	private int timesRemaining;
+
+	@Column(name = "provider")
+	private String provider;
+
+	public String getProvider() {
+		return provider;
+	}
+
+	public void setProvider(String provider) {
+		this.provider = provider;
+	}
+
+	public int getTimesRemaining() {
+		return timesRemaining;
+	}
+
+	public void setTimesRemaining(int timesRemaining) {
+		this.timesRemaining = timesRemaining;
+	}
+
+	public int getExp() {
+		return exp;
+	}
+
+	public void setExp(int exp) {
+		this.exp = exp;
+	}
 
 	@Column(name = "carrier")
 	private String carrier;

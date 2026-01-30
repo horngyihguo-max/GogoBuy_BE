@@ -6,7 +6,6 @@ import java.util.List;
 import com.example.demo.constants.ValidationMsg;
 import com.example.demo.vo.FeeDescriptionVo;
 import com.example.demo.vo.MenuCategoriesVo;
-import com.example.demo.vo.MenuVo;
 import com.example.demo.vo.ProductOptionGroupsVo;
 import com.example.demo.vo.ProductOptionItemsVo;
 import com.example.demo.vo.StoreOperatingHoursVo;
@@ -41,16 +40,20 @@ public class StoresReq {
 	
 	private String createdBy;
 	
+	private Double lng;
+	
+	private Double lat;
+	
 	@Valid
 	private List<StoreOperatingHoursVo>operatingHoursVoList;
-	@Valid
-	private List<MenuVo> menuVoList;
+//	@Valid
+//	private List<MenuVo> menuVoList;
 	@Valid
 	private List<MenuCategoriesVo> menuCategoriesVoList;
 	@Valid
 	private List<ProductOptionGroupsVo> productOptionGroupsVoList;
 	@Valid
-	private List<ProductOptionItemsVo> ProductOptionItemsVoList;
+	private List<ProductOptionItemsVo> productOptionItemsVoList;
 
 
 	public String getStoresname() {
@@ -134,13 +137,13 @@ public class StoresReq {
 		this.operatingHoursVoList = operatingHoursVoList;
 	}
 
-	public List<MenuVo> getMenuVoList() {
-		return menuVoList;
-	}
-
-	public void setMenuVoList(List<MenuVo> menuVoList) {
-		this.menuVoList = menuVoList;
-	}
+//	public List<MenuVo> getMenuVoList() {
+//		return menuVoList;
+//	}
+//
+//	public void setMenuVoList(List<MenuVo> menuVoList) {
+//		this.menuVoList = menuVoList;
+//	}
 
 	public List<MenuCategoriesVo> getMenuCategoriesVoList() {
 		return menuCategoriesVoList;
@@ -159,11 +162,11 @@ public class StoresReq {
 	}
 
 	public List<ProductOptionItemsVo> getProductOptionItemsVoList() {
-		return ProductOptionItemsVoList;
+		return productOptionItemsVoList;
 	}
 
 	public void setProductOptionItemsVoList(List<ProductOptionItemsVo> productOptionItemsVoList) {
-		ProductOptionItemsVoList = productOptionItemsVoList;
+		this.productOptionItemsVoList = productOptionItemsVoList;
 	}
 
 	public String getCreatedBy() {
@@ -172,6 +175,22 @@ public class StoresReq {
 
 	public void setCreatedBy(String createdBy) {
 		this.createdBy = createdBy;
+	}
+
+	public Double getLng() {
+		return lng;
+	}
+
+	public void setLng(Double lng) {
+		this.lng = lng;
+	}
+
+	public Double getLat() {
+		return lat;
+	}
+
+	public void setLat(Double lat) {
+		this.lat = lat;
 	}
 
 	

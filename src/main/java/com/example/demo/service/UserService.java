@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
@@ -7,18 +8,24 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.UserDao;
 import com.example.demo.dto.UserInfoDto;
 import com.example.demo.dto.UserPasswordDto;
 import com.example.demo.entity.User;
+import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.GetUserInfoListRes;
+import com.example.demo.response.GetUserInfoRes;
+import com.example.demo.response.LoginRes;
 
 import jakarta.transaction.Transactional;
 
@@ -31,6 +38,9 @@ public class UserService {
 	@Autowired
 	private JavaMailSender mailSender;
 
+	@Autowired
+	private ImageService imageService;
+
 	/**
 	 * Redis發送修改email驗證碼功能 暫時用不到
 	 * 
@@ -39,6 +49,9 @@ public class UserService {
 
 	private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
+	/*
+	 * 會員註冊
+	 */
 	public BasicRes addUser(UserAddReq req) {
 		String uniqueID = UUID.randomUUID().toString();
 		String email = req.getEmail();
@@ -56,28 +69,52 @@ public class UserService {
 		}
 	}
 
-	public BasicRes login(UserLoginReq req) {
+	/*
+	 * 登入
+	 */
+	public LoginRes login(UserLoginReq req) {
 		String email = req.getEmail();
 		String password = req.getPassword();
 
 		User user = userDao.getUserByEmail(email);
 
 		if (user == null) {
-			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+			return new LoginRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
 //		比對密碼:
 //		比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(password, user.getPassword())) {
-			return new BasicRes(ResMessage.PASSWORD_ERROR.getCode(), //
+			return new LoginRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
 		}
 
-		return new BasicRes(ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage());
+		return new LoginRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage(), user.getId());
 	}
 
-//	更新暱稱、大頭貼或載具
+	public GetUserInfoListRes getAllUser() {
+		return new GetUserInfoListRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage(),
+				userDao.getAllUser());
+	}
+
+	public GetUserInfoRes getUser(String id) {
+		User user = userDao.getUserById(id);
+		if (user == null) {
+			return new GetUserInfoRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+		return new GetUserInfoRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage(), user.getId(), //
+				user.getNickname(), user.getEmail(), //
+				user.getPhone(), user.getAvatarUrl(), //
+				user.getCarrier(), user.getExp(), user.getRole(), //
+				user.getTimesRemaining(), user.getProvider());
+	}
+
+	/*
+	 * 更新暱稱、大頭貼或載具
+	 */
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes updateInfo(UserInfoDto dto, String id) {
 		User user = userDao.getUserById(id);
@@ -97,7 +134,9 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	更新密碼
+	/*
+	 * 於會員中心更改密碼
+	 */
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes updatePassword(String id, UserPasswordDto dto) {
 		User user = userDao.getUserById(id);
@@ -125,7 +164,9 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	串接電話
+	/*
+	 * 串接電話
+	 */
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes userPhone(String phone, String id) {
 		User user = userDao.getUserById(id);
@@ -142,29 +183,28 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	發送OTP code 並修改Email
+	/*
+	 * 透過ID發送OTP code 至 Email
+	 */
 	@Transactional
-	public BasicRes sendOtpWithoutRedis(String email, String id) {
+	public BasicRes sendOtpById(String email, String id) {
 		// 1. 生成 6 位數驗證碼
 		String otpCode = String.format("%06d", new Random().nextInt(1000000));
 
 		// 2. 找到使用者並更新 OTP 資訊
-		User user = userDao.getUserById(id);
-		user.setOtpCode(otpCode);
-		user.setOtpExpiry(LocalDateTime.now().plusMinutes(5)); // 設定 5 分鐘後過期
-		userDao.save(user);
+		userDao.sendOtpById(id, otpCode, LocalDateTime.now().plusMinutes(10));
 
 		SimpleMailMessage message = new SimpleMailMessage();
 
-		// 建議這裡也從 properties 讀取，或直接寫死你的發信帳號
+		// 從 properties 讀取，或直接寫死發信帳號
 		message.setFrom("GogobuyAdmin@gmail.com");
 		message.setTo(email);
-		message.setSubject("[GoGoBuy] 修改帳號驗證碼");
-		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 5 分鐘後失效，請盡速完成操作。");
+		message.setSubject("[GoGoBuy] 修改信箱驗證碼");
+		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 10 分鐘後失效，請盡速完成操作。");
 
 		try {
 			System.out.println("OTP碼:" + otpCode);
-			// 這是真正執行發送的動作
+			// 執行發送
 			mailSender.send(message);
 			return new BasicRes(ResMessage.EMAIL_SUCCESS.getCode(), //
 					ResMessage.EMAIL_SUCCESS.getMessage());
@@ -174,6 +214,47 @@ public class UserService {
 		}
 	}
 
+	/*
+	 * 透過 email 確認是否有該用戶 並發送OTP
+	 */
+	@Transactional
+	public BasicRes sendOtpByEmail(String email) {
+		// 1. 生成 6 位數驗證碼
+		String otpCode = String.format("%06d", new Random().nextInt(1000000));
+
+		User user = userDao.getUserByEmail(email);
+
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+
+		// 2. 找到使用者並更新 OTP 資訊
+		userDao.sendOtpByEmail(user.getEmail(), otpCode, LocalDateTime.now().plusMinutes(10));
+
+		SimpleMailMessage message = new SimpleMailMessage();
+
+		// 從 properties 讀取，或直接寫死發信帳號
+		message.setFrom("GogobuyAdmin@gmail.com");
+		message.setTo(user.getEmail());
+		message.setSubject("[GoGoBuy] 修改密碼驗證碼");
+		message.setText("您好：\n\n您的驗證碼為：" + otpCode + "\n驗證碼將於 10 分鐘後失效，請盡速完成操作。");
+
+		try {
+			System.out.println("OTP碼:" + otpCode);
+			// 執行發送
+			mailSender.send(message);
+			return new BasicRes(ResMessage.EMAIL_SUCCESS.getCode(), //
+					ResMessage.EMAIL_SUCCESS.getMessage());
+		} catch (Exception e) {
+			return new BasicRes(ResMessage.EMAIL_ERROR.getCode(), //
+					ResMessage.EMAIL_ERROR.getMessage());
+		}
+	}
+
+	/*
+	 * 驗證OTP碼並更新Email
+	 */
 	@Transactional
 	public BasicRes verifyAndUpdateEmail(String newEmail, String inputCode, String id) {
 		User user = userDao.getUserById(id);
@@ -197,18 +278,74 @@ public class UserService {
 		}
 
 		// 檢查新信箱是否已被他人佔用
-		if (userDao.existsByEmail(newEmail) > 0) { // 假設你 userDao 有這個方法
+		if (userDao.existsByEmail(newEmail) > 0) {
 			return new BasicRes(ResMessage.EMAIL_EXITS.getCode(), ResMessage.EMAIL_EXITS.getMessage());
 		}
 
 		// 4. 驗證通過，執行更新並清空 OTP 資訊
-		user.setEmail(newEmail);
-		user.setOtpCode(null); // 清除驗證碼，防止重複使用
+		userDao.updateEmail(id, newEmail);
+
+		return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+	}
+
+	/*
+	 * 重設密碼 (忘記密碼)
+	 */
+	@Transactional(rollbackOn = Exception.class)
+	public BasicRes resetPassword(ResetPasswordReq req) {
+		User user = userDao.getUserByEmail(req.getEmail());
+//		檢查帳戶是否存在
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
+					ResMessage.USER_NOT_FOUND.getMessage());
+		}
+
+		// 1. 檢查驗證碼是否為空
+		if (user.getOtpCode() == null || user.getOtpExpiry() == null) {
+			return new BasicRes(ResMessage.OTP_EMPTY.getCode(), //
+					ResMessage.OTP_EMPTY.getMessage());
+		}
+
+		// 2. 檢查驗證碼是否過期
+		if (LocalDateTime.now().isAfter(user.getOtpExpiry())) {
+			return new BasicRes(ResMessage.OTP_EXPIRED.getCode(), //
+					ResMessage.OTP_EXPIRED.getMessage());
+		}
+
+		// 3. 比對驗證碼
+		if (!user.getOtpCode().equals(req.getOtpCode())) {
+			return new BasicRes(ResMessage.OTP_ERROR.getCode(), //
+					ResMessage.OTP_ERROR.getMessage());
+		}
+
+//		加密新密碼
+		String encodePassword = encoder.encode(req.getNewPassword());
+		userDao.userPassword(user.getId(), encodePassword);
+
+//		清空 OTP 防止重複使用
+		user.setOtpCode(null);
 		user.setOtpExpiry(null);
+		user.setPassword(encodePassword);
 		userDao.save(user);
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
+	}
+
+//	每小時進行一次清理
+	@Scheduled(cron = "0 0 * * * ?")
+	@Transactional
+	/*
+	 * 每隔一小時清理資料庫的OTP驗證碼
+	 */
+	public void cleanupExpiredOtp() {
+		System.out.println("開始清理過期驗證碼...");
+
+		// 找到所有已過期且還有 code 的使用者，並清空欄位
+		int updatedRows = userDao.clearExpiredOtp(LocalDateTime.now());
+
+		System.out.println("清理完成，共影響了 " + updatedRows + " 筆資料。");
 	}
 
 	/*
@@ -238,4 +375,28 @@ public class UserService {
 	 * return new BasicRes(ResMessage.SUCCESS.getCode(), //
 	 * ResMessage.SUCCESS.getMessage()); }
 	 */
+
+	@Transactional
+	public BasicRes changeAvatar(String id, MultipartFile file) {
+		try {
+			// 檢查用戶是否存在
+			User user = userDao.getUserById(id);
+			if (user == null) {
+				return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
+			}
+
+			// ImageService 進行 Cloudinary 上傳
+			String newAvatarUrl = imageService.uploadImage(file, "avatars");
+
+			// 更新資料庫
+			userDao.updateProfile(user.getNickname(), newAvatarUrl, user.getCarrier(), id);
+
+			return new BasicRes(ResMessage.SUCCESS.getCode(), "圖片上傳成功");
+
+		} catch (IOException e) {
+			// 借400用
+			return new BasicRes(ResMessage.REGISTRATION_ERROR.getCode(), "圖片上傳失敗");
+		}
+	}
+
 }
