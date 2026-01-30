@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -58,5 +59,12 @@ public class OrdersController {
 	public BasicRes deleteOrderByUserIdAndEventsId(@RequestParam(name = "user_id") String userId, //
 			@RequestParam(name = "events_id") int eventsId) {
 		return ordersService.deleteOrderByUserIdAndEventsId(userId, eventsId);
+	}
+
+	// 硬刪除
+	@PostMapping("gogobuy/event/deleteOrder")
+	private BasicRes deleteOrder(@Valid @RequestParam(name = "user_id") String userId,
+			@RequestParam(name = "events_id") int eventsId) {
+		return ordersService.hardDelete(userId, eventsId);
 	}
 }

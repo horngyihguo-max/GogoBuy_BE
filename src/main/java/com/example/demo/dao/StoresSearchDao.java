@@ -61,7 +61,7 @@ public interface StoresSearchDao extends JpaRepository<Stores, Integer> {
 
 	// 找飯店(? (附近)
 
-	@Query(value = "SELECT * FROM (" + "  SELECT id, name, address, phone, image, category, "
+	@Query(value = "SELECT * FROM (" + "  SELECT id, nam e, address, phone, image, category, "
 			+ "  ROUND((6371 * acos(cos(radians(:lat)) * cos(radians(lat)) * cos(radians(lng) - radians(:lng)) "
 			+ "  + sin(radians(:lat)) * sin(radians(lat)))), 3) AS distance " //
 			+ "  FROM stores  WHERE is_deleted = false AND is_public = true " + "  AND lat BETWEEN :minLat AND :maxLat "
