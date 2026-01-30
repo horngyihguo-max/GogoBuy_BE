@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.example.demo.dao.OrdersDao;
 import com.example.demo.dao.PersonalOrderDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
+import com.example.demo.dto.CartDTO;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
@@ -491,5 +493,76 @@ public class GroupbuyEventsService {
 	}
 	
 	
+
+	// 購物車(首頁)
+	public GroupbuyEventsRes getCart(String userId) {
+	    try {
+	        if (!StringUtils.hasText(userId)) {
+	            return new GroupbuyEventsRes(400, "UserId 錯誤");
+	        }
+
+	        // 取得該用戶所有未刪除的訂單 
+	        List<Orders> allOrders = ordersDao.getOrdersByUserId(userId);
+	        
+	        if (allOrders == null || allOrders.isEmpty()) {
+	            return new GroupbuyEventsRes(200, "購物車目前沒有資料");
+	        }
+	        
+	        // 建立 Map 用於分組處理，Key 為 eventsId
+	        Map<Integer, CartDTO> cartMap = new HashMap<>();
+	        
+	        for (Orders order : allOrders) {
+	            int eventId = order.getEventsId();
+	            
+	            // 如果這團還沒被建立過，則初始化這團的共通資訊
+	            if (!cartMap.containsKey(eventId)) {
+	                CartDTO dto = new CartDTO();
+	                dto.setEventsId(eventId);
+	                dto.setItems(new ArrayList<>());
+	                dto.setTotalAmount(0);
+	                
+	                // 補充團購活動資訊
+	                GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
+	                if (event != null) {
+	                    dto.setEventName(event.getEventName());
+	                    dto.setStatus(event.getStatus().name());
+	                    
+	                    // 根據狀態判斷是否可修改 (只有 OPEN 狀態才能改)
+	                    dto.setCanModify(event.getStatus() == GroupbuyStatusEnum.OPEN);
+	                    
+	                    // 補充商店資訊 (抓 Logo 和 店名)
+	                    Stores store = storesSearchDao.getStoreById(event.getStoresId());
+	                    if (store != null) {
+	                        dto.setStoreName(store.getName());
+	                        dto.setStoreLogo(store.getImage()); 
+	                    }
+	                }
+	                cartMap.put(eventId, dto);
+	            }
+	            
+	            // 把當前訂單塞入對應的群組
+	            CartDTO currentGroup = cartMap.get(eventId);
+	            currentGroup.getItems().add(order);
+	            
+	            // 累加總金額與總數量
+	            currentGroup.setTotalAmount(currentGroup.getTotalAmount() + order.getSubtotal());
+	            currentGroup.setTotalQuantity(currentGroup.getItems().size());
+	            
+	            // 記錄該團最新的下單時間 (格式化為字串)
+	            if (currentGroup.getLatestOrderTime() == null || 
+	                order.getOrderTime().toString().compareTo(currentGroup.getLatestOrderTime()) > 0) {
+	                currentGroup.setLatestOrderTime(order.getOrderTime().toString());
+	            }
+	        } 
+
+	        GroupbuyEventsRes res = new GroupbuyEventsRes(200, "購物車查詢成功");
+	        res.setCartData(new ArrayList<>(cartMap.values()));
+	        return res;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return new GroupbuyEventsRes(500, "查詢失敗：" + e.getMessage());
+	    }
+	}
 	
 }
