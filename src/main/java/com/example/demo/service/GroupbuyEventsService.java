@@ -531,7 +531,8 @@ public class GroupbuyEventsService {
 	            dto.setEventsId(eid);
 	            dto.setEventName(view.getEventName());
 	            dto.setStoreName(view.getStoreName());
-	            dto.setStoreLogo(view.getHostAvatar()); 
+	            dto.setStoreLogo(view.getStoreImage()); 
+	            dto.setHostLogo(view.getHostAvatar());
 	            dto.setStatus(view.getEventStatus());
 	            
 	            // 權限：團長只要沒結單都能改；團員只有 OPEN 能改
