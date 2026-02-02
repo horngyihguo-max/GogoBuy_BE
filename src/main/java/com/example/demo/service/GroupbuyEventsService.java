@@ -499,95 +499,74 @@ public class GroupbuyEventsService {
 
 	// 購物車(首頁)
 	public GroupbuyEventsRes getCart(String userId) {
-		try {
-			if (!StringUtils.hasText(userId)) {
-				return new GroupbuyEventsRes(400, "UserId 錯誤");
-			}
-
-			// 取得該用戶所有未刪除的訂單
-			List<Orders> allOrders = ordersDao.getOrdersByUserId(userId);
-
-			if (allOrders == null || allOrders.isEmpty()) {
-				return new GroupbuyEventsRes(200, "購物車目前沒有資料");
-			}
-
-			// 建立 Map 用於分組處理，Key 為 eventsId
-			Map<Integer, CartDTO> cartMap = new HashMap<>();
-
-			for (Orders order : allOrders) {
-				int eventId = order.getEventsId();
-
-				// 如果這團還沒被建立過，則初始化這團的共通資訊
-				if (!cartMap.containsKey(eventId)) {
-					CartDTO dto = new CartDTO();
-					dto.setEventsId(eventId);
-					dto.setItems(new ArrayList<>());
-					dto.setTotalAmount(0);
-
-					// 補充團購活動資訊
-					GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
-					if (event != null) {
-						dto.setEventName(event.getEventName());
-						dto.setStatus(event.getStatus().name());
-
-						// 根據狀態判斷是否可修改 (只有 OPEN 狀態才能改)
-						dto.setCanModify(event.getStatus() == GroupbuyStatusEnum.OPEN);
-
-						// 補充商店資訊 (抓 Logo 和 店名)
-						Stores store = storesSearchDao.getStoreById(event.getStoresId());
-						if (store != null) {
-							dto.setStoreName(store.getName());
-							dto.setStoreLogo(store.getImage());
-						}
-					}
-					cartMap.put(eventId, dto);
-				}
-
-				// 把當前訂單塞入對應的群組
-				CartDTO currentGroup = cartMap.get(eventId);
-				currentGroup.getItems().add(order);
-
-				// 累加總金額與總數量
-				currentGroup.setTotalAmount(currentGroup.getTotalAmount() + order.getSubtotal());
-				currentGroup.setTotalQuantity(currentGroup.getItems().size());
-
-				// 記錄該團最新的下單時間 (格式化為字串)
-				if (currentGroup.getLatestOrderTime() == null
-						|| order.getOrderTime().toString().compareTo(currentGroup.getLatestOrderTime()) > 0) {
-					currentGroup.setLatestOrderTime(order.getOrderTime().toString());
-				}
-			}
-
-			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "購物車查詢成功");
-			res.setCartData(new ArrayList<>(cartMap.values()));
-			return res;
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new GroupbuyEventsRes(500, "查詢失敗：" + e.getMessage());
-		}
-	}
-
-	// 給團長看全部的orders
-	public GroupbuyEventsRes getOrdersAll(int eventId) {
-		List<OrdersSearchView> ordersSearchViewList = groupbuyEventsDao.selectOrdersAll(eventId);
-	    
-	    if(ordersSearchViewList == null) {
-	        return new GroupbuyEventsRes(404, "查無此orders");
-	    }
-	    ObjectMapper mapper = new ObjectMapper();
-	    // 多筆所以要用迴圈 一筆一筆轉
-	    for (OrdersSearchView order : ordersSearchViewList) {
-	        try {
-	            String selectedOptionJson = order.getSelectedOption(); 
-	            if (selectedOptionJson != null && !selectedOptionJson.isEmpty()) {
-	                List<Map<String, Object>> list = mapper.readValue(selectedOptionJson, new TypeReference<>() {});
-	                order.setSelectedOptionList(list);
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
+	    try {
+	        if (!StringUtils.hasText(userId)) {
+	            return new GroupbuyEventsRes(400, "UserId空的喵");
 	        }
+	        
+	        List<GroupsSearchView> relatedViews = groupsSearchViewDao.findAllMyRelatedEvents(userId);
+
+	        if (CollectionUtils.isEmpty(relatedViews)) {
+	            return new GroupbuyEventsRes(200, "購物車目前沒有資料喵");
+	        }
+
+	        List<Orders> allVisibleOrders = new ArrayList<>();
+	        Map<Integer, CartDTO> cartMap = new HashMap<>();
+
+	        for (GroupsSearchView view : relatedViews) {
+	            int eid = view.getEventId();
+	            boolean isHost = userId.equals(view.getHostId());
+
+	            //我是團長就拿「整團單」，我是團員就拿「個人單」
+	            if (isHost) {
+	                // 團長拿整團 (getAllOrdersByEventId)
+	                List<Orders> hostOrders = ordersDao.getAllOrdersByEventId(eid);
+	                if (!CollectionUtils.isEmpty(hostOrders)) allVisibleOrders.addAll(hostOrders);
+	            } else {
+	                // 團員拿自己 (getEventIdByUserId)
+	                List<Orders> memberOrders = ordersDao.getEventIdByUserId(userId, eid);
+	                if (!CollectionUtils.isEmpty(memberOrders)) allVisibleOrders.addAll(memberOrders);
+	            }
+
+	            // 預先初始化 CartDTO(View)
+	            CartDTO dto = new CartDTO();
+	            dto.setEventsId(eid);
+	            dto.setEventName(view.getEventName());
+	            dto.setStoreName(view.getStoreName());
+	            dto.setStoreLogo(view.getHostAvatar()); 
+	            dto.setStatus(view.getEventStatus());
+	            
+	            // 權限：團長只要沒結單都能改；團員只有 OPEN 能改
+	            boolean canModify = isHost ? !"FINISHED".equals(view.getEventStatus().toString()) 
+	                                       : "OPEN".equals(view.getEventStatus().toString());
+	            dto.setCanModify(canModify);
+	            dto.setItems(new ArrayList<>());
+	            cartMap.put(eid, dto);
+	        }
+
+	        // 將蒐集到的訂單塞入對應的 DTO 裡
+	        for (Orders order : allVisibleOrders) {
+	            CartDTO current = cartMap.get(order.getEventsId());
+	            if (current != null) {
+	                current.getItems().add(order);
+	                current.setTotalAmount(current.getTotalAmount() + order.getSubtotal());
+	                current.setTotalQuantity(current.getItems().size());
+	                
+	                // 時間紀錄
+	                if (current.getLatestOrderTime() == null || 
+	                    order.getOrderTime().toString().compareTo(current.getLatestOrderTime()) > 0) {
+	                    current.setLatestOrderTime(order.getOrderTime().toString());
+	                }
+	            }
+	        }
+
+	        GroupbuyEventsRes res = new GroupbuyEventsRes(200, "成功找到");
+	        res.setCartData(new ArrayList<>(cartMap.values()));
+	        return res;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return new GroupbuyEventsRes(500, "查詢失敗");
 	    }
-	    return new GroupbuyEventsRes(200, "成功", null, null, null, null, null, ordersSearchViewList);
 	}
 }
