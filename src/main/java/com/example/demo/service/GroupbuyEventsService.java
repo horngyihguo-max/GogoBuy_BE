@@ -569,4 +569,26 @@ public class GroupbuyEventsService {
 	        return new GroupbuyEventsRes(500, "查詢失敗");
 	    }
 	}
+	// 給團長看全部的orders
+	public GroupbuyEventsRes getOrdersAll(int eventId) {
+		List<OrdersSearchView> ordersSearchViewList = groupbuyEventsDao.selectOrdersAll(eventId);
+	    
+	    if(ordersSearchViewList == null) {
+	        return new GroupbuyEventsRes(404, "查無此orders");
+	    }
+	    ObjectMapper mapper = new ObjectMapper();
+	    // 多筆所以要用迴圈 一筆一筆轉
+	    for (OrdersSearchView order : ordersSearchViewList) {
+	        try {
+	            String selectedOptionJson = order.getSelectedOption(); 
+	            if (selectedOptionJson != null && !selectedOptionJson.isEmpty()) {
+	                List<Map<String, Object>> list = mapper.readValue(selectedOptionJson, new TypeReference<>() {});
+	                order.setSelectedOptionList(list);
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    return new GroupbuyEventsRes(200, "成功", null, null, null, null, null, ordersSearchViewList);
+	}
 }
