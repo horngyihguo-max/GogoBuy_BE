@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 
 import com.example.demo.constants.ValidationMsg;
+import com.example.demo.constants.WishTypeEnum;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -22,8 +23,8 @@ public class WishReq {
 	@NotNull(message = ValidationMsg.ANONYMOUS_EMPTY)
 	private boolean anonymous;
 	
-	@NotBlank(message = ValidationMsg.TYPE_EMPTY)
-	private String type;
+	@NotNull(message = ValidationMsg.TYPE_EMPTY)
+	private WishTypeEnum type;
 	
 	@NotBlank(message = ValidationMsg.LOCATION_EMPTY)
 	private String location;
@@ -47,10 +48,10 @@ public class WishReq {
 	public void setAnonymous(boolean anonymous) {
 		this.anonymous = anonymous;
 	}
-	public String getType() {
+	public WishTypeEnum getType() {
 		return type;
 	}
-	public void setType(String type) {
+	public void setType(WishTypeEnum type) {
 		this.type = type;
 	}
 	public String getLocation() {

@@ -18,8 +18,9 @@ public class WishSchedule {
         wishService.wishTimesReset();
     }
 	
-//	@Scheduled(cron = "0 0 0 * * ?")
-//	public String overThreeMonth() {
-//		wishService.
-//	}
+	@Scheduled(cron = "0 0 0 * * ?")
+//	@Scheduled(fixedRate = 20000)
+	public void overThreeMonth() throws Exception {
+		wishService.wishOverThreeMonth();
+	}
 }

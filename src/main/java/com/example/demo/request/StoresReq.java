@@ -1,10 +1,16 @@
 package com.example.demo.request;
 
+
 import java.util.List;
 
 import com.example.demo.constants.ValidationMsg;
 import com.example.demo.vo.FeeDescriptionVo;
+import com.example.demo.vo.MenuCategoriesVo;
+import com.example.demo.vo.ProductOptionGroupsVo;
+import com.example.demo.vo.ProductOptionItemsVo;
+import com.example.demo.vo.StoreOperatingHoursVo;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
 public class StoresReq {
@@ -12,8 +18,11 @@ public class StoresReq {
 	@NotBlank(message = ValidationMsg.STORE_NAME_EMPTY)
 	private String storesname;
 
-	@NotBlank(message = ValidationMsg.PHONE_EMPTY)
+//	@NotBlank(message = ValidationMsg.PHONE_EMPTY)
 	private String phone;
+	
+//	@NotBlank(message = ValidationMsg.ADDRESS_EMPTY)
+	private String address;
 
 	@NotBlank(message = ValidationMsg.CATEGORY_EMPTY)
 	private String category;
@@ -28,6 +37,24 @@ public class StoresReq {
 	private List<FeeDescriptionVo> fee_description;
 
 	private boolean publish;
+	
+	private String createdBy;
+	
+	private Double lng;
+	
+	private Double lat;
+	
+	@Valid
+	private List<StoreOperatingHoursVo>operatingHoursVoList;
+//	@Valid
+//	private List<MenuVo> menuVoList;
+	@Valid
+	private List<MenuCategoriesVo> menuCategoriesVoList;
+	@Valid
+	private List<ProductOptionGroupsVo> productOptionGroupsVoList;
+	@Valid
+	private List<ProductOptionItemsVo> productOptionItemsVoList;
+
 
 	public String getStoresname() {
 		return storesname;
@@ -43,6 +70,15 @@ public class StoresReq {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+	
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	public String getCategory() {
@@ -93,4 +129,71 @@ public class StoresReq {
 		this.publish = publish;
 	}
 
+	public List<StoreOperatingHoursVo> getOperatingHoursVoList() {
+		return operatingHoursVoList;
+	}
+
+	public void setOperatingHoursVoList(List<StoreOperatingHoursVo> operatingHoursVoList) {
+		this.operatingHoursVoList = operatingHoursVoList;
+	}
+
+//	public List<MenuVo> getMenuVoList() {
+//		return menuVoList;
+//	}
+//
+//	public void setMenuVoList(List<MenuVo> menuVoList) {
+//		this.menuVoList = menuVoList;
+//	}
+
+	public List<MenuCategoriesVo> getMenuCategoriesVoList() {
+		return menuCategoriesVoList;
+	}
+
+	public void setMenuCategoriesVoList(List<MenuCategoriesVo> menuCategoriesVoList) {
+		this.menuCategoriesVoList = menuCategoriesVoList;
+	}
+
+	public List<ProductOptionGroupsVo> getProductOptionGroupsVoList() {
+		return productOptionGroupsVoList;
+	}
+
+	public void setProductOptionGroupsVoList(List<ProductOptionGroupsVo> productOptionGroupsVoList) {
+		this.productOptionGroupsVoList = productOptionGroupsVoList;
+	}
+
+	public List<ProductOptionItemsVo> getProductOptionItemsVoList() {
+		return productOptionItemsVoList;
+	}
+
+	public void setProductOptionItemsVoList(List<ProductOptionItemsVo> productOptionItemsVoList) {
+		this.productOptionItemsVoList = productOptionItemsVoList;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Double getLng() {
+		return lng;
+	}
+
+	public void setLng(Double lng) {
+		this.lng = lng;
+	}
+
+	public Double getLat() {
+		return lat;
+	}
+
+	public void setLat(Double lat) {
+		this.lat = lat;
+	}
+
+	
+
+	
 }
