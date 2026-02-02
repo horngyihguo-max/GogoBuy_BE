@@ -23,7 +23,6 @@ import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GetUserInfoListRes;
-import com.example.demo.response.GetUserInfoRes;
 import com.example.demo.service.GoogleOAuth2Service;
 import com.example.demo.service.UserService;
 
