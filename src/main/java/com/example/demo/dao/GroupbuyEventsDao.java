@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Menu;
+import com.example.demo.entity.OrdersSearchView;
 import com.example.demo.projection.GroupbuyEventsProjection;
 
 @Repository
@@ -107,4 +108,12 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Modifying
 	@Query(value ="delete from groupbuy_events where id = ?1", nativeQuery = true)
 	public int deleteEvent(int id);
+	
+	// 查詢全部的映射表
+	@Query(value ="select * from groups_search_view ", nativeQuery = true)
+	public int selectAll();
+	
+	// 查詢orders映射表
+	@Query(value = "select * from orders_search_view where event_id = ?1 and is_deleted = false" , nativeQuery = true)
+	public List<OrdersSearchView> selectOrdersAll(int eventId);
 }
