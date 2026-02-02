@@ -90,7 +90,7 @@ public class PersonalOrderService {
 			// 用list存此單的userId
 			List<PersonalOrder> orderList = personalOrderDao.findUserIdByEventsId(eventsId);
 			// 檢查List有沒有人
-			if (orderList.isEmpty()) {
+			if (orderList == null || orderList.isEmpty()) {
 				return new ShippingFeeRes(200, "目前無人跟團，運費總額為：" + shippingFee);
 			}
 			// 檢查list有沒有金額是0的

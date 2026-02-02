@@ -103,9 +103,15 @@ public class GroupbuyEventsController {
 		return groupbuyEventsService.deleteEventPhysically(id);
 	}
 	
-	//購物車
+	// 購物車
 	@GetMapping("gogobuy/event/getCart")
 	public GroupbuyEventsRes getCart(@Valid @RequestParam(name = "user_id") String usrerId) {
 		return groupbuyEventsService.getCart(usrerId);
 		}
+	
+	// 活動ID 查詢 Orders 映射表
+	@GetMapping("gogobuy/event/getOrdersView")
+	public GroupbuyEventsRes getOrdersAll(@Valid @RequestParam(name = "event_id")int eventId) {
+		return groupbuyEventsService.getOrdersAll(eventId);
+	}
 }
