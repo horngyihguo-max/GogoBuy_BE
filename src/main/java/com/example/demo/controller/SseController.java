@@ -68,4 +68,10 @@ public class SseController {
 	}
    
 
+    // 取得歷史公告
+    @GetMapping("/history")
+    public List<SystemNotice> getHistory() {
+        return systemNotificationServer.getHistory();
+    }
+
 }
