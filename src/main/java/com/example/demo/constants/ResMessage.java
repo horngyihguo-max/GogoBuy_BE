@@ -8,6 +8,7 @@ public enum ResMessage {
 	REGISTRATION_ERROR(400, "註冊失敗"),
 	PASSWORD_ERROR(400, "密碼錯誤"),
 	PHONE_SIZE_ERROR(400,"電話長度錯誤"),
+	NOTICE_ERROR(400,"公告新增失敗"),
 	CATEGORY_ERROR(400,"大類型的類型錯誤(不存在)"),
 	STORE_EXISTS(400,"店家(電話)已存在"),
 	STORE_NULL_ERROR(400,"店家列表為空"),
