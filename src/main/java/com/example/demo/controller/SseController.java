@@ -43,33 +43,29 @@ public class SseController {
    
    // 管理員新增公告  api/sse/set-notice
    @PostMapping("/set-notice") 
-   public String setNotice(@RequestBody NoticeDTO dto) {
-       LocalDateTime expiry ;
-       if (dto.getTime() != null) {
-           expiry = dto.getTime();
-       } else if (dto.getMinutes() != null) {
-           expiry = LocalDateTime.now().plusMinutes(dto.getMinutes());
-       } else {
-           return "錯誤：缺少時間參數";
-       }
-   
-       
-             
-       //  時空旅人防呆
-       if (expiry.isBefore(LocalDateTime.now())) {
-           return "錯誤：失效時間不能是過去的時間。";
-       }
-       
-       
-       
-       // 存入公告中心(給新登入用戶看)
-       systemNotificationServer.setNotice(dto.getMsg(), expiry);
-       
-       //廣播在線用戶
-        notificationService.broadcast(dto.getMsg()); 
-       
-        return String.format("公告已設定！內容：%s，失效時間：%s", dto.getMsg(), expiry);
-   }
+	public String setNotice(@RequestBody NoticeDTO dto) {
+		LocalDateTime expiry;
+		if (dto.getTime() != null) {
+			expiry = dto.getTime();
+		} else if (dto.getMinutes() != null) {
+			expiry = LocalDateTime.now().plusMinutes(dto.getMinutes());
+		} else {
+			return "錯誤：缺少時間參數";
+		}
+
+		// 時空旅人防呆
+		if (expiry.isBefore(LocalDateTime.now())) {
+			return "錯誤：失效時間不能是過去的時間。";
+		}
+
+		// 存入公告中心(給新登入用戶看)
+		systemNotificationServer.setNotice(dto.getMsg(), expiry);
+
+		// 廣播在線用戶
+		notificationService.broadcast(dto.getMsg());
+
+		return String.format("公告已設定！內容：%s，失效時間：%s", dto.getMsg(), expiry);
+	}
    
 
 }
