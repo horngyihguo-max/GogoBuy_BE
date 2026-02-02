@@ -6,6 +6,8 @@ public class ProductOptionGroupsVo {
 	
 	private int id;
 	
+	private String tempId;
+	
 	private int storesId;
 	
 	private String name;
@@ -62,6 +64,14 @@ public class ProductOptionGroupsVo {
 
 	public void setItems(List<ProductOptionItemsVo> items) {
 		this.items = items;
+	}
+
+	public String getTempId() {
+		return tempId;
+	}
+
+	public void setTempId(String tempId) {
+		this.tempId = tempId;
 	}
 
 	
