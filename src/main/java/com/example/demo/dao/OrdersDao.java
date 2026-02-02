@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Orders;
 
 @Repository
@@ -108,6 +109,12 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	//用 userId 查詢 selectedOption 
 	@Query(value = "select selected_option from orders where user_id =?1 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getselectedOptionByUserId(int userId);
-	
+
+	// 團長拿整團
+		@Query(value = "select * from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
+		public List<Orders> getAllOrdersByEventId(int eventId);
+		
+
+
 	// 購物車 eventsId和userId 刪 orders
 }
