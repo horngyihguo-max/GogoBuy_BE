@@ -11,6 +11,7 @@ public class CartDTO {
     private String eventName;
     private String storeName;
     private String storeLogo;     
+    private String hostLogo;
     private int totalAmount;       
     private int totalQuantity;     
     private String latestOrderTime; 
@@ -50,6 +51,16 @@ public class CartDTO {
 
 	public void setStoreLogo(String storeLogo) {
 		this.storeLogo = storeLogo;
+	}
+	
+	
+
+	public String getHostLogo() {
+		return hostLogo;
+	}
+
+	public void setHostLogo(String hostLogo) {
+		this.hostLogo = hostLogo;
 	}
 
 	public int getTotalAmount() {

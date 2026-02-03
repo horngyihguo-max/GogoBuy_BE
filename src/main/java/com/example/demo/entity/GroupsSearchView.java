@@ -70,6 +70,9 @@ public class GroupsSearchView {
 	@Column(name = "store_category")
 	private String storeCategory;
 	
+	@Column(name = "store_image")
+	private String storeImage;
+	
 	@Column(name = "host_id")
 	private String hostId;
 	
@@ -237,6 +240,14 @@ public class GroupsSearchView {
 
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
+	}
+
+	public String getStoreImage() {
+		return storeImage;
+	}
+
+	public void setStoreImage(String storeImage) {
+		this.storeImage = storeImage;
 	}
 
 	
