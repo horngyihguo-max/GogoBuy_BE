@@ -275,4 +275,16 @@ public class OrdersService {
 			return new GroupbuyEventsRes(500, "系統錯誤");
 		}
 	}
+	
+	public BasicRes deleteCartByOrderId(int orderId) {
+		int deletedCount = ordersDao.deleteOrderById(orderId);
+
+		// 如果受影響的筆數大於 0，表示至少有一份問卷被成功軟刪除
+		if (deletedCount > 0) {
+			return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
+		} else {
+			// 如果一筆都沒改到，表示傳入的 ID 在資料庫都找不到（或是已被刪除）
+			return new BasicRes(ResMessage.ORDER_ERROR.getCode(), ResMessage.ORDER_ERROR.getMessage());
+		}
+	}
 }
