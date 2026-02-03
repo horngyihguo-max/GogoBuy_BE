@@ -3,6 +3,7 @@ package com.example.demo.response;
 import java.util.List;
 
 import com.example.demo.dto.CartDTO;
+import com.example.demo.dto.OrdersDTO;
 import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
@@ -26,7 +27,6 @@ public class GroupbuyEventsRes extends BasicRes {
 	private List<GroupsSearchView> groupsSearchViewList;
 	
 	private List<OrdersSearchView> ordersSearchViewList;
-
 
 
 	public List<OrdersSearchView> getOrdersSearchViewList() {
@@ -110,5 +110,19 @@ public class GroupbuyEventsRes extends BasicRes {
     public void setCartData(List<CartDTO> cartData) {
         this.cartData = cartData;
     }
+    private OrdersDTO ordersDto;
 
+
+	public OrdersDTO getOrdersDto() {
+		return ordersDto;
+	}
+
+	public void setOrdersDto(OrdersDTO ordersDto) {
+		this.ordersDto = ordersDto;
+	}
+	public GroupbuyEventsRes(int code, String message, OrdersDTO responseDto) {
+        super(code, message);
+        this.ordersDto = responseDto; 
+    }
+    
 }
