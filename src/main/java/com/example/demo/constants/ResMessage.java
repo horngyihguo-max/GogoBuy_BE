@@ -42,6 +42,7 @@ public enum ResMessage {
 	MENU_NOT_FOUND(404, "找不到menu"),
 	MENU_ITEM_NOT_FOUND(404, "找不到商品"),
 	MENU_ITEM_ERROR(400, "推薦商品錯誤"),
+	ORDER_ERROR(400, "找不到該訂單"),
 	EVENTS_ID_ERROR(400, "所屬團ID錯誤"),
 	MENU_ID_ERROR(400, "商品ID錯誤"),
 	EVENTS_NOT_FOUND(404, "找不到所屬團"),
