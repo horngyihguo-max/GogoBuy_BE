@@ -100,7 +100,7 @@ public class StoreService {
 		// - 手機：09xxxxxxxx (共10碼)
 		// - 市話：0x-xxxxxxx (共9碼) 或 0x-xxxxxxxx (共10碼，如台北/台中/高雄)
 		if (!StringUtils.hasText(purePhone)) {
-			throw new Exception("電話不能為空喵");
+			throw new Exception("電話不能為空喵!");
 		}
 
 		// 使用正則表達式檢查格式與長度：
@@ -117,7 +117,7 @@ public class StoreService {
 		if (req.getFee_description() != null) {
 			for (FeeDescriptionVo vo : req.getFee_description()) {
 				if (vo.getKm() < 0 || vo.getFee() < 0)
-					throw new Exception("運費或距離不可為負");
+					throw new Exception("運費或距離不可為負喵!");
 			}
 		}
 	}
@@ -142,10 +142,10 @@ public class StoreService {
 				java.time.LocalTime.parse(vo.getCloseTime(), timeFormatter);
 			} catch (DateTimeParseException e) {
 				// 如果格式不對 (例如 25:00 或 12:70) 會進到這裡
-				throw new Exception("時間格式錯誤，請使用 HH:mm 格式 (例如 09:00)");
+				throw new Exception("時間格式錯誤喵!，請使用 HH:mm 格式喵! (例如 09:00)");
 //		子類別
 			} catch (DateTimeException e) {
-				throw new Exception("無效的星期數值: " + vo.getWeek());
+				throw new Exception("無效的星期數值喵!: " + vo.getWeek());
 //		父類別
 			}
 		}
@@ -764,12 +764,13 @@ public class StoreService {
 				            "memo": "備註",
 				            "fee_description": [{ "km": 2, "fee": 30 }],
 				            "operatingHoursVoList": [{ "week": 1, "openTime": "09:00", "closeTime": "21:00" }],
-				            "menuCategoriesVoList": [{ "name": "類別", "menuVo": [{ "name": "品名", "description": "描述", "basePrice": 80, "unusual": {"tempId":"value"} }],"priceLevel": [{ "name": "規格", "price": 100 }] }]
-				            "productOptionGroupsVoList": [{ "name": "選項群組", "items": [{ "name": "項目", "extraPrice": 0 }] }]
+				            "menuCategoriesVoList": [{ "name": "類別", "menuVo": [{ "name": "品名", "description": "描述", "basePrice": 80, "unusual": [{"tempId":"value"}] }],"priceLevel": [{ "name": "規格", "price": 100 }] }]
+				            "productOptionGroupsVoList": [{ "tempId": "t1", "name": "選項群組", "items": [{ "name": "項目", "extraPrice": 0 }] }]
 				        }
 				unusual欄位可以留空,如有產品特殊規格、價格(熱飲、與同類型商品加大不同價)視必要性填入
-				商品、各欄位要盡可能完整齊全提供，但沒有的就不要亂填
-				category可以是fast或slow,請依據是否為餐飲業來判斷
+				商品、各欄位要盡可能完整齊全提供
+				沒有的填 空陣列[] 或 空字串"" 依欄位判斷
+				category 依據產業判斷：餐飲業為 fast，非餐飲業為 slow
 				unusual 必須是 List<Map<String, String>> 格式
 				unusual 的 Key 必須對應到 productOptionGroupsVoList 中定義的 tempId
 					            """;
