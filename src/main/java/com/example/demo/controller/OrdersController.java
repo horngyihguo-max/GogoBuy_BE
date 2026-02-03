@@ -67,4 +67,11 @@ public class OrdersController {
 			@RequestParam(name = "events_id") int eventsId) {
 		return ordersService.hardDelete(userId, eventsId);
 	}
+
+	// 根據order id 軟刪除該筆資料
+	@PostMapping("gogobuy/order/deleteOrderById")
+	private BasicRes deleteOrder(@RequestParam(name = "order_id") int orderId) {
+		return ordersService.deleteCartByOrderId(orderId);
+	}
+
 }

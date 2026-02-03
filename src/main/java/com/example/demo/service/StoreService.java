@@ -157,7 +157,7 @@ public class StoreService {
 		List<ProductOptionGroupsVo> groupList = req.getProductOptionGroupsVoList();
 
 		if (categoriesList == null || categoriesList.isEmpty()) {
-			throw new Exception("你的商品沒有類別喵");
+			throw new Exception("你的商品沒有類別喵!");
 		}
 
 		// 蒐集關聯ID
@@ -174,7 +174,7 @@ public class StoreService {
 		for (MenuCategoriesVo vo : categoriesList) {
 			// 檢查類別名稱
 			if (!StringUtils.hasText(vo.getName())) {
-				throw new Exception("類別名稱不可為空喵");
+				throw new Exception("類別名稱不可為空喵!");
 			}
 
 			// 檢查該類別下的「規格/價位級距」 (PriceLevel)
@@ -226,15 +226,15 @@ public class StoreService {
 			return;
 		for (ProductOptionGroupsVo vo : groupList) {
 			if (!StringUtils.hasText(vo.getName()))
-				throw new Exception("選項群組名不可為空");
+				throw new Exception("選項群組名不可為空喵!");
 			if (vo.getMaxSelection() < 0)
-				throw new Exception("規格 [" + vo.getName() + "] 的最多可選項數不可為負數");
+				throw new Exception("規格 [" + vo.getName() + "] 的最多可選項數不可為負數喵!");
 			if (vo.getItems() != null) {
 				for (ProductOptionItemsVo item : vo.getItems()) {
 					if (!StringUtils.hasText(item.getName()))
-						throw new Exception("選項名不可為空");
+						throw new Exception("選項名不可為空喵!");
 					if (item.getExtraPrice() != null && item.getExtraPrice() < 0)
-						throw new Exception("加價不可為負");
+						throw new Exception("加價不可為負喵!");
 				}
 			}
 		}
@@ -354,8 +354,8 @@ public class StoreService {
 			store.setLng(googleMapRes.getLng());
 		} else {
 			// 如果定位失敗，拋出異常讓事務回滾，或是給予預設提示
-			String errorMsg = (googleMapRes != null) ? googleMapRes.getMessage() : "定位服務無回應";
-			throw new Exception("地址定位失敗：" + errorMsg);
+			String errorMsg = (googleMapRes != null) ? googleMapRes.getMessage() : "定位服務無回應喵!";
+			throw new Exception("地址定位失敗喵!：" + errorMsg);
 		}
 	}
 
@@ -375,7 +375,7 @@ public class StoreService {
 		}
 
 		// 情況 C：兩者都沒有，無法搜尋
-		throw new Exception("請開啟定位或輸入搜尋地址喵");
+		throw new Exception("請開啟定位或輸入搜尋地址喵!");
 	}
 
 	// 回滾
@@ -458,7 +458,7 @@ public class StoreService {
 				imageService.deleteImage(oldImageUrl);
 			} catch (Exception e) {
 				// 捕捉但不拋出，確保資料庫更新能繼續
-				System.err.println("舊圖片刪除失敗，但商店更新繼續執行: " + e.getMessage());
+				System.err.println("舊圖片刪除失敗，但商店更新繼續執行喵!: " + e.getMessage());
 			}
 		}
 		// 檢查
@@ -523,7 +523,7 @@ public class StoreService {
 				try {
 					imageService.deleteImage(oldImg);
 				} catch (Exception e) {
-					System.err.println("舊品項圖片刪除失敗: " + oldImg);
+					System.err.println("舊品項圖片刪除失敗喵!: " + oldImg);
 				}
 			}
 		}
@@ -578,7 +578,7 @@ public class StoreService {
 		int result = storesUpdateDao.deleteStoreById(storeId);
 
 		if (result > 0) {
-			return new BasicRes(ResMessage.SUCCESS.getCode(), "店家ID" + storeId + "已被物理抹除");
+			return new BasicRes(ResMessage.SUCCESS.getCode(), "店家ID" + storeId + "已被物理抹除喵!");
 		} else {
 			return new BasicRes(ResMessage.STORE_NOT_FOUND.getCode(), ResMessage.STORE_NOT_FOUND.getMessage());
 		}
@@ -599,24 +599,24 @@ public class StoreService {
 		int result = storesUpdateDao.softDeleteStoreById(storeId);
 
 		if (result <= 0) {
-			throw new Exception("找不到該店家或已被刪除 (ID: " + storeId + ")");
+			throw new Exception("找不到該店家或已被刪除喵! (ID: " + storeId + ")");
 		}
 
-		return new BasicRes(ResMessage.SUCCESS.getCode(), "店家 ID " + storeId + " 已成功軟刪除");
+		return new BasicRes(ResMessage.SUCCESS.getCode(), "店家 ID " + storeId + " 已成功軟刪除喵!");
 	}
 
 	public StoresRes getStoresByName(String name) {
 		try {
 			// 修正點：如果未輸入或只有空白，直接回傳空清單
 			if (name == null || name.trim().isEmpty()) {
-				return new StoresRes(ResMessage.INPUT_IS_EMPTY.getCode(), "請輸入搜尋關鍵字", null);
+				return new StoresRes(ResMessage.INPUT_IS_EMPTY.getCode(), "請輸入搜尋關鍵字喵!", null);
 			}
 
 			List<Stores> storeList = storesSearchDao.findStoresByNameLike(name);
 
-			return new StoresRes(ResMessage.SUCCESS.getCode(), "搜尋成功，共 " + storeList.size() + " 筆", storeList);
+			return new StoresRes(ResMessage.SUCCESS.getCode(), "搜尋成功喵!，共 " + storeList.size() + " 筆喵!", storeList);
 		} catch (Exception e) {
-			return new StoresRes(500, "搜尋失敗: " + e.getMessage());
+			return new StoresRes(500, "搜尋失敗喵!: " + e.getMessage());
 		}
 	}
 
@@ -718,7 +718,7 @@ public class StoreService {
 			return res;
 
 		} catch (Exception e) {
-			return new StoresRes(500, "取得店家資料失敗: " + e.getMessage(), null);
+			return new StoresRes(500, "取得店家資料失敗喵!: " + e.getMessage(), null);
 		}
 	}
 
@@ -730,7 +730,7 @@ public class StoreService {
 			return new StoresRes(ResMessage.STORE_NULL_ERROR.getCode(), ResMessage.STORE_NULL_ERROR.getMessage());
 		}
 
-		return new StoresRes(ResMessage.SUCCESS.getCode(), "共" + storesList.size() + "筆資料", storesList);
+		return new StoresRes(ResMessage.SUCCESS.getCode(), "共" + storesList.size() + "筆資料喵!", storesList);
 	}
 
 //	AI填菜單
@@ -809,7 +809,7 @@ public class StoreService {
 
 			// 檢查 API 是否有回傳內容（有時會因為安全過濾而回傳空內容）
 			if (candidate.path("content").path("parts").isMissingNode()) {
-				throw new Exception("Gemini 3 拒絕回應或圖片無法辨識，請更換圖片再試");
+				throw new Exception("Gemini 3 拒絕回應或圖片無法辨識，請更換圖片再試喵!");
 			}
 
 			// 確保回傳JSON符合格式
@@ -820,7 +820,7 @@ public class StoreService {
 			int start = aiJsonText.indexOf("{");
 			int end = aiJsonText.lastIndexOf("}");
 			if (start == -1 || end == -1) {
-				throw new Exception("AI 回傳的內容不包含合法的 JSON 結構");
+				throw new Exception("AI 回傳的內容不包含合法的 JSON 結構喵!");
 			}
 			String cleanedJson = aiJsonText.substring(start, end + 1);
 
@@ -837,8 +837,8 @@ public class StoreService {
 
 		} catch (Exception e) {
 			// 增加詳細錯誤輸出，方便調試
-			System.err.println("解析異常回傳內容：" + rawResponse);
-			throw new Exception("AI 辨識解析失敗: " + e.getMessage());
+			System.err.println("解析異常回傳內容喵!：" + rawResponse);
+			throw new Exception("AI 辨識解析失敗喵!: " + e.getMessage());
 		}
 	}
 
@@ -891,10 +891,10 @@ public class StoreService {
 
 			String locationMsg = (address != null && !address.isEmpty()) ? address : "當前定位";
 			return new StoresRes(ResMessage.SUCCESS.getCode(),
-					"於 [" + locationMsg + "] 半徑 " + radius + " 公里內共搜尋到 " + projections.size() + " 筆", projections,
+					"於 [" + locationMsg + "] 半徑 " + radius + " 公里內共搜尋到 " + projections.size() + " 筆喵!", projections,
 					true);
 		} catch (Exception e) {
-			return new StoresRes(500, "搜尋失敗: " + e.getMessage());
+			return new StoresRes(500, "搜尋失敗喵!: " + e.getMessage());
 		}
 	}
 
