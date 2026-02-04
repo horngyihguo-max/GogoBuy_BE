@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -16,6 +18,8 @@ import jakarta.persistence.Table;
 public class Orders {
 
 	@Id
+	//必須告訴 Hibernate 使用資料庫的「自動遞增」機制
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private int id;
 	
@@ -31,11 +35,11 @@ public class Orders {
 	@Column(name = "quantity")
 	private int quantity;
 	
+	@Column(name = "spec_name")
+	private String specName;
+	
 	@Column(name = "selected_option")
 	private String selectedOption;
-	
-	@Column(name = "personal_memo")
-	private String personalMemo;
 	
 	@Column(name = "order_time")
 	private LocalDateTime orderTime;
@@ -49,6 +53,9 @@ public class Orders {
 	
 	@Column(name = "subtotal")
 	private int subtotal;
+	
+	@Column(name = "personal_memo")
+	private String personalMemo;
 	
 	@Column(name = "weight")
 	private double weight;
@@ -96,20 +103,20 @@ public class Orders {
 		this.quantity = quantity;
 	}
 
+	public String getSpecName() {
+		return specName;
+	}
+
+	public void setSpecName(String specName) {
+		this.specName = specName;
+	}
+
 	public String getSelectedOption() {
 		return selectedOption;
 	}
 
 	public void setSelectedOption(String selectedOption) {
 		this.selectedOption = selectedOption;
-	}
-
-	public String getPersonalMemo() {
-		return personalMemo;
-	}
-
-	public void setPersonalMemo(String personalMemo) {
-		this.personalMemo = personalMemo;
 	}
 
 	public LocalDateTime getOrderTime() {
@@ -159,6 +166,15 @@ public class Orders {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-	
+
+	public String getPersonalMemo() {
+		return personalMemo;
+	}
+
+	public void setPersonalMemo(String personalMemo) {
+		this.personalMemo = personalMemo;
+	}
+
+
 	
 }
