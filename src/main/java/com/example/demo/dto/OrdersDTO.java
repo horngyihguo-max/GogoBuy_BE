@@ -1,14 +1,10 @@
 package com.example.demo.dto;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.demo.constants.PickupStatusEnum;
 import com.example.demo.vo.OrderMenuVo;
 
 public class OrdersDTO {
-
-	private int id;
 	
 	private int eventsId;
 	
@@ -17,26 +13,8 @@ public class OrdersDTO {
 	private List<OrderMenuVo> menuList;
 	
 	private String personalMemo;
-	
-	private LocalDateTime orderTime;
-	
-	private PickupStatusEnum pickupStatus;
-	
-	private LocalDateTime pickupTime;
-	
-	private int subtotal;
-	
+
 	private double weight;
-
-	private boolean deleted;
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
-	}
 
 	public int getEventsId() {
 		return eventsId;
@@ -70,52 +48,12 @@ public class OrdersDTO {
 		this.personalMemo = personalMemo;
 	}
 
-	public LocalDateTime getOrderTime() {
-		return orderTime;
-	}
-
-	public void setOrderTime(LocalDateTime orderTime) {
-		this.orderTime = orderTime;
-	}
-
-	public PickupStatusEnum getPickupStatus() {
-		return pickupStatus;
-	}
-
-	public void setPickupStatus(PickupStatusEnum pickupStatus) {
-		this.pickupStatus = pickupStatus;
-	}
-
-	public LocalDateTime getPickupTime() {
-		return pickupTime;
-	}
-
-	public void setPickupTime(LocalDateTime pickupTime) {
-		this.pickupTime = pickupTime;
-	}
-
-	public int getSubtotal() {
-		return subtotal;
-	}
-
-	public void setSubtotal(int subtotal) {
-		this.subtotal = subtotal;
-	}
-
 	public double getWeight() {
 		return weight;
 	}
 
 	public void setWeight(double weight) {
 		this.weight = weight;
-	}
-
-	public boolean isDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
 	}
 
 	
