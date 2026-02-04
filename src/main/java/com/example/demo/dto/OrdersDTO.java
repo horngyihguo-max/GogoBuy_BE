@@ -1,4 +1,4 @@
-package com.example.demo.request;
+package com.example.demo.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -6,16 +6,12 @@ import java.util.List;
 import com.example.demo.constants.PickupStatusEnum;
 import com.example.demo.vo.OrderMenuVo;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-public class OredersReq {
+public class OrdersDTO {
 
 	private int id;
-	@NotNull(message = "所屬團ID必填")
+	
 	private int eventsId;
 	
-    @NotBlank(message = "跟團者ID必填")
 	private String userId;
 
 	private List<OrderMenuVo> menuList;
@@ -121,6 +117,6 @@ public class OredersReq {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-	
+
 	
 }
