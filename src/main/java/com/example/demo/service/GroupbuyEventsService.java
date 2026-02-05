@@ -323,7 +323,7 @@ public class GroupbuyEventsService {
 		// 更新活動狀態為 FINISHED
 		groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.FINISHED.name(), id, userId);
 		List<String> userIdList = ordersDao.getUserIdByEventsId(id);
-		if (userIdList == null || userIdList.isEmpty()) {
+		if (!CollectionUtils.isEmpty(userIdList)) {
 			for (String userIdStr : userIdList) {
 				// 計算該用戶個人的數據
 				// 此用戶的全部小計
@@ -338,7 +338,7 @@ public class GroupbuyEventsService {
 		// 手動結單完查詢所屬活動的跟團者做自動生產addPersonOrder資料
 		List<Orders> ordersInfoList = ordersDao.getUserAllByEventsId(id);
 		// 檢查
-		if (ordersInfoList == null || ordersInfoList.isEmpty()) {
+		if (CollectionUtils.isEmpty(ordersInfoList)) {
 			return new BasicRes(200, "已結單沒有跟團者");
 		}
 
@@ -416,7 +416,7 @@ public class GroupbuyEventsService {
 				return new GroupbuyEventsRes(400, "輸入正確的stores_id");
 			}
 			List<Menu> menuList = groupbuyEventsDao.getMenuByStoresId(storesId);
-			if (menuList == null || menuList.isEmpty()) {
+			if (CollectionUtils.isEmpty(menuList)) {
 				return new GroupbuyEventsRes(200, "查無此店家的菜單資料");
 			}
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "店家菜單搜尋成功");
@@ -434,7 +434,7 @@ public class GroupbuyEventsService {
 				return new GroupbuyEventsRes(400, "輸入正確的stores_id");
 			}
 			List<GroupbuyEvents> eventsList = groupbuyEventsDao.getGroupbuyEventByStoresId(storesId);
-			if (eventsList == null || eventsList.isEmpty()) {
+			if (CollectionUtils.isEmpty(eventsList)) {
 				return new GroupbuyEventsRes(200, "查無此店家的菜單資料");
 			}
 			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "店家菜單搜尋成功");
@@ -478,7 +478,7 @@ public class GroupbuyEventsService {
 	// 回傳eventsId的活動
 	public GroupbuyEventsRes getEventsByEventsId(int id) {
 		List<GroupbuyEventsProjection> list = groupbuyEventsDao.getEventsByEventsId(id);
-		if (list == null || list.isEmpty()) {
+		if (CollectionUtils.isEmpty(list)) {
 			return new GroupbuyEventsRes(404, "查無此資料");
 		}
 		return new GroupbuyEventsRes(200, "成功查詢資料", list, null, null, null, null, null);
@@ -509,7 +509,7 @@ public class GroupbuyEventsService {
         for (OrdersSearchView order : ordersSearchViewList) {
             try {
                 String selectedOptionJson = order.getSelectedOption(); 
-                if (selectedOptionJson != null && !selectedOptionJson.isEmpty()) {
+                if (!CollectionUtils.isEmpty(ordersSearchViewList)) {
                     List<Map<String, Object>> list = mapper.readValue(selectedOptionJson, new TypeReference<>() {});
                     order.setSelectedOptionList(list);
                 }
