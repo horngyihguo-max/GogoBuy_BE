@@ -18,11 +18,11 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	// 新增
 	@Transactional
 	@Modifying
-	@Query(value = "insert into orders(events_id, user_id, menu_id, quantity, selected_option, "
+	@Query(value = "insert into orders(events_id, user_id, menu_id, quantity, selected_option, spec_name,"
 			+ "personal_memo, order_time, pickup_status, pickup_time, subtotal, weight) "
-			+ "values(?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP, ?7, ?8, ?9, ?10)", nativeQuery = true)
+			+ "values(?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP, ?7, ?8, ?9, ?10, ?11)", nativeQuery = true)
 	public int addOrders(int eventsId, String userId, int menuId, int quantity, String selectedOption,
-			String personalMemo, String pickupStatus, LocalDateTime pickupTime, int subtotal, int weight);
+			String specName,String personalMemo, String pickupStatus, LocalDateTime pickupTime, int subtotal, int weight);
 
 	// 查詢ordersId
 	@Query(value = "select* from orders where id = ?1", nativeQuery = true)
@@ -131,5 +131,7 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Modifying
 	@Query(value = "update orders set is_deleted = 1 where id = ?1", nativeQuery = true)
 	public int deleteOrderById(int orderId);
+
+
 
 }
