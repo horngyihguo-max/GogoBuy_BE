@@ -162,7 +162,7 @@ public class GroupbuyEventsService {
 					 */
 					.collect(Collectors.toSet());
 
-			// 檢查飲料 ID
+			// 檢查品項 ID
 			List<Integer> selectedIds = new ArrayList<>();
 			if (req.getTempMenuList() != null) {
 				for (Integer selectedId : req.getTempMenuList()) {
@@ -178,7 +178,7 @@ public class GroupbuyEventsService {
 				}
 			}
 
-			// 檢查推薦飲料ID
+			// 檢查推薦品項ID
 			List<Integer> recommendIds = new ArrayList<>();
 			if (req.getRecommendList() != null) {
 				for (Integer recommendId : req.getRecommendList()) {
