@@ -296,17 +296,14 @@ public class OrdersService {
                 OrdersDTO newDto = new OrdersDTO();
                 // 開新櫃子與初始化
                 // 設定這團的「共用資訊」
-                newDto.setId(order.getId());
                 newDto.setEventsId(order.getEventsId());
                 newDto.setUserId(order.getUserId());
                 newDto.setPersonalMemo(order.getPersonalMemo());
-                newDto.setOrderTime(order.getOrderTime());
-                newDto.setPickupStatus(order.getPickupStatus());
-                newDto.setDeleted(order.isDeleted());
+          
                 
                 // 初始化這團的商品箱子
                 newDto.setMenuList(new ArrayList<>());
-                newDto.setSubtotal(0); 
+ 
 
                 // 把它塞回去分類櫃
                 groupMap.put(currentEventId, newDto);
@@ -335,7 +332,6 @@ public class OrdersService {
 
             // 把商品塞進這團的清單，並累加金額
             currentDto.getMenuList().add(item);
-            currentDto.setSubtotal(currentDto.getSubtotal() + order.getSubtotal());
         }
 
         // 最後把 Map 裡所有的 DTO 拿出來，變成一個 List 回傳
@@ -365,13 +361,9 @@ public class OrdersService {
 			// 資料庫的「多筆資料」中，有一部分資訊是重複且共通的，我們只需要抓其中一份來當作「整張訂單」來當開頭
 			Orders orderInfo = ordersList.get(0);
 			System.err.println("原始資料內容: " + ordersList.get(0).toString());
-			responseDto.setId(orderInfo.getId());
 			responseDto.setUserId(orderInfo.getUserId());
 			responseDto.setEventsId(orderInfo.getEventsId());
 			responseDto.setPersonalMemo(orderInfo.getPersonalMemo());
-			responseDto.setOrderTime(orderInfo.getOrderTime());
-			responseDto.setPickupStatus(orderInfo.getPickupStatus());
-			responseDto.setDeleted(orderInfo.isDeleted());
 			responseDto.setWeight(orderInfo.getWeight());
 
 			List<OrderMenuVo> menuList = new ArrayList<>();
@@ -396,12 +388,6 @@ public class OrdersService {
                 menuList.add(item);
             } 
             responseDto.setMenuList(menuList);
-
-            int totalSum = 0;
-            for (Orders order : ordersList) {
-                totalSum += order.getSubtotal(); 
-            }
-            responseDto.setSubtotal(totalSum);
 
             return new GroupbuyEventsRes(200, "成功找到", responseDto);
         } catch (Exception e) {
