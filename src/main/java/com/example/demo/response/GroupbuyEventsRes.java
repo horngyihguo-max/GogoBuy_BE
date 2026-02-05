@@ -84,7 +84,6 @@ public class GroupbuyEventsRes extends BasicRes {
 	public GroupbuyEventsRes(int code, String message) {
 		super(code, message);
 	}
-	
 
 	public GroupbuyEventsRes(int code, String message, List<?> groupbuyEvents, List<Orders> orders,
 			List<PersonalOrder> personalOrder, List<Menu> menuList, List<GroupsSearchView> groupsSearchViewList,List<OrdersSearchView> ordersSearchViewList) {
