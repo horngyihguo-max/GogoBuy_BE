@@ -2,9 +2,9 @@ package com.example.demo.request;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 import com.example.demo.constants.PickupStatusEnum;
+import com.example.demo.vo.OrderMenuVo;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,14 +14,11 @@ public class OredersReq {
 	private int id;
 	@NotNull(message = "所屬團ID必填")
 	private int eventsId;
+	
     @NotBlank(message = "跟團者ID必填")
 	private String userId;
-    @NotNull(message = "菜單品項ID必填")
-	private int menuId;
-    @NotNull(message = "數量必填")
-	private int quantity;
-	
-	private List<Map<String, Object>> selectedOptionList;
+
+	private List<OrderMenuVo> menuList;
 	
 	private String personalMemo;
 	
@@ -36,7 +33,7 @@ public class OredersReq {
 	private double weight;
 
 	private boolean deleted;
-	
+
 	public int getId() {
 		return id;
 	}
@@ -61,28 +58,12 @@ public class OredersReq {
 		this.userId = userId;
 	}
 
-	public int getMenuId() {
-		return menuId;
+	public List<OrderMenuVo> getMenuList() {
+		return menuList;
 	}
 
-	public void setMenuId(int menuId) {
-		this.menuId = menuId;
-	}
-
-	public int getQuantity() {
-		return quantity;
-	}
-
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
-
-	public List<Map<String, Object>> getSelectedOptionList() {
-		return selectedOptionList;
-	}
-
-	public void setSelectedOptionList(List<Map<String, Object>> selectedOptionList) {
-		this.selectedOptionList = selectedOptionList;
+	public void setMenuList(List<OrderMenuVo> menuList) {
+		this.menuList = menuList;
 	}
 
 	public String getPersonalMemo() {
@@ -140,5 +121,6 @@ public class OredersReq {
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
-
+	
+	
 }
