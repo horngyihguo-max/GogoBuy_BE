@@ -131,7 +131,12 @@ public class GroupbuyEventsService {
 		// 如果 checkEvent(req).getCode() 不等於 SUCCESS.getCode() 就會回傳 錯誤的訊息跟代碼
 		if (checkEvent(req).getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkEvent(req);
+			
 		}
+		int check = groupbuyEventsDao.checkEvnet(req.getHostId(), req.getStoresId());
+        if(check > 0) {
+            return new BasicRes(400, "您已在此店家發起過團購，請勿重複新增");
+        }
 		// 新增資料
 		GroupbuyEvents event = new GroupbuyEvents();
 		event.setHostId(req.getHostId());
