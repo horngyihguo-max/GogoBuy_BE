@@ -28,6 +28,10 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type, String temp_menu,
 			String recommend, String recommendDescription, int limitation);
 
+	// 檢查開團活動
+    @Query(value = "select count(*) from groupbuy_events where host_id = ?1 and stores_id = ?2 and status = 'OPEN' and is_deleted = false", nativeQuery = true)
+    public int checkEvnet(String hostId, int storesId);
+	
 	// 查所屬團ID
 	@Query(value = "select* from groupbuy_events where id = ?1", nativeQuery = true)
 	public GroupbuyEvents findById(int id);
