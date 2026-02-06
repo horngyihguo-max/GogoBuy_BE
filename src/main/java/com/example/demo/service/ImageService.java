@@ -67,12 +67,12 @@ public class ImageService {
 
 		// 檢查結果 (印出 log 方便除錯)
 		if ("ok".equals(result.get("result"))) {
-            System.out.println("Cloudinary 圖片刪除成功: " + publicId);
+            System.out.println("Cloudinary 圖片刪除成功喵!: " + publicId);
         } else {
-            System.err.println("Cloudinary 圖片刪除失敗: " + result.get("result"));
+            System.err.println("Cloudinary 圖片刪除失敗喵!: " + result.get("result"));
         }
     } catch (Exception e) {
-        System.err.println("刪除雲端圖片時發生異常: " + e.getMessage());
+        System.err.println("刪除雲端圖片時發生異常喵!: " + e.getMessage());
     }
 }
 
@@ -102,7 +102,7 @@ public class ImageService {
 			// 移除 temp 標籤
 			cloudinary.uploader().removeTag("temp", new String[] { publicId }, ObjectUtils.emptyMap());//
 		} catch (Exception e) {//
-			System.err.println("標籤更新失敗: " + e.getMessage());//
+			System.err.println("標籤更新失敗喵!: " + e.getMessage());//
 		}
 	}
 	
@@ -120,7 +120,7 @@ public class ImageService {
 
 	    // 檢查是否有需要清理的圖片
 	    if (resources == null || resources.isEmpty()) {
-	        return new BasicRes(200, "目前沒有需要清理的過期暫存圖片喵");
+	        return new BasicRes(200, "目前沒有需要清理的過期暫存圖片喵!");
 	    }
 
 	    // 提取所有 Public ID
