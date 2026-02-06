@@ -29,8 +29,6 @@ public class GroupbuyEventsSchedule {
 
     @Scheduled(cron = "0 0 * * * *")
     @Transactional
-    @Scheduled(cron = "0 * * * * *")
-
     public void autoUpdateEventsStatus() {
     	
     	// 查詢狀態 open 且 結單時間結束的

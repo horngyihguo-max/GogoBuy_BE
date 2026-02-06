@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,25 +24,25 @@ public class OrdersController {
 	private OrdersService ordersService;
 
 	// 新增訂單
-	@PostMapping("gogobuy/addOrders")
+	@PostMapping("gogobuy/event/addOrders")
 	public BasicRes addOrders(@Valid @RequestBody OredersReq req) {
 		return ordersService.addOrders(req);
 	}
 
 	// 更新訂單
-	@PostMapping("gogobuy/updateOrders")
+	@PostMapping("gogobuy/event/updateOrders")
 	public BasicRes updateOrders(@Valid @RequestBody OredersReq req) {
-		return ordersService.updateOrders(req.getId(), req);
+		return ordersService.updateOrders( req);
 	}
 
 	// 查詢跟團者的開團
-	@GetMapping("gogobuy/getOrdersIdByUserId")
+	@GetMapping("gogobuy/event/getOrdersIdByUserId")
 	public GroupbuyEventsRes getOrdersIdByUserId(@Valid @RequestParam(name = "user_id") String userId) {
 		return ordersService.getOrdersByUserId(userId);
 	}
 
 	// 查詢跟團者的訂單
-	@GetMapping("gogobuy/getAllOrdersByUserIdAndEventsId")
+	@GetMapping("gogobuy/event/getAllOrdersByUserIdAndEventsId")
 	public GroupbuyEventsRes getAllOrdersByUserIdAndEventsId(@Valid @RequestParam(name = "user_id") String userId,
 			@RequestParam(name = "events_id") int eventsId) {
 		return ordersService.getEventIdByUserId(userId, eventsId);
@@ -54,9 +55,23 @@ public class OrdersController {
 //	}
 
 	// 軟刪除
-	@PostMapping("gogobuy/deleteOrderByUserIdAndEventsId")
+	@PostMapping("gogobuy/event/deleteOrderByUserIdAndEventsId")
 	public BasicRes deleteOrderByUserIdAndEventsId(@RequestParam(name = "user_id") String userId, //
 			@RequestParam(name = "events_id") int eventsId) {
 		return ordersService.deleteOrderByUserIdAndEventsId(userId, eventsId);
 	}
+
+	// 硬刪除
+	@PostMapping("gogobuy/event/deleteOrder")
+	private BasicRes deleteOrder(@Valid @RequestParam(name = "user_id") String userId,
+			@RequestParam(name = "events_id") int eventsId) {
+		return ordersService.hardDelete(userId, eventsId);
+	}
+
+	// 根據order id 軟刪除該筆資料
+	@PostMapping("gogobuy/order/deleteOrderById")
+	private BasicRes deleteOrder(@RequestParam(name = "order_id") int orderId) {
+		return ordersService.deleteCartByOrderId(orderId);
+	}
+
 }

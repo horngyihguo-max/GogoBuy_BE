@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
-import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
+import com.example.demo.entity.OrdersSearchView;
 import com.example.demo.projection.GroupbuyEventsProjection;
 
 @Repository
@@ -28,6 +28,10 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type, String temp_menu,
 			String recommend, String recommendDescription, int limitation);
 
+	// 檢查開團活動
+    @Query(value = "select count(*) from groupbuy_events where host_id = ?1 and stores_id = ?2 and status = 'OPEN' and is_deleted = false", nativeQuery = true)
+    public int checkEvnet(String hostId, int storesId);
+	
 	// 查所屬團ID
 	@Query(value = "select* from groupbuy_events where id = ?1", nativeQuery = true)
 	public GroupbuyEvents findById(int id);
@@ -108,4 +112,12 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Modifying
 	@Query(value ="delete from groupbuy_events where id = ?1", nativeQuery = true)
 	public int deleteEvent(int id);
+	
+	// 查詢全部的映射表
+	@Query(value ="select * from groups_search_view ", nativeQuery = true)
+	public int selectAll();
+	
+	// 查詢orders映射表
+	@Query(value = "select * from orders_search_view where event_id = ?1 and is_deleted = false" , nativeQuery = true)
+	public List<OrdersSearchView> selectOrdersAll(int eventId);
 }

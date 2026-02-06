@@ -1,74 +1,56 @@
-package com.example.demo.entity;
+package com.example.demo.response;
 
 import java.time.LocalDateTime;
 
 import com.example.demo.constants.PickupStatusEnum;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
-@Entity
-@Table(name = "orders")
-public class Orders {
+public class OrdersSearchViewRes extends BasicRes{
 
-	@Id
-	//必須告訴 Hibernate 使用資料庫的「自動遞增」機制
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
-	private int id;
+	private int orderId;
 	
-	@Column(name = "events_id")
 	private int eventsId;
-	
-	@Column(name = "user_id")
+
 	private String userId;
-	
-	@Column(name = "menu_id")
+
 	private int menuId;
 	
-	@Column(name = "quantity")
 	private int quantity;
-	
-	@Column(name = "spec_name")
-	private String specName;
-	
-	@Column(name = "selected_option")
+
 	private String selectedOption;
-	
-	@Column(name = "order_time")
+
+	private String personalMemo;
+
 	private LocalDateTime orderTime;
 	
-	@Column(name = "pickup_status")
+	//資料庫會直接儲存 列舉名稱的字串
 	@Enumerated(EnumType.STRING) 
 	private PickupStatusEnum pickupStatus;
 	
-	@Column(name = "pickup_time")
 	private LocalDateTime pickupTime;
-	
-	@Column(name = "subtotal")
+
 	private int subtotal;
-	
-	@Column(name = "personal_memo")
-	private String personalMemo;
-	
-	@Column(name = "weight")
+
 	private double weight;
 	
-	@Column(name = "is_deleted")
 	private boolean deleted;
 
-	public int getId() {
-		return id;
+	private String menuName;
+
+	private String hostId;
+
+	private String hostNickname;
+
+	public int getOrderId() {
+		return orderId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
 	}
 
 	public int getEventsId() {
@@ -103,20 +85,20 @@ public class Orders {
 		this.quantity = quantity;
 	}
 
-	public String getSpecName() {
-		return specName;
-	}
-
-	public void setSpecName(String specName) {
-		this.specName = specName;
-	}
-
 	public String getSelectedOption() {
 		return selectedOption;
 	}
 
 	public void setSelectedOption(String selectedOption) {
 		this.selectedOption = selectedOption;
+	}
+
+	public String getPersonalMemo() {
+		return personalMemo;
+	}
+
+	public void setPersonalMemo(String personalMemo) {
+		this.personalMemo = personalMemo;
 	}
 
 	public LocalDateTime getOrderTime() {
@@ -167,14 +149,62 @@ public class Orders {
 		this.deleted = deleted;
 	}
 
-	public String getPersonalMemo() {
-		return personalMemo;
+	public String getMenuName() {
+		return menuName;
 	}
 
-	public void setPersonalMemo(String personalMemo) {
+	public void setMenuName(String menuName) {
+		this.menuName = menuName;
+	}
+
+	public String getHostId() {
+		return hostId;
+	}
+
+	public void setHostId(String hostId) {
+		this.hostId = hostId;
+	}
+
+	public String getHostNickname() {
+		return hostNickname;
+	}
+
+	public void setHostNickname(String hostNickname) {
+		this.hostNickname = hostNickname;
+	}
+
+	public OrdersSearchViewRes() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public OrdersSearchViewRes(int code, String message) {
+		super(code, message);
+		// TODO Auto-generated constructor stub
+	}
+
+	public OrdersSearchViewRes(int code, String message, int orderId, int eventsId, String userId, int menuId,
+			int quantity, String selectedOption, String personalMemo, LocalDateTime orderTime,
+			PickupStatusEnum pickupStatus, LocalDateTime pickupTime, int subtotal, double weight, boolean deleted,
+			String menuName, String hostId, String hostNickname) {
+		super(code, message);
+		this.orderId = orderId;
+		this.eventsId = eventsId;
+		this.userId = userId;
+		this.menuId = menuId;
+		this.quantity = quantity;
+		this.selectedOption = selectedOption;
 		this.personalMemo = personalMemo;
+		this.orderTime = orderTime;
+		this.pickupStatus = pickupStatus;
+		this.pickupTime = pickupTime;
+		this.subtotal = subtotal;
+		this.weight = weight;
+		this.deleted = deleted;
+		this.menuName = menuName;
+		this.hostId = hostId;
+		this.hostNickname = hostNickname;
 	}
-
 
 	
 }

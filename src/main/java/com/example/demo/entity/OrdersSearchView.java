@@ -1,30 +1,31 @@
 package com.example.demo.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 import com.example.demo.constants.PickupStatusEnum;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 
 @Entity
-@Table(name = "orders")
-public class Orders {
+@Table(name = "orders_search_view")
+public class OrdersSearchView {
 
 	@Id
-	//必須告訴 Hibernate 使用資料庫的「自動遞增」機制
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
-	private int id;
+	@Column(name = "order_id")
+	private int orderId;
 	
-	@Column(name = "events_id")
-	private int eventsId;
+	@Column(name = "event_id")
+	private int eventId;
 	
 	@Column(name = "user_id")
 	private String userId;
@@ -35,11 +36,15 @@ public class Orders {
 	@Column(name = "quantity")
 	private int quantity;
 	
-	@Column(name = "spec_name")
-	private String specName;
-	
 	@Column(name = "selected_option")
+	@JsonIgnore // 加上這行，JSON 就不會出現這個字串欄位了
 	private String selectedOption;
+	
+	@Transient // 關鍵：這不會儲存在資料庫
+    private List<Map<String, Object>> selectedOptionList;
+	
+	@Column(name = "personal_memo")
+	private String personalMemo;
 	
 	@Column(name = "order_time")
 	private LocalDateTime orderTime;
@@ -54,29 +59,45 @@ public class Orders {
 	@Column(name = "subtotal")
 	private int subtotal;
 	
-	@Column(name = "personal_memo")
-	private String personalMemo;
-	
 	@Column(name = "weight")
 	private double weight;
 	
 	@Column(name = "is_deleted")
 	private boolean deleted;
+	
+	@Column(name = "menu_name")
+	private String menuName;
+	
+	@Column(name = "host_id")
+	private String hostId;
+	
+	@Column(name = "user_nickname")
+	private String hostNickname;
+	
+	
 
-	public int getId() {
-		return id;
+	public List<Map<String, Object>> getSelectedOptionList() {
+		return selectedOptionList;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setSelectedOptionList(List<Map<String, Object>> selectedOptionList) {
+		this.selectedOptionList = selectedOptionList;
 	}
 
-	public int getEventsId() {
-		return eventsId;
+	public int getOrderId() {
+		return orderId;
 	}
 
-	public void setEventsId(int eventsId) {
-		this.eventsId = eventsId;
+	public void setOrderId(int orderId) {
+		this.orderId = orderId;
+	}
+
+	public int getEventId() {
+		return eventId;
+	}
+
+	public void setEventId(int eventId) {
+		this.eventId = eventId;
 	}
 
 	public String getUserId() {
@@ -103,20 +124,20 @@ public class Orders {
 		this.quantity = quantity;
 	}
 
-	public String getSpecName() {
-		return specName;
-	}
-
-	public void setSpecName(String specName) {
-		this.specName = specName;
-	}
-
 	public String getSelectedOption() {
 		return selectedOption;
 	}
 
 	public void setSelectedOption(String selectedOption) {
 		this.selectedOption = selectedOption;
+	}
+
+	public String getPersonalMemo() {
+		return personalMemo;
+	}
+
+	public void setPersonalMemo(String personalMemo) {
+		this.personalMemo = personalMemo;
 	}
 
 	public LocalDateTime getOrderTime() {
@@ -167,14 +188,30 @@ public class Orders {
 		this.deleted = deleted;
 	}
 
-	public String getPersonalMemo() {
-		return personalMemo;
+	public String getMenuName() {
+		return menuName;
 	}
 
-	public void setPersonalMemo(String personalMemo) {
-		this.personalMemo = personalMemo;
+	public void setMenuName(String menuName) {
+		this.menuName = menuName;
 	}
 
+	public String getHostId() {
+		return hostId;
+	}
 
+	public void setHostId(String hostId) {
+		this.hostId = hostId;
+	}
+
+	public String getHostNickname() {
+		return hostNickname;
+	}
+
+	public void setHostNickname(String hostNickname) {
+		this.hostNickname = hostNickname;
+	}
+	
+	
 	
 }

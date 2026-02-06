@@ -28,7 +28,7 @@ public class PersonalOrderController {
 //		return personalOrderService.addPersonalOrder(req);
 //	}
 	// 更新
-	@PostMapping("gogobuy/updatePersonalOrder")
+	@PostMapping("gogobuy/event/updatePersonalOrder")
 	public BasicRes updatePersonalOrder(@Valid @RequestBody personalOrderReq req) {
 		return personalOrderService.updatePersonalOrder(req);
 	}
@@ -39,7 +39,7 @@ public class PersonalOrderController {
 //	}
 
 	// 更新平均運費
-	@GetMapping("gogobuy/getShippingFeeByEventId")
+	@GetMapping("gogobuy/event/getShippingFeeByEventId")
 	public ShippingFeeRes getShippingFeeByEventId(@Valid @RequestParam(name = "events_id") int eventsId,
 			@RequestParam(name = "user_id") String userId) {
 		return personalOrderService.getShippingFeeByEventId(eventsId, userId);
