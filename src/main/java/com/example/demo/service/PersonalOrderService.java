@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import com.example.demo.constants.PaymentStatus;
 import com.example.demo.dao.GroupbuyEventsDao;
@@ -90,7 +91,7 @@ public class PersonalOrderService {
 			// 用list存此單的userId
 			List<PersonalOrder> orderList = personalOrderDao.findUserIdByEventsId(eventsId);
 			// 檢查List有沒有人
-			if (orderList == null || orderList.isEmpty()) {
+			if (CollectionUtils.isEmpty(orderList)) {
 				return new ShippingFeeRes(200, "目前無人跟團，運費總額為：" + shippingFee);
 			}
 			// 檢查list有沒有金額是0的

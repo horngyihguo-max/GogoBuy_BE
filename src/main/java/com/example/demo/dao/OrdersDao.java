@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Orders;
 
 @Repository
@@ -25,7 +24,7 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 			String specName,String personalMemo, String pickupStatus, LocalDateTime pickupTime, int subtotal, int weight);
 
 	// 查詢ordersId
-	@Query(value = "select* from orders where id = ?1", nativeQuery = true)
+	@Query(value = "select* from orders where id = ?1 and is_deleted = false", nativeQuery = true)
 	public Orders findById(int id);
 
 	// 更新
@@ -36,6 +35,9 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 			+ "weight = ?10 where id =?11 ", nativeQuery = true)
 	public int updateOrders(int eventsId, String userId, int menuId, int quantity, String selectedOption,
 			String personalMemo, String pickupStatus, LocalDateTime pickupTime, int subtotal, int weight, int id);
+	
+	// 只要照著規則命名，Spring 就會自動去資料庫找有沒有這兩筆欄位符合的資料
+	public boolean existsByUserIdAndEventsId(String userId, int eventsId);
 
 	// 統計人數
 	@Query(value = "select count(*) from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
@@ -65,7 +67,7 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 
 	// userId 和 eventsId 找訂單所有商品
 	@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
-	public List<Orders> getEventIdByUserId(String userId, int eventsId);
+	public List<Orders> getOrderByEventIdAndUserId(String userId, int eventsId);
 
 	// userId 和 eventsId 找訂單所有商品
 	@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
@@ -113,7 +115,7 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 
 	// 找這個eventsId的跟團者的資料
 	// 拿來做自動生產
-	@Query(value = "select * from orders where events_id =?1 and is_deleted = false ", nativeQuery = true)
+	@Query(value = "select * from orders where events_id =?1 and is_deleted = false", nativeQuery = true)
 	public List<Orders> getUserAllByEventsId(int eventsId);
 
 	// 用 userId 查詢 selectedOption

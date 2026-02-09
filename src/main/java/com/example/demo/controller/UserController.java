@@ -61,7 +61,7 @@ public class UserController {
 	public BasicRes login(@Valid @RequestBody UserLoginReq req, HttpSession session) throws Exception {
 		BasicRes res = userService.login(req);
 		if (res.getCode() == 200) {
-//			setting session's attribute when login success
+			// setting session's attribute when login success
 			session.setAttribute("account", req.getEmail());
 		}
 		return res;
