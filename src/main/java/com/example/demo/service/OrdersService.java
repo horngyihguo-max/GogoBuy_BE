@@ -125,7 +125,7 @@ public class OrdersService {
 		return new BasicRes(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 
-	//
+	// 硬刪除
 	public BasicRes hardDelete(String userId, int eventsId) {
 		int orders = ordersDao.getOrderByUserIdAndEventsId(userId, eventsId);
 		if (orders == 0) {
@@ -184,16 +184,18 @@ public class OrdersService {
 	}
 
 	// 新增
+	@Transactional
 	public BasicRes addOrders(OredersReq req) {
 		BasicRes checkResult = checkEvent(req);
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkResult;
 		}
-
 		try {
+			if (ordersDao.existsByUserIdAndEventsId(req.getUserId(), req.getEventsId())) {
+	            ordersDao.hardDelete(req.getUserId(), req.getEventsId());
+	        }
 			for (OrderMenuVo item : req.getMenuList()) {
 				Orders orders = new Orders();
-
 				// 金額計算
 				OrdersRes subtotalRes = getSubtotal(item);
 				if (subtotalRes.getCode() != 200) {
@@ -216,7 +218,6 @@ public class OrdersService {
 				// 寫入資料庫
 				ordersDao.save(orders);
 			}
-
 			updateSubtotal(req.getEventsId());
 			return new BasicRes(200, "成功");
 		} catch (Exception e) {
@@ -224,7 +225,8 @@ public class OrdersService {
 		}
 	}
 
-	// 更新
+//	 //更新
+	@Transactional
 	public BasicRes updateOrders(OredersReq req) {
 		BasicRes checkResult = checkEvent(req);
 		if (checkResult.getCode() != ResMessage.SUCCESS.getCode()) {
@@ -234,7 +236,7 @@ public class OrdersService {
 			ordersDao.hardDelete(req.getUserId(), req.getEventsId());
 			return addOrders(req);
 		} catch (Exception e) {
-			return new BasicRes(ResMessage.UPDATE_ERROR.getCode(), "更新過程發生錯誤");
+			return new BasicRes(400, "更新過程發生錯誤");
 		}
 	}
 
