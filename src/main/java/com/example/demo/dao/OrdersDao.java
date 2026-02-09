@@ -64,7 +64,7 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 
 	// userId 和 eventsId 找訂單所有商品
 	@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
-	public List<Orders> getEventIdByUserId(String userId, int eventsId);
+	public List<Orders> getOrderByEventIdAndUserId(String userId, int eventsId);
 
 	// userId 和 eventsId 找訂單所有商品
 	@Query(value = "select * from orders where user_id = ?1 and events_id = ?2 and is_deleted = false ", nativeQuery = true)
