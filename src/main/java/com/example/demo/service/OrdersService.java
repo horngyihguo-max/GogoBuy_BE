@@ -337,7 +337,7 @@ public class OrdersService {
 	// 查詢跟團者的特定訂單
 	public GroupbuyEventsRes getEventIdByUserId(String userId, int eventsId) {
 		try {
-			List<Orders> ordersList = ordersDao.getEventIdByUserId(userId, eventsId);
+			List<Orders> ordersList = ordersDao.getOrderByEventIdAndUserId(userId, eventsId);
 
 			if (CollectionUtils.isEmpty(ordersList)) { 
 				System.out.println(ordersList);
