@@ -1,5 +1,6 @@
 package com.example.demo.vo;
 
+import java.util.List;
 import java.util.Map;
 
 public class MenuVo {
@@ -21,7 +22,7 @@ private int id;
 	
 	private boolean available;
 	
-	private Map<String,Object> unusual;
+	private List<Map<String,String>> unusual;
 
 	public int getId() {
 		return id;
@@ -87,11 +88,13 @@ private int id;
 		this.available = available;
 	}
 
-	public Map<String, Object> getUnusual() {
+
+
+	public List<Map<String, String>> getUnusual() {
 		return unusual;
 	}
 
-	public void setUnusual(Map<String, Object> unusual) {
+	public void setUnusual(List<Map<String, String>> unusual) {
 		this.unusual = unusual;
 	}
 
@@ -100,7 +103,7 @@ private int id;
 	}
 
 	public MenuVo(int id, int storesId, int categoryId, String name, String description, int basePrice, String image,
-			boolean available, Map<String, Object> unusual) {
+			boolean available, List<Map<String, String>> unusual) {
 		super();
 		this.id = id;
 		this.storesId = storesId;
@@ -112,6 +115,8 @@ private int id;
 		this.available = available;
 		this.unusual = unusual;
 	}
+
+
 
 
 

@@ -1,87 +1,46 @@
-package com.example.demo.entity;
+package com.example.demo.response;
 
 import java.time.LocalDateTime;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.SplitTypeEnum;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-import jakarta.annotation.Generated;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
+@JsonInclude(Include.NON_DEFAULT)
+public class GroupbuyEventsResNew extends BasicRes{
 
-@Entity
-@Table(name = "groupbuy_events")
-public class GroupbuyEvents {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
 	private int id;
-
-	@Column(name = "host_id")
+	
 	private String hostId;
 
-	@Column(name = "stores_id")
 	private int storesId;
 
-	@Column(name = "event_name")
 	private String eventName;
 
-	@Column(name = "status")
-	@Enumerated(EnumType.STRING)
 	private GroupbuyStatusEnum status;
 
-	@Column(name = "end_time")
 	private LocalDateTime endTime;
 
-	@Column(name = "total_order_amount")
 	private int totalOrderAmount;
 
-	@Column(name = "shipping_fee")
 	private int shippingFee;
 
-	@Column(name = "split_type")
-	@Enumerated(EnumType.STRING)
 	private SplitTypeEnum splitType;
 
-	@Column(name = "announcement")
 	private String announcement;
 
-	@Column(name = "type")
 	private String type;
 
-	@Column(name = "temp_menu")
 	private String tempMenuList;
 
-	@Column(name = "recommend")
 	private String recommendList;
 
-	@Column(name = "recommend_description")
 	private String recommendDescription;
-
-	@Column(name = "limitation")
+	
 	private int limitation;
 
-	@Column(name = "is_deleted")
 	private boolean deleted;
-
-	@Transient // 代表此欄位不屬於資料庫表，僅供程式內部使用
-	private String nickname;
-
-	public String getNickname() {
-		return nickname;
-	}
-
-	public void setNickname(String nickname) {
-		this.nickname = nickname;
-	}
 
 	public int getId() {
 		return id;
@@ -211,4 +170,43 @@ public class GroupbuyEvents {
 		this.deleted = deleted;
 	}
 
+	public GroupbuyEventsResNew() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public GroupbuyEventsResNew(int code, String message) {
+		super(code, message);
+		// TODO Auto-generated constructor stub
+	}
+
+	public GroupbuyEventsResNew(int code, String message, int id, String hostId, int storesId, String eventName,
+			GroupbuyStatusEnum status, LocalDateTime endTime, int totalOrderAmount, int shippingFee,
+			SplitTypeEnum splitType, String announcement, String type, String tempMenuList, String recommendList,
+			String recommendDescription, int limitation, boolean deleted) {
+		super(code, message);
+		this.id = id;
+		this.hostId = hostId;
+		this.storesId = storesId;
+		this.eventName = eventName;
+		this.status = status;
+		this.endTime = endTime;
+		this.totalOrderAmount = totalOrderAmount;
+		this.shippingFee = shippingFee;
+		this.splitType = splitType;
+		this.announcement = announcement;
+		this.type = type;
+		this.tempMenuList = tempMenuList;
+		this.recommendList = recommendList;
+		this.recommendDescription = recommendDescription;
+		this.limitation = limitation;
+		this.deleted = deleted;
+	}
+
+	public GroupbuyEventsResNew(int code, String message, int id) {
+		super(code, message);
+		this.id = id;
+	}
+	
+	
 }

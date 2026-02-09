@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.constants.ResMessage;
-import com.example.demo.request.UserAddReq;
 import com.example.demo.request.WishReq;
 import com.example.demo.response.AllWishRes;
 import com.example.demo.response.BasicRes;
@@ -46,8 +44,9 @@ public class WishController {
 	}
 	
 	@PostMapping("gogobuy/wish/finish_wish")
-	public BasicRes finish(@RequestParam("id") int id, @RequestParam("userId") String userId) throws Exception {
-		return wishService.finishWish(id, userId);
+	public BasicRes finish(@RequestParam("id") int id, @RequestParam("userId") String userId,  //
+			@RequestParam("targetUrl") String targetUrl) throws Exception {
+		return wishService.finishWish(id, userId, targetUrl);
 	}
 	
 	@PostMapping("gogobuy/wish/delete_wish")

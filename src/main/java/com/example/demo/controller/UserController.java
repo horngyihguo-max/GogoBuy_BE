@@ -23,7 +23,6 @@ import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GetUserInfoListRes;
-import com.example.demo.response.GetUserInfoRes;
 import com.example.demo.service.GoogleOAuth2Service;
 import com.example.demo.service.UserService;
 
@@ -62,7 +61,7 @@ public class UserController {
 	public BasicRes login(@Valid @RequestBody UserLoginReq req, HttpSession session) throws Exception {
 		BasicRes res = userService.login(req);
 		if (res.getCode() == 200) {
-//			setting session's attribute when login success
+			// setting session's attribute when login success
 			session.setAttribute("account", req.getEmail());
 		}
 		return res;

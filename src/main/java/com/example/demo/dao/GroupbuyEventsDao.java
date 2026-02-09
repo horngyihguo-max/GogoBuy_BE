@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Menu;
+import com.example.demo.entity.OrdersSearchView;
 import com.example.demo.projection.GroupbuyEventsProjection;
 
 @Repository
@@ -26,6 +27,10 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public int addEvent(String hostId, int storesId, String event_name, String status, LocalDateTime endTime,
 			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type, String temp_menu,
 			String recommend, String recommendDescription, int limitation);
+
+	// 檢查開團活動
+	@Query(value = "select count(*) from groupbuy_events where host_id = ?1 and stores_id = ?2 and status = 'OPEN' and is_deleted = false", nativeQuery = true)
+	public int checkEvnet(String hostId, int storesId);
 
 	// 查所屬團ID
 	@Query(value = "select* from groupbuy_events where id = ?1", nativeQuery = true)
@@ -76,17 +81,16 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	// 查詢全部的開團
 	@Query(value = "SELECT e.*, u.nickname AS nickname FROM groupbuy_events e JOIN user u ON e.host_id = u.id", nativeQuery = true)
 	public List<GroupbuyEventsProjection> getAll();
-	
+
 	// eventsId 查詢 event
 //	@Query(value = "select * from groups_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
 //	public List<GroupsSearchView> getEventsByEventsId(int id);
-	
-    @Query(value = "SELECT e.*, CASE WHEN e.is_deleted = 0 THEN false ELSE true END AS deleted, "
-            + "e.temp_menu AS tempMenuList, e.recommend AS recommendList, u.nickname AS nickname "
-            + "FROM groupbuy_events e JOIN user u ON e.host_id = u.id "
-            + "WHERE e.id = ?1 ", nativeQuery = true)
-    public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
-	
+
+	@Query(value = "SELECT e.*, CASE WHEN e.is_deleted = 0 THEN false ELSE true END AS deleted, "
+			+ "e.temp_menu AS tempMenuList, e.recommend AS recommendList, u.nickname AS nickname "
+			+ "FROM groupbuy_events e JOIN user u ON e.host_id = u.id " + "WHERE e.id = ?1 ", nativeQuery = true)
+	public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
+
 //		@Query(value = "SELECT * FROM groupbuy_events  WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
 //		public List<GroupbuyEvents> getEventsByEventsId1(int id);
 
@@ -102,9 +106,17 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "select * from groupbuy_events where status = 'OPEN' and end_time <= now() and is_deleted = false ", nativeQuery = true)
 	public List<GroupbuyEvents> findByEndTimeBeforeAndStatus(@Param("status") String status,
 			@Param("now") LocalDateTime now);
-	
-	//物理刪除
+
+	// 物理刪除
 	@Modifying
-	@Query(value ="delete from groupbuy_events where id = ?1", nativeQuery = true)
+	@Query(value = "delete from groupbuy_events where id = ?1", nativeQuery = true)
 	public int deleteEvent(int id);
+
+	// 查詢全部的映射表
+	@Query(value = "select * from groups_search_view ", nativeQuery = true)
+	public int selectAll();
+
+	// 查詢orders映射表
+	@Query(value = "select * from orders_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
+	public List<OrdersSearchView> selectOrdersAll(int eventId);
 }

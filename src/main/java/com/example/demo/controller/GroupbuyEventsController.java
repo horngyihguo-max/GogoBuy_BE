@@ -29,50 +29,50 @@ public class GroupbuyEventsController {
 	private GoogleMapService googleMapService;
 
 	// 新增
-	@PostMapping("gogobuy/addEvent")
+	@PostMapping("gogobuy/event/addEvent")
 	public BasicRes addEvent(@Valid @RequestBody GroupbuyEventsReq req) {
 		return groupbuyEventsService.addEvent(req);
 	}
 
 	// 更新
-	@PostMapping("gogobuy/updateEvent")
+	@PostMapping("gogobuy/event/updateEvent")
 	public BasicRes updateEvent(@Valid @RequestBody GroupbuyEventsReq req) {
 		return groupbuyEventsService.updateEvent(req.getId(), req);
 	}
 
 	// 查詢開團者的開團紀錄
-	@GetMapping("gogobuy/getGroupbuyEventByHostId")
+	@GetMapping("gogobuy/event/getGroupbuyEventByHostId")
 	public GroupbuyEventsRes getGroupbuyEventById(@RequestParam(name = "host_id", required = false) String hostId) {
 		return groupbuyEventsService.getGroupbuyEventById(hostId);
 	}
 
 	// 透過店家ID取得對應菜單
-	@GetMapping("gogobuy/getMenuByStoresId")
+	@GetMapping("gogobuy/event/getMenuByStoresId")
 	public GroupbuyEventsRes getMenuByStoresId(@RequestParam(name = "stores_id", required = false) int storesId) {
 		return groupbuyEventsService.getMenuByStoresId(storesId);
 	}
 
 	// 查詢開團菜單
-	@GetMapping("gogobuy/getMenuByMenuId")
+	@GetMapping("gogobuy/event/getMenuByMenuId")
 	public GroupbuyEventsRes getMenuByMenuId(@RequestParam(name = "temp_menu", required = false) List<Integer> menuId) {
 		return groupbuyEventsService.getMenuByMenuId(menuId);
 	}
 
 	// 透過店家ID取得對應菜單
-	@GetMapping("gogobuy/getGroupbuyEventByStoresId")
+	@GetMapping("gogobuy/event/getGroupbuyEventByStoresId")
 	public GroupbuyEventsRes getGroupbuyEventByStoresId(
 			@RequestParam(name = "stores_id", required = false) int storesId) {
 		return groupbuyEventsService.getGroupbuyEventByStoresId(storesId);
 	}
 
 	// 查詢全部開團
-	@GetMapping("gogobuy/getAll")
+	@GetMapping("gogobuy/event/getAll")
 	public GroupbuyEventsRes getAll() {
 		return groupbuyEventsService.getAll();
 	}
 
 	// 暱稱查詢開團紀錄
-	@GetMapping("gogobuy/getGroupbuyEventByNickname")
+	@GetMapping("gogobuy/event/getGroupbuyEventByNickname")
 	public GroupbuyEventsRes getGroupbuyEventByNickname(
 			@RequestParam(name = "host_nickname", required = false) String hostNickname) {
 		return groupbuyEventsService.getGroupbuyEventByNickname(hostNickname);
@@ -103,9 +103,15 @@ public class GroupbuyEventsController {
 		return groupbuyEventsService.deleteEventPhysically(id);
 	}
 	
-	//購物車
+	// 購物車
 	@GetMapping("gogobuy/event/getCart")
 	public GroupbuyEventsRes getCart(@Valid @RequestParam(name = "user_id") String usrerId) {
 		return groupbuyEventsService.getCart(usrerId);
 		}
+	
+	// 活動ID 查詢 Orders 映射表
+	@GetMapping("gogobuy/event/getOrdersView")
+	public GroupbuyEventsRes getOrdersAll(@Valid @RequestParam(name = "event_id")int eventId) {
+		return groupbuyEventsService.getOrdersAll(eventId);
+	}
 }

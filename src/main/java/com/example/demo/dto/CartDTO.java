@@ -2,6 +2,7 @@ package com.example.demo.dto;
 
 import java.util.List;
 
+import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.entity.Orders;
 
 public class CartDTO {
@@ -10,10 +11,11 @@ public class CartDTO {
     private String eventName;
     private String storeName;
     private String storeLogo;     
+    private String hostLogo;
     private int totalAmount;       
     private int totalQuantity;     
     private String latestOrderTime; 
-    private String status; // OPEN, LOCKED, FINISHED
+    private GroupbuyStatusEnum status; // OPEN, LOCKED, FINISHED
     private boolean canModify; // 根據 status 判斷是否還能修改
     
     // 這一團裡面點的所有商品細項
@@ -50,6 +52,16 @@ public class CartDTO {
 	public void setStoreLogo(String storeLogo) {
 		this.storeLogo = storeLogo;
 	}
+	
+	
+
+	public String getHostLogo() {
+		return hostLogo;
+	}
+
+	public void setHostLogo(String hostLogo) {
+		this.hostLogo = hostLogo;
+	}
 
 	public int getTotalAmount() {
 		return totalAmount;
@@ -75,11 +87,13 @@ public class CartDTO {
 		this.latestOrderTime = latestOrderTime;
 	}
 
-	public String getStatus() {
+
+
+	public GroupbuyStatusEnum getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
+	public void setStatus(GroupbuyStatusEnum status) {
 		this.status = status;
 	}
 
