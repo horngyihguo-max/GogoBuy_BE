@@ -133,6 +133,10 @@ public class GroupbuyEventsService {
 		if (checkEvent(req).getCode() != ResMessage.SUCCESS.getCode()) {
 			return checkEvent(req);
 		}
+		int check = groupbuyEventsDao.checkEvnet(req.getHostId(), req.getStoresId());
+		if(check > 0) {
+			return new GroupbuyEventsResNew(400, "您已在此店家發起過團購，請勿重複新增");
+		}
 		/*
 		 *  新增資料
 		 */
