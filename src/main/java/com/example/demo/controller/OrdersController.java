@@ -29,11 +29,11 @@ public class OrdersController {
 		return ordersService.addOrders(req);
 	}
 
-	// 更新訂單
-	@PostMapping("gogobuy/event/updateOrders")
-	public BasicRes updateOrders(@Valid @RequestBody OredersReq req) {
-		return ordersService.updateOrders( req);
-	}
+//	// 更新訂單
+//	@PostMapping("gogobuy/event/updateOrders")
+//	public BasicRes updateOrders(@Valid @RequestBody OredersReq req) {
+//		return ordersService.updateOrders(req);
+//	}
 
 	// 查詢跟團者的開團
 	@GetMapping("gogobuy/event/getOrdersIdByUserId")
