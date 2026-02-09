@@ -543,7 +543,7 @@ public class GroupbuyEventsService {
 	                if (!CollectionUtils.isEmpty(hostOrders)) allVisibleOrders.addAll(hostOrders);
 	            } else {
 	                // 團員拿自己 (getEventIdByUserId)
-	                List<Orders> memberOrders = ordersDao.getEventIdByUserId(userId, eid);
+	                List<Orders> memberOrders = ordersDao.getOrderByEventIdAndUserId(userId, eid);
 	                if (!CollectionUtils.isEmpty(memberOrders)) allVisibleOrders.addAll(memberOrders);
 	            }
 
