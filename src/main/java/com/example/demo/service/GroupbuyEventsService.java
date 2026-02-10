@@ -297,7 +297,7 @@ public class GroupbuyEventsService {
 
 	// 團長手動結單
 	@Transactional
-	public BasicRes HostCloseEvent(int id, String hostId) {
+	public BasicRes hostCloseEvent(int id, String hostId) {
 		GroupbuyEvents event = groupbuyEventsDao.findById(id);
 		if (event == null) {
 			return new BasicRes(404, "找不到該團購活動");
