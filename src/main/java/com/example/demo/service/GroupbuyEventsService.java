@@ -124,6 +124,16 @@ public class GroupbuyEventsService {
 			return new GroupbuyEventsResNew(ResMessage.SPLIT_TYPE_ERROR.getCode(), //
 					ResMessage.SPLIT_TYPE_ERROR.getMessage());
 		}
+		if (req.getPickupTime()==null) {
+			return new GroupbuyEventsResNew(400, //
+					"去貨時間為空喵!");
+		}
+		
+		
+		if (req.getPickupTime().isBefore(req.getEndTime())) {
+			return new GroupbuyEventsResNew(400, //
+					"取貨時間早於結單時間喵!");
+		}
 		return new GroupbuyEventsResNew(ResMessage.SUCCESS.getCode(), ResMessage.SUCCESS.getMessage());
 	}
 
@@ -153,6 +163,8 @@ public class GroupbuyEventsService {
 		event.setAnnouncement(req.getAnnouncement());
 		event.setType(req.getType());
 		event.setRecommendDescription(req.getRecommendDescription());
+		event.setPickupTime(req.getPickupTime());
+		event.setPickLocation(req.getPickLocation());
 
 		try {
 			// 此店家的全部菜單

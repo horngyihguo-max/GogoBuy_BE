@@ -216,4 +216,21 @@ public class GroupbuyEvents {
 		this.deleted = deleted;
 	}
 
+	public LocalDateTime getPickupTime() {
+		return pickupTime;
+	}
+
+	public void setPickupTime(LocalDateTime pickupTime) {
+		this.pickupTime = pickupTime;
+	}
+
+	public String getPickLocation() {
+		return pickLocation;
+	}
+
+	public void setPickLocation(String pickLocation) {
+		this.pickLocation = pickLocation;
+	}
+
+	
 }

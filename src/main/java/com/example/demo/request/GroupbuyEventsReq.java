@@ -55,7 +55,7 @@ public class GroupbuyEventsReq {
     
     private LocalDateTime pickupTime;
     
-    private String pick_location;
+    private String pickLocation;
 
 	public int getId() {
 		return id;
@@ -193,12 +193,12 @@ public class GroupbuyEventsReq {
 		this.pickupTime = pickupTime;
 	}
 
-	public String getPick_location() {
-		return pick_location;
+	public String getPickLocation() {
+		return pickLocation;
 	}
 
-	public void setPick_location(String pick_location) {
-		this.pick_location = pick_location;
+	public void setPick_location(String pickLocation) {
+		this.pickLocation = pickLocation;
 	}
 
 
