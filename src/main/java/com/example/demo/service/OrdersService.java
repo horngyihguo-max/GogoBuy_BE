@@ -144,11 +144,13 @@ public class OrdersService {
 
 			int basePrice = menu.getBasePrice();
 			int specPrice = 0;
+			
+	        String menuName = menu.getName();
 
 			// 解析規格價格 (unusual 欄位)
 			String unusualJson = menu.getUnusual();
 			// 確保 unusualJson 不是 null 且前端有傳規格名稱才進行解析
-			if (!StringUtils.hasText(unusualJson) && item.getSpecName() != null) {
+			if (StringUtils.hasText(unusualJson) && item.getSpecName() != null) {
 				try {
 					List<Map<String, Object>> specs = mapper.readValue(unusualJson,
 							new TypeReference<List<Map<String, Object>>>() {
@@ -176,8 +178,11 @@ public class OrdersService {
 			}
 			int unitPrice = basePrice + specPrice + totalExtraPrice;
 			int subtotal = unitPrice * item.getQuantity();
-
-			return new OrdersRes(200, "計算成功", subtotal);
+			OrdersRes res = new OrdersRes(200, "計算成功", subtotal);
+			res.setMenuName(menuName); 
+	        res.setBasePrice(basePrice);
+	        res.setSpecPrice(specPrice);
+			return res;
 		} catch (Exception e) {
 			return new OrdersRes(500, "商品 " + item.getMenuId() + " 金額計算失敗: " + e.getMessage(), 0);
 		}
@@ -202,6 +207,11 @@ public class OrdersService {
 					throw new RuntimeException("商品 " + item.getMenuId() + " 金額計算失敗");
 				}
 
+				//	快照欄位
+				orders.setMenuName(subtotalRes.getMenuName()); 
+	            orders.setBasePrice(subtotalRes.getBasePrice());
+	            orders.setSpecPrice(subtotalRes.getSpecPrice());
+				
 				// 基礎欄位賦值
 				orders.setSubtotal(subtotalRes.getSubtotal());
 				orders.setEventsId(req.getEventsId());
@@ -311,6 +321,7 @@ public class OrdersService {
             item.setMenuId(order.getMenuId());
             item.setQuantity(order.getQuantity());
             item.setSpecName(order.getSpecName());
+            item.setMenuName(order.getMenuName());
             // 解析 JSON 選項
             String jsonStr = order.getSelectedOption();
             if (StringUtils.hasText(jsonStr)) {
@@ -357,7 +368,7 @@ public class OrdersService {
                 item.setMenuId(order.getMenuId());
                 item.setQuantity(order.getQuantity());
                 item.setSpecName(order.getSpecName());
-
+                item.setMenuName(order.getMenuName());
                 String jsonStr = order.getSelectedOption();
                 if (StringUtils.hasText(jsonStr)) {
                     try {
@@ -367,6 +378,7 @@ public class OrdersService {
                         List<Map<String, Object>> options = mapper.readValue( jsonStr, new TypeReference<List<Map<String, Object>>>() {});
                         item.setSelectedOptionList(options);
                     } catch (Exception e) {
+                    	e.printStackTrace();
                     	return new GroupbuyEventsRes(500,e.getMessage());
                     }
                 }
