@@ -181,6 +181,15 @@ public class OrdersService {
 					throw new RuntimeException("商品 " + item.getMenuId() + " 金額計算失敗");
 				}
 
+
+				//	快照欄位
+				orders.setMenuName(subtotalRes.getMenuName()); 
+	            orders.setBasePrice(subtotalRes.getBasePrice());
+	            orders.setSpecPrice(subtotalRes.getSpecPrice());
+	            
+
+				
+
 				// 基礎欄位賦值
 				orders.setSubtotal(subtotalRes.getSubtotal());
 				orders.setEventsId(req.getEventsId());
