@@ -126,7 +126,7 @@ public class GroupbuyEventsService {
 		}
 		if (req.getPickupTime()==null) {
 			return new GroupbuyEventsResNew(400, //
-					"去貨時間為空喵!");
+					"取貨時間為空喵!");
 		}
 		
 		
