@@ -16,6 +16,12 @@ public class OrderMenuVo {
       private String specName;
       
       private List<Map<String, Object>> selectedOptionList;
+      
+      private String menuName;
+      
+      private int basePrice;
+      
+      private int specPrice;
 
 	  public int getMenuId() {
 		  return menuId;
@@ -47,6 +53,31 @@ public class OrderMenuVo {
 
 	  public void setSelectedOptionList(List<Map<String, Object>> selectedOptionList) {
 		  this.selectedOptionList = selectedOptionList;
+	  }
+
+	  public String getMenuName() {
+		  return menuName;
+	  }
+
+	  public void setMenuName(String menuName) {
+		  this.menuName = menuName;
+	  }
+
+	  
+	  public int getBasePrice() {
+		return basePrice;
+	}
+
+	  public void setBasePrice(int basePrice) {
+		  this.basePrice = basePrice;
+	  }
+
+	  public int getSpecPrice() {
+		  return this.specPrice;
+	  }
+
+	  public void setSpecPrice(int specPrice) {
+		  this.specPrice = specPrice;
 	  }
       
 

@@ -614,7 +614,7 @@ public class StoreService {
 	public StoresRes getStoresByName(String name) {
 		try {
 			// 修正點：如果未輸入或只有空白，直接回傳空清單
-			if (StringUtils.hasText(name)) {
+			if (!StringUtils.hasText(name)) {
 				return new StoresRes(ResMessage.INPUT_IS_EMPTY.getCode(), "請輸入搜尋關鍵字喵!", null);
 			}
 
