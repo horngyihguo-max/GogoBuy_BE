@@ -1,10 +1,13 @@
 HELP.md
 .gradle
+.metadata
+logs/
 build/
+logs/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-
+.metadata
 ### STS ###
 .apt_generated
 .classpath
