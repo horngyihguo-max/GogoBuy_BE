@@ -20,7 +20,6 @@ import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.dto.OrdersDTO;
 import com.example.demo.entity.GroupbuyEvents;
-import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
 import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
@@ -136,37 +135,15 @@ public class OrdersService {
 	}
 
 	// 計算個人subtotal
-	private OrdersRes getSubtotal(OrderMenuVo item) {
+	private OrdersRes getSubtotal(OrderMenuVo item, OredersReq req) {
 		try {
-			Menu menu = storesSearchDao.getMenuByMenuId(item.getMenuId());
-			if (menu == null)
-				return new OrdersRes(404, "找不到品項", 0);
+			int basePrice = req.getBasePrice();
+			int specPrice = req.getSpecPrice();
 
-			int basePrice = menu.getBasePrice();
-			int specPrice = 0;
-			
-	        String menuName = menu.getName();
-
-			// 解析規格價格 (unusual 欄位)
-			String unusualJson = menu.getUnusual();
-			// 確保 unusualJson 不是 null 且前端有傳規格名稱才進行解析
-			if (StringUtils.hasText(unusualJson) && item.getSpecName() != null) {
-				try {
-					List<Map<String, Object>> specs = mapper.readValue(unusualJson,
-							new TypeReference<List<Map<String, Object>>>() {
-							});
-					for (Map<String, Object> spec : specs) {
-						if (item.getSpecName().equals(spec.get("name"))) {
-							// 使用 Number 轉型更安全，可以同時處理 Integer 或 Long
-							specPrice = ((Number) spec.get("price")).intValue();
-							break;
-						}
-					}
-				} catch (Exception jsonEx) {
-					System.out.println("JSON 解析規格失敗，跳過規格加價: " + jsonEx.getMessage());
-				}
-			}
+		
 			int totalExtraPrice = 0;
+			//這裡的資料結構是一個 List，
+			//裡面放了很多個 Map。每個 Map 代表一個選項（例如：{ "name": "加珍珠", "extraPrice": 10 }）。
 			List<Map<String, Object>> opListPrice = item.getSelectedOptionList();
 			if (opListPrice != null) {
 				for (Map<String, Object> op : opListPrice) {
@@ -177,12 +154,9 @@ public class OrdersService {
 				}
 			}
 			int unitPrice = basePrice + specPrice + totalExtraPrice;
-			int subtotal = unitPrice * item.getQuantity();
-			OrdersRes res = new OrdersRes(200, "計算成功", subtotal);
-			res.setMenuName(menuName); 
-	        res.setBasePrice(basePrice);
-	        res.setSpecPrice(specPrice);
-			return res;
+			int subtotal = unitPrice * req.getQuantity();
+
+			return new OrdersRes(200, "計算成功", subtotal);
 		} catch (Exception e) {
 			return new OrdersRes(500, "商品 " + item.getMenuId() + " 金額計算失敗: " + e.getMessage(), 0);
 		}
@@ -202,18 +176,20 @@ public class OrdersService {
 			for (OrderMenuVo item : req.getMenuList()) {
 				Orders orders = new Orders();
 				// 金額計算
-				OrdersRes subtotalRes = getSubtotal(item);
+				OrdersRes subtotalRes = getSubtotal(item,req);
 				if (subtotalRes.getCode() != 200) {
 					throw new RuntimeException("商品 " + item.getMenuId() + " 金額計算失敗");
 				}
+
 
 				//	快照欄位
 				orders.setMenuName(subtotalRes.getMenuName()); 
 	            orders.setBasePrice(subtotalRes.getBasePrice());
 	            orders.setSpecPrice(subtotalRes.getSpecPrice());
 	            
-	            System.out.println("RRRRR");
+
 				
+
 				// 基礎欄位賦值
 				orders.setSubtotal(subtotalRes.getSubtotal());
 				orders.setEventsId(req.getEventsId());
@@ -323,7 +299,6 @@ public class OrdersService {
             item.setMenuId(order.getMenuId());
             item.setQuantity(order.getQuantity());
             item.setSpecName(order.getSpecName());
-            item.setMenuName(order.getMenuName());
             // 解析 JSON 選項
             String jsonStr = order.getSelectedOption();
             if (StringUtils.hasText(jsonStr)) {
@@ -370,7 +345,7 @@ public class OrdersService {
                 item.setMenuId(order.getMenuId());
                 item.setQuantity(order.getQuantity());
                 item.setSpecName(order.getSpecName());
-                item.setMenuName(order.getMenuName());
+
                 String jsonStr = order.getSelectedOption();
                 if (StringUtils.hasText(jsonStr)) {
                     try {
@@ -380,7 +355,6 @@ public class OrdersService {
                         List<Map<String, Object>> options = mapper.readValue( jsonStr, new TypeReference<List<Map<String, Object>>>() {});
                         item.setSelectedOptionList(options);
                     } catch (Exception e) {
-                    	e.printStackTrace();
                     	return new GroupbuyEventsRes(500,e.getMessage());
                     }
                 }

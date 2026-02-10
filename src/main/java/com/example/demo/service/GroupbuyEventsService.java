@@ -300,7 +300,9 @@ public class GroupbuyEventsService {
 					tempMenuJson, //
 					recommendJson, //
 					req.getRecommendDescription(), //
-					req.getLimitation(), id);
+					req.getLimitation(),
+					req.getPickLocation(),
+					req.getPickupTime(), id);
 		} catch (Exception e) {
 			return new BasicRes(ResMessage.EVENT_ERROR.getCode(), ResMessage.EVENT_ERROR.getMessage());
 		}
@@ -309,7 +311,7 @@ public class GroupbuyEventsService {
 
 	// 團長手動結單
 	@Transactional
-	public BasicRes HostCloseEvent(int id, String hostId) {
+	public BasicRes hostCloseEvent(int id, String hostId) {
 		GroupbuyEvents event = groupbuyEventsDao.findById(id);
 		if (event == null) {
 			return new BasicRes(404, "找不到該團購活動");
@@ -363,25 +365,6 @@ public class GroupbuyEventsService {
 	public BasicRes autoCloseEvent(int id, String userId) {
 		BasicRes autoClose = closeEvent(id, userId);
 		return autoClose;
-	}
-
-	// 軟刪除
-	@Transactional
-	public BasicRes deleteEvent(int eventsId) {
-		// 檢查該活動是否存在且尚未被刪除
-		GroupbuyEvents event = groupbuyEventsDao.findById(eventsId);
-		if (event == null) {
-			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
-		}
-		// 軟刪除主表
-		int deletedEvent = groupbuyEventsDao.delete(eventsId);
-
-		if (deletedEvent > 0) {
-			// 順便刪除子表
-			ordersDao.deleteAllOrdersByEventId(eventsId);
-			return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
-		}
-		return new BasicRes(500, "刪除活動失敗，請稍後再試");
 	}
 
 	// 回傳開團者的開團紀錄
@@ -502,6 +485,24 @@ public class GroupbuyEventsService {
 		groupbuyEventsDao.deleteEvent(eventId);
 
 		return new BasicRes(200, "成功刪除團購喵");
+	}
+	
+	// 物理刪除
+	@Transactional
+	public BasicRes delete(int eventsId) {
+		// 檢查該活動是否存在且尚未被刪除
+		GroupbuyEvents event = groupbuyEventsDao.findById(eventsId);
+		if (event == null) {
+			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
+		}
+		// 軟刪除主表
+		int deletedEvent = groupbuyEventsDao.delete(eventsId);
+		if (deletedEvent > 0) {
+			// 順便刪除子表
+			ordersDao.deleteAllOrdersByEventId(eventsId);
+			return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
+		}
+		return new BasicRes(500, "刪除活動失敗，請稍後再試");
 	}
 
 	// 給團長看全部的orders

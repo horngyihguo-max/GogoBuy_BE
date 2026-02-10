@@ -42,10 +42,11 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "update groupbuy_events set host_id = ?1, stores_id = ?2, event_name = ?3, status = ?4, "
 			+ "end_time = ?5, total_order_amount = ?6, shipping_fee = ?7, "
 			+ "split_type = ?8, announcement = ?9, type= ?10, temp_menu = ?11, "
-			+ "recommend = ?12, recommend_description = ?13, limitation = ?14 where id = ?15", nativeQuery = true)
+			+ "recommend = ?12, recommend_description = ?13, limitation = ?14 , pick_location = ?15 , pickup_time = ?16 where id = ?17", nativeQuery = true)
 	public int updateEvent(String hostId, int storesId, String eventName, String status, LocalDateTime endTime,
 			int totalOrderAmount, int shippingFee, String splitType, String announcement, String type, String tempMenu,
-			String recommend, String recommendDescription, int limitation, int id);
+			String recommend, String recommendDescription, int limitation, String pickLocation,
+			LocalDateTime pickupTime, int id);
 
 	// 更新總金額
 	@Transactional
@@ -64,10 +65,10 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "update groupbuy_events set status = ?1 where end_time <= ?2 and status = ?3 and is_deleted = false", nativeQuery = true)
 	public int autoUpdateEventsStatus(String targetStatus, LocalDateTime now, String currentStatus);
 
-	// 軟刪除
+	// 先刪子表再刪主表(這個是要接API的刪除)
 	@Transactional
 	@Modifying
-	@Query(value = "update groupbuy_events set is_deleted = true where events_id = ?1 and is_deleted = false", nativeQuery = true)
+	@Query(value = "delete from groupbuy_events where id = ?1 ", nativeQuery = true)
 	public int delete(int eventsId);
 
 	// 用 hostId 檢索主表
