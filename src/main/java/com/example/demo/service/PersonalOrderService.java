@@ -13,7 +13,6 @@ import com.example.demo.constants.PaymentStatus;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.OrdersDao;
 import com.example.demo.dao.PersonalOrderDao;
-import com.example.demo.dao.UserDao;
 import com.example.demo.entity.PersonalOrder;
 import com.example.demo.request.personalOrderReq;
 import com.example.demo.response.PersonalOrdersRes;
@@ -22,9 +21,6 @@ import com.example.demo.response.ShippingFeeRes;
 @Service
 @Transactional
 public class PersonalOrderService {
-
-	@Autowired
-	private UserDao userDao;
 
 	@Autowired
 	private GroupbuyEventsDao groupbuyEventsDao;
