@@ -197,7 +197,7 @@ public class GroupbuyEventsReq {
 		return pickLocation;
 	}
 
-	public void setPick_location(String pickLocation) {
+	public void setPickLocation(String pickLocation) {
 		this.pickLocation = pickLocation;
 	}
 
