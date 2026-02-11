@@ -3,12 +3,16 @@ package com.example.demo.service;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.example.demo.constants.SalesStatsType;
+import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.entity.SalesStats;
+import com.example.demo.projection.SalesLeaderboardProjection;
 import com.example.demo.repository.SalesStatsRepository;
 import com.example.demo.response.SalesStatsRes;
 
@@ -18,10 +22,21 @@ import jakarta.transaction.Transactional;
 public class SalesStatsService {
 	@Autowired
     private SalesStatsRepository salesStatsRepository;
+	
+	@Autowired
+    private StoresSearchDao storesSearchDao;
 
 	@Transactional
     public SalesStatsRes addSalesVolume(Integer storeId, Integer menuId, int quantity) {
         try {
+        	
+            if (!storesSearchDao.existsById(storeId)) {
+                return new SalesStatsRes(404, "審核失敗：商店 ID " + storeId + " 不存在喵！");
+            }
+
+            if (storesSearchDao.getMenuByMenuId(menuId) == null) {
+                return new SalesStatsRes(404, "審核失敗：商品 ID " + menuId + " 不存在喵！");
+            }
             LocalDate today = LocalDate.now();
 
             // 今日 (DAILY) - 基準日：今天
@@ -44,7 +59,7 @@ public class SalesStatsService {
 
             return new SalesStatsRes(200, "全週期銷量同步更新成功喵！");
         } catch (Exception e) {
-            return new SalesStatsRes(500, "同步更新失敗喵: " + e.getMessage());
+            return new SalesStatsRes(500, "同步更新失敗喵...: " + e.getMessage());
         }
     }
 
@@ -63,6 +78,38 @@ public class SalesStatsService {
             });
         stats.setSalesVolume(stats.getSalesVolume() + quantity);
         salesStatsRepository.save(stats);
+    }
+    
+    public SalesStatsRes getTop10SalesBystore(Integer storeId, SalesStatsType type) {
+        try {
+            // 將 Enum 轉為 String 以符合 nativeQuery 參數
+            String typeStr = (type != null) ? type.name() : SalesStatsType.ALL.name();
+            
+            List<SalesLeaderboardProjection> details = salesStatsRepository.findTop10WithDetails(storeId, typeStr);
+            if (CollectionUtils.isEmpty(details)) {
+            	return new SalesStatsRes(404,"目前該店沒有銷售紀錄喵!快去買喵!");
+            }
+            SalesStatsRes res = new SalesStatsRes(200, "獲取排行成功喵！");
+            res.setSalesDetailList(details); 
+            return res;
+        } catch (Exception e) {
+            return new SalesStatsRes(500, "失敗喵...：" + e.getMessage());
+        }
+    }
+    
+    public SalesStatsRes getTop10(SalesStatsType type) {
+        try {
+            String typeStr = (type != null) ? type.name() : SalesStatsType.ALL.name();
+            List<SalesLeaderboardProjection> list = salesStatsRepository.findGlobalTop10(typeStr);
+            if (CollectionUtils.isEmpty(list)) {
+            	return new SalesStatsRes(404,"任何店都沒有銷售紀錄喵!快去買喵!");
+            }
+            SalesStatsRes res = new SalesStatsRes(200, "獲取全平台排行成功喵！");
+            res.setSalesDetailList(list);
+            return res;
+        } catch (Exception e) {
+            return new SalesStatsRes(500, "獲取全平台排行失敗喵：" + e.getMessage());
+        }
     }
 
 }
