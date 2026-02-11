@@ -17,6 +17,8 @@ public class CartDTO {
     private String latestOrderTime; 
     private GroupbuyStatusEnum status; // OPEN, LOCKED, FINISHED
     private boolean canModify; // 根據 status 判斷是否還能修改
+    private String pickLocation;
+    private String pickupTime;
     
     // 這一團裡面點的所有商品細項
     private List<Orders> items;
@@ -111,6 +113,22 @@ public class CartDTO {
 
 	public void setItems(List<Orders> items) {
 		this.items = items;
+	}
+
+	public String getPickLocation() {
+		return pickLocation;
+	}
+
+	public void setPickLocation(String pickLocation) {
+		this.pickLocation = pickLocation;
+	}
+
+	public String getPickupTime() {
+		return pickupTime;
+	}
+
+	public void setPickupTime(String pickupTime) {
+		this.pickupTime = pickupTime;
 	}
 	
     
