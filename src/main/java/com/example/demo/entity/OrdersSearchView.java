@@ -75,6 +75,9 @@ public class OrdersSearchView {
 	private String hostNickname;
 	
 	
+	@Column(name = "pick_location")
+	private String pickLocation;
+	
 
 	public List<Map<String, Object>> getSelectedOptionList() {
 		return selectedOptionList;
