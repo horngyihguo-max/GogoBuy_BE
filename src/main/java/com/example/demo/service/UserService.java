@@ -15,6 +15,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.constants.ResMessage;
+import com.example.demo.constants.UserStatusEnum;
 import com.example.demo.dao.UserDao;
 import com.example.demo.dto.UserInfoDto;
 import com.example.demo.dto.UserPasswordDto;
@@ -41,6 +42,9 @@ public class UserService {
 	@Autowired
 	private ImageService imageService;
 
+	@Autowired
+	private JwtService jwtService;
+
 	/**
 	 * Redis發送修改email驗證碼功能 暫時用不到
 	 * 
@@ -52,22 +56,76 @@ public class UserService {
 	/*
 	 * 會員註冊
 	 */
-	public BasicRes addUser(UserAddReq req) {
+	@Transactional(rollbackOn = Exception.class)
+	public BasicRes addUser(UserAddReq req) throws Exception {
 		String uniqueID = UUID.randomUUID().toString();
 		String email = req.getEmail();
 		String password = req.getPassword();
 		String name = req.getNickname();
 		String phone = req.getPhone();
-//		String avatarUrl = req.getAvatarUrl();
-		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone);
+		String status = UserStatusEnum.PENDING_ACTIVE.name();
+		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone, status);
 		if (res == 1) {
+			// 只有資料庫存成功後，才生成 JWT Token
+			String token = jwtService.createActivationToken(uniqueID);
+
+			// 生成開通連結 (以前端 Angular 跑在 4200 port)
+			String activationUrl = "http://localhost:4200/active-account?token=" + token + "\n\n連結將於1小時後失效。";
+
+			try {
+				// 執行發送郵件 (這部分你需要另外實作 MailService)
+				SimpleMailMessage message = new SimpleMailMessage();
+				// 從 properties 讀取發信帳號
+				message.setFrom("GogobuyAdmin@gmail.com");
+				message.setTo(email);
+				message.setSubject("[GoGoBuy] 帳號開通驗證");
+				message.setText("您好：\n\n請點選以下網址開通：" + activationUrl);
+				mailSender.send(message);
+				// 測試用
+				System.out.println("用戶註冊成功，開通連結為: " + activationUrl);
+
+			} catch (Exception e) {
+				throw e;
+			}
+
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
-					ResMessage.SUCCESS.getMessage());
+					"註冊成功，請至電子信箱點擊驗證連結開通帳戶。");
 		} else {
+
 			return new BasicRes(ResMessage.REGISTRATION_ERROR.getCode(), //
 					ResMessage.REGISTRATION_ERROR.getMessage());
 		}
 	}
+
+	// 驗證時啟用帳戶
+	public boolean activateUser(String token) {
+		// 從 JWT 提取 UUID
+		String userId = jwtService.parseActivationToken(token);
+
+		if (userId != null && !userId.isEmpty()) {
+			// 直接去資料庫更新該 UUID 的狀態
+			int rows = userDao.updateStatus(userId, "ACTIVE");
+	        return rows > 0;
+		}
+		return false;
+	}
+	
+	// 自主停用
+    public BasicRes selfSuspend(String userId) {
+        User user = userDao.getUserById(userId); 
+        if ("active".equals(user.getStatus())) {
+            userDao.updateStatus(userId, "self_suspended");
+        }
+        return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+    }
+
+    // 管理員停權
+    public BasicRes adminBan(String id) {
+        userDao.updateStatus(id, "banned");
+        return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+    }
 
 	/*
 	 * 登入
@@ -89,8 +147,20 @@ public class UserService {
 					ResMessage.PASSWORD_ERROR.getMessage());
 		}
 
-		return new LoginRes(ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage(), user.getId());
+		// 核心狀態檢查
+		switch (user.getStatus()) {
+		case "pending_active":
+			return new LoginRes(ResMessage.PENDING_ACTIVE.getCode(), ResMessage.PENDING_ACTIVE.getMessage());
+		case "banned":
+			return new LoginRes(ResMessage.BANNED.getCode(), ResMessage.BANNED.getMessage());
+		case "self_suspended":
+			return new LoginRes(ResMessage.SELF_SUSPENDED.getCode(), ResMessage.SELF_SUSPENDED.getMessage());
+		case "active":
+			return new LoginRes(ResMessage.SUCCESS.getCode(), //
+					ResMessage.SUCCESS.getMessage(), user.getId());
+		default:
+			return new LoginRes(500, "未知狀態");
+		}
 	}
 
 	public GetUserInfoListRes getAllUser() {
@@ -399,4 +469,13 @@ public class UserService {
 		}
 	}
 
+	// 信箱開通驗證
+	public boolean verifyEmail(String email) {
+		User user = userDao.getUserByEmail(email);
+		if (user != null && user.getStatus() == UserStatusEnum.PENDING_ACTIVE.getStatus()) {
+
+			return true;
+		}
+		return false;
+	}
 }
