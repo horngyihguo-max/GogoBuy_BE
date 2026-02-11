@@ -1,9 +1,9 @@
 package com.example.demo.response;
 
 import java.util.List;
-import java.util.Map;
 
 import com.example.demo.entity.SalesStats;
+import com.example.demo.projection.SalesLeaderboardProjection;
 
 public class SalesStatsRes extends BasicRes{
 
@@ -11,7 +11,7 @@ public class SalesStatsRes extends BasicRes{
     private Integer salesVolume;
     private String statsType;
     private List<SalesStats> salesList; // 用於返回排行榜
-    private List<Map<String, Object>> salesDetailList;
+    private List<SalesLeaderboardProjection> salesDetailList;
 	public Integer getMenuId() {
 		return menuId;
 	}
@@ -36,10 +36,10 @@ public class SalesStatsRes extends BasicRes{
 	public void setSalesList(List<SalesStats> salesList) {
 		this.salesList = salesList;
 	}
-	public List<Map<String, Object>> getSalesDetailList() {
+	public List<SalesLeaderboardProjection> getSalesDetailList() {
 		return salesDetailList;
 	}
-	public void setSalesDetailList(List<Map<String, Object>> salesDetailList) {
+	public void setSalesDetailList(List<SalesLeaderboardProjection> salesDetailList) {
 		this.salesDetailList = salesDetailList;
 	}
 	public SalesStatsRes() {
