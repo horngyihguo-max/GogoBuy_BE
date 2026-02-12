@@ -66,27 +66,8 @@ public class UserService {
 		String status = UserStatusEnum.PENDING_ACTIVE.name();
 		int res = userDao.addUser(uniqueID, email, encoder.encode(password), name, phone, status);
 		if (res == 1) {
-			// 只有資料庫存成功後，才生成 JWT Token
-			String token = jwtService.createActivationToken(uniqueID);
-
-			// 生成開通連結 (以前端 Angular 跑在 4200 port)
-			String activationUrl = "http://localhost:4200/active-account?token=" + token + "\n\n連結將於1小時後失效。";
-
-			try {
-				// 執行發送郵件 (這部分你需要另外實作 MailService)
-				SimpleMailMessage message = new SimpleMailMessage();
-				// 從 properties 讀取發信帳號
-				message.setFrom("GogobuyAdmin@gmail.com");
-				message.setTo(email);
-				message.setSubject("[GoGoBuy] 帳號開通驗證");
-				message.setText("您好：\n\n請點選以下網址開通：" + activationUrl);
-				mailSender.send(message);
-				// 測試用
-				System.out.println("用戶註冊成功，開通連結為: " + activationUrl);
-
-			} catch (Exception e) {
-				throw e;
-			}
+			// 發送開通驗證信
+			sendActivationEmail(email, uniqueID);
 
 			return new BasicRes(ResMessage.SUCCESS.getCode(), //
 					"註冊成功，請至電子信箱點擊驗證連結開通帳戶。");
@@ -94,6 +75,32 @@ public class UserService {
 
 			return new BasicRes(ResMessage.REGISTRATION_ERROR.getCode(), //
 					ResMessage.REGISTRATION_ERROR.getMessage());
+		}
+	}
+
+	// 發送會員開通驗證信 (公開方法供 OAuth2 使用)
+	public void sendActivationEmail(String email, String userId) {
+		// 生成 JWT Token
+		String token = jwtService.createActivationToken(userId);
+
+		// 生成開通連結 (以前端 Angular 跑在 4200 port)
+		String activationUrl = "http://localhost:4200/active-account?token=" + token + "\n\n連結將於1小時後失效。";
+
+		try {
+			// 執行發送郵件
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setFrom("GogobuyAdmin@gmail.com");
+			message.setTo(email);
+			message.setSubject("[GoGoBuy] 帳號開通驗證");
+			message.setText("您好：\n\n請點選以下網址開通：" + activationUrl);
+			mailSender.send(message);
+
+			// 測試用
+			System.out.println("驗證信已發送至: " + email + ", 連結: " + activationUrl);
+
+		} catch (Exception e) {
+			// 僅印出錯誤，不拋出避免中斷 (視需求調整)
+			e.printStackTrace();
 		}
 	}
 
@@ -105,27 +112,27 @@ public class UserService {
 		if (userId != null && !userId.isEmpty()) {
 			// 直接去資料庫更新該 UUID 的狀態
 			int rows = userDao.updateStatus(userId, "ACTIVE");
-	        return rows > 0;
+			return rows > 0;
 		}
 		return false;
 	}
-	
-	// 自主停用
-    public BasicRes selfSuspend(String userId) {
-        User user = userDao.getUserById(userId); 
-        if ("active".equals(user.getStatus())) {
-            userDao.updateStatus(userId, "self_suspended");
-        }
-        return new BasicRes(ResMessage.SUCCESS.getCode(), //
-				ResMessage.SUCCESS.getMessage());
-    }
 
-    // 管理員停權
-    public BasicRes adminBan(String id) {
-        userDao.updateStatus(id, "banned");
-        return new BasicRes(ResMessage.SUCCESS.getCode(), //
+	// 自主停用
+	public BasicRes selfSuspend(String userId) {
+		User user = userDao.getUserById(userId);
+		if ("active".equals(user.getStatus())) {
+			userDao.updateStatus(userId, "self_suspended");
+		}
+		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
-    }
+	}
+
+	// 管理員停權
+	public BasicRes adminBan(String id) {
+		userDao.updateStatus(id, "banned");
+		return new BasicRes(ResMessage.SUCCESS.getCode(), //
+				ResMessage.SUCCESS.getMessage());
+	}
 
 	/*
 	 * 登入
@@ -140,8 +147,8 @@ public class UserService {
 			return new LoginRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
-//		比對密碼:
-//		比對輸入的密碼與資料庫中加密過的密碼是否相同
+		// 比對密碼:
+		// 比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(password, user.getPassword())) {
 			return new LoginRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
@@ -149,17 +156,17 @@ public class UserService {
 
 		// 核心狀態檢查
 		switch (user.getStatus()) {
-		case "pending_active":
-			return new LoginRes(ResMessage.PENDING_ACTIVE.getCode(), ResMessage.PENDING_ACTIVE.getMessage());
-		case "banned":
-			return new LoginRes(ResMessage.BANNED.getCode(), ResMessage.BANNED.getMessage());
-		case "self_suspended":
-			return new LoginRes(ResMessage.SELF_SUSPENDED.getCode(), ResMessage.SELF_SUSPENDED.getMessage());
-		case "active":
-			return new LoginRes(ResMessage.SUCCESS.getCode(), //
-					ResMessage.SUCCESS.getMessage(), user.getId());
-		default:
-			return new LoginRes(500, "未知狀態");
+			case "pending_active":
+				return new LoginRes(ResMessage.PENDING_ACTIVE.getCode(), ResMessage.PENDING_ACTIVE.getMessage());
+			case "banned":
+				return new LoginRes(ResMessage.BANNED.getCode(), ResMessage.BANNED.getMessage());
+			case "self_suspended":
+				return new LoginRes(ResMessage.SELF_SUSPENDED.getCode(), ResMessage.SELF_SUSPENDED.getMessage());
+			case "active":
+				return new LoginRes(ResMessage.SUCCESS.getCode(), //
+						ResMessage.SUCCESS.getMessage(), user.getId());
+			default:
+				return new LoginRes(500, "未知狀態");
 		}
 	}
 
@@ -210,14 +217,14 @@ public class UserService {
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes updatePassword(String id, UserPasswordDto dto) {
 		User user = userDao.getUserById(id);
-//		檢查帳戶是否存在
+		// 檢查帳戶是否存在
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
 
-//		比對密碼:
-//		比對輸入的密碼與資料庫中加密過的密碼是否相同
+		// 比對密碼:
+		// 比對輸入的密碼與資料庫中加密過的密碼是否相同
 		if (!encoder.matches(dto.getOldPassword(), user.getPassword())) {
 			return new BasicRes(ResMessage.PASSWORD_ERROR.getCode(), //
 					ResMessage.PASSWORD_ERROR.getMessage());
@@ -227,7 +234,7 @@ public class UserService {
 					ResMessage.SAME_PASSWORD_ERROR.getMessage());
 		}
 
-//		加密新密碼
+		// 加密新密碼
 		String encodePassword = encoder.encode(dto.getNewPassword());
 		userDao.userPassword(id, encodePassword);
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
@@ -365,7 +372,7 @@ public class UserService {
 	@Transactional(rollbackOn = Exception.class)
 	public BasicRes resetPassword(ResetPasswordReq req) {
 		User user = userDao.getUserByEmail(req.getEmail());
-//		檢查帳戶是否存在
+		// 檢查帳戶是否存在
 		if (user == null) {
 			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
@@ -389,11 +396,11 @@ public class UserService {
 					ResMessage.OTP_ERROR.getMessage());
 		}
 
-//		加密新密碼
+		// 加密新密碼
 		String encodePassword = encoder.encode(req.getNewPassword());
 		userDao.userPassword(user.getId(), encodePassword);
 
-//		清空 OTP 防止重複使用
+		// 清空 OTP 防止重複使用
 		user.setOtpCode(null);
 		user.setOtpExpiry(null);
 		user.setPassword(encodePassword);
@@ -403,7 +410,7 @@ public class UserService {
 				ResMessage.SUCCESS.getMessage());
 	}
 
-//	每小時進行一次清理
+	// 每小時進行一次清理
 	@Scheduled(cron = "0 0 * * * ?")
 	@Transactional
 	/*
