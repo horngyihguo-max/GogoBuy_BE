@@ -54,13 +54,13 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Query(value = "update user SET phone = ?2 where id = ?1", nativeQuery = true)
 	public int userPhone(String id, String phone);
 
-//	OTP驗證碼至對應id的email
+	// OTP驗證碼至對應id的email
 	@Transactional
 	@Modifying
 	@Query(value = "update user SET otp_code = ?2, otp_expiry=?3 where id = ?1", nativeQuery = true)
 	public int sendOtpById(String id, String otpCode, LocalDateTime otpExpiry);
 
-//	發送OTP驗證碼至email
+	// 發送OTP驗證碼至email
 	@Transactional
 	@Modifying
 	@Query(value = "update user SET otp_code = ?2, otp_expiry=?3 where email = ?1", nativeQuery = true)
@@ -84,10 +84,10 @@ public interface UserDao extends JpaRepository<User, String> {
 	// 新增Google用戶
 	@Transactional
 	@Modifying
-	@Query(value = "insert into user(id, email, password, nickname, phone, avatar_url, provider) "//
-			+ " values (?1, ?2, ?3, ?4, ?5, ?6, ?7)", nativeQuery = true)
+	@Query(value = "insert into user(id, email, password, nickname, phone, avatar_url, provider, status) "//
+			+ " values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)", nativeQuery = true)
 	public int addGoogleUser(String id, String email, String password, String nickname, String phone, String avatarUrl,
-			String provider);
+			String provider, String status);
 
 	// 更改用戶狀態
 	@Transactional

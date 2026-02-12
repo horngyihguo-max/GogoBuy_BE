@@ -5,11 +5,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +21,9 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
 
 	@Autowired
 	private UserDao userDao;
+
+	@Autowired
+	private UserService userService;
 
 	private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -40,16 +43,31 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
 		// 2. 判斷是否需要自動註冊
 		User user = userDao.getUserByEmail(email);
 		if (user == null) {
-			userDao.addGoogleUser(UUID.randomUUID().toString(), email, encoder.encode(password), nickname, phone,
-					avatarUrl, provider);
+			String userId = UUID.randomUUID().toString();
+			// 預設狀態為 PENDING_ACTIVE
+			userDao.addGoogleUser(userId, email, encoder.encode(password), nickname, phone,
+					avatarUrl, provider, "pending_active");
+
+			// 發送驗證信
+			userService.sendActivationEmail(email, userId);
+
+			throw new OAuth2AuthenticationException(
+					new OAuth2Error("account_created",
+							"Account created. Please verify your email via the link sent to your inbox.", null));
 		} else {
 			// 3. 檢查用戶狀態
 			String status = user.getStatus();
 			if ("banned".equalsIgnoreCase(status)) {
-				throw new OAuth2AuthenticationException("Your account has been banned.");
+				throw new OAuth2AuthenticationException(new OAuth2Error(
+						"account_banned", "Your account has been banned.", null));
 			}
 			if ("self_suspended".equalsIgnoreCase(status)) {
-				throw new OAuth2AuthenticationException("Your account is suspended.");
+				throw new OAuth2AuthenticationException(new OAuth2Error(
+						"account_suspended", "Your account is suspended.", null));
+			}
+			if ("pending_active".equalsIgnoreCase(status)) {
+				throw new OAuth2AuthenticationException(new OAuth2Error(
+						"account_pending", "帳號尚未開通，請確認您的信箱", null));
 			}
 		}
 
