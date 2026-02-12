@@ -38,40 +38,51 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
 		String provider = "GOOGLE";
 
 		// 2. 判斷是否需要自動註冊
-		if (userDao.getUserByEmail(email) == null) {
+		User user = userDao.getUserByEmail(email);
+		if (user == null) {
 			userDao.addGoogleUser(UUID.randomUUID().toString(), email, encoder.encode(password), nickname, phone,
 					avatarUrl, provider);
+		} else {
+			// 3. 檢查用戶狀態
+			String status = user.getStatus();
+			if ("banned".equalsIgnoreCase(status)) {
+				throw new OAuth2AuthenticationException("Your account has been banned.");
+			}
+			if ("self_suspended".equalsIgnoreCase(status)) {
+				throw new OAuth2AuthenticationException("Your account is suspended.");
+			}
 		}
+
 		return oAuth2User;
 	}
 
-	public Map<String, Object> loginGoogle( OAuth2User principal) {
-		
+	public Map<String, Object> loginGoogle(OAuth2User principal) {
+
 		Map<String, Object> res = new HashMap<>();
-		
+
 		if (principal == null) {
 			return Map.of("status", "未登入");
 		}
 		// 1. 從 Google 資料中取得 Email
 		String email = principal.getAttribute("email");
 		String nickname = principal.getAttribute("name");
-        String avatarUrl = principal.getAttribute("picture");
+		String avatarUrl = principal.getAttribute("picture");
 
 		// 2. 去資料庫查看看有沒有這個 Email
 		User user = userDao.getUserByEmail(email);
 
 		if (user != null) {
-            res.put("status", "success");
-            res.put("nickname", nickname != null ? nickname : user.getNickname()); 
-            res.put("email", email);
-            res.put("id", user.getId());
-//      res.put("sub", encoder.encode(password));
-            res.put("avatarUrl", avatarUrl);
-            res.put("provider", user.getProvider());
-        } else {
-            res.put("status", "processing");
-            res.put("message", "帳號建立中，請稍後再試");
-        }
-        return res;
+			res.put("status", "success");
+			res.put("nickname", nickname != null ? nickname : user.getNickname());
+			res.put("email", email);
+			res.put("id", user.getId());
+			// res.put("sub", encoder.encode(password));
+			res.put("avatarUrl", avatarUrl);
+			res.put("provider", user.getProvider());
+		} else {
+			res.put("status", "processing");
+			res.put("message", "帳號建立中，請稍後再試");
+		}
+		return res;
 	}
 }
