@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.constants.SalesStatsType;
 import com.example.demo.entity.PersonalOrder;
 
 @Repository
@@ -37,6 +38,6 @@ public interface PersonalOrderDao extends JpaRepository<PersonalOrder, Integer> 
 	// 查詢 eventsId 相同的 userId
 		@Query(value = "select * from personal_order where events_id = ?1", nativeQuery = true)
 		public List<PersonalOrder> findUserIdByEventsId(int eventsId);
-	
+		
 
 }

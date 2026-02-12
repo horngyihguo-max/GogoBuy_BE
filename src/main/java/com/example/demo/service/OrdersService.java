@@ -211,8 +211,6 @@ public class OrdersService {
 				orders.setMenuName(subtotalRes.getMenuName()); 
 	            orders.setBasePrice(subtotalRes.getBasePrice());
 	            orders.setSpecPrice(subtotalRes.getSpecPrice());
-	            
-	            System.out.println("RRRRR");
 				
 				// 基礎欄位賦值
 				orders.setSubtotal(subtotalRes.getSubtotal());
@@ -237,7 +235,7 @@ public class OrdersService {
 		}
 	}
 
-//	 //更新
+	//更新
 	@Transactional
 	public BasicRes updateOrders(OredersReq req) {
 		BasicRes checkResult = checkEvent(req);

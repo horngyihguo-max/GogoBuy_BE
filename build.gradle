@@ -66,6 +66,9 @@ dependencies {
     
     // Google Maps Java SDK
     implementation 'com.google.maps:google-maps-services:2.2.0'
+    
+	    // 用於發送 HTTP 請求
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	
 
 	
