@@ -13,6 +13,7 @@ import com.example.demo.constants.PaymentStatus;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.OrdersDao;
 import com.example.demo.dao.PersonalOrderDao;
+import com.example.demo.entity.Orders;
 import com.example.demo.entity.PersonalOrder;
 import com.example.demo.request.personalOrderReq;
 import com.example.demo.response.PersonalOrdersRes;
@@ -30,15 +31,33 @@ public class PersonalOrderService {
 
 	@Autowired
 	private PersonalOrderDao personalOrderDao;
+	
+	@Autowired
+	private SalesStatsService salesStatsService;
 
-	// 結單後生成
-	public void addPersonalOrder(int eventId, String userId, int totalSum, double totalWeight, int personFee) {
+	// 結團後生成
+	public void addPersonalOrder(personalOrderReq req) {
+		List<Orders> item = ordersDao.getOrderByEventIdAndUserId(req.getUserId() ,req.getEventsId());
+		
+		if (CollectionUtils.isEmpty(item)) {
+			System.out.println("因為沒有訂單明細，跳過銷售統計更新");
+			return; 
+		}
+		int store = groupbuyEventsDao.selectStoreIdByEventId(req.getEventsId());
+		for (Orders orders : item) {
+			// 從每一筆訂單物件中取出資料
+			Integer storeId = store; 
+			Integer menuId = orders.getMenuId();
+			int quantity = orders.getQuantity();
+			// 引用 service 的 addSalesVolume
+			salesStatsService.addSalesVolume(storeId, menuId, quantity);
+		}
 		PersonalOrder addpo = new PersonalOrder();
-		addpo.setEventsId(eventId);
-		addpo.setUserId(userId);
-		addpo.setTotalSum(totalSum);
-		addpo.setTotalWeight(totalWeight);
-		addpo.setPersonFee(personFee);
+		addpo.setEventsId(req.getEventsId());
+		addpo.setUserId(req.getUserId());
+		addpo.setTotalSum(req.getTotalSum());
+		addpo.setTotalWeight(req.getTotalWeight());
+		addpo.setPersonFee(req.getPersonFee());
 		addpo.setPaymentStatus(PaymentStatus.UNPAID);
 
 		personalOrderDao.save(addpo);

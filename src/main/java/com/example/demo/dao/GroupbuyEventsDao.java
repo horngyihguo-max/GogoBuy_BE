@@ -120,4 +120,8 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	// 查詢orders映射表
 	@Query(value = "select * from orders_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
 	public List<OrdersSearchView> selectOrdersAll(int eventId);
+	
+	// 查詢 event 裡面的 storeId 
+	@Query(value = "select stores_id from groupbuy_events where id = ?1 and is_deleted = false", nativeQuery = true)
+	public int selectStoreIdByEventId(int eventId);
 }

@@ -14,7 +14,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
-import com.example.demo.constants.PaymentStatus;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.GroupsSearchViewDao;
@@ -32,6 +31,7 @@ import com.example.demo.entity.Stores;
 import com.example.demo.entity.User;
 import com.example.demo.projection.GroupbuyEventsProjection;
 import com.example.demo.request.GroupbuyEventsReq;
+import com.example.demo.request.personalOrderReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
 import com.example.demo.response.GroupbuyEventsResNew;
@@ -56,9 +56,6 @@ public class GroupbuyEventsService {
 
 	@Autowired
 	private OrdersDao ordersDao;
-
-	@Autowired
-	private PersonalOrderDao personalOrderDao;
 
 	@Autowired
 	private PersonalOrderService personalOrderService;
@@ -333,15 +330,16 @@ public class GroupbuyEventsService {
 		groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.FINISHED.name(), id, userId);
 		List<String> userIdList = ordersDao.getUserIdByEventsId(id);
 		if (!CollectionUtils.isEmpty(userIdList)) {
-			for (String userIdStr : userIdList) {
-				// 計算該用戶個人的數據
-				// 此用戶的全部小計
-				int userSubtotal = ordersDao.sumSubtotalByEventIdAndUserId(id, userIdStr);
-				// 此用戶的全部重量
-				Double userWeight = ordersDao.sumWeightByEventIdAndUserId(id, userIdStr);
+            for (String userIdStr : userIdList) {
+                // 準備 Request 物件
+                personalOrderReq req = new personalOrderReq();
+                req.setEventsId(id);
+                req.setUserId(userIdStr);
+                req.setTotalSum(ordersDao.sumSubtotalByEventIdAndUserId(id, userIdStr));
+                req.setTotalWeight(ordersDao.sumWeightByEventIdAndUserId(id, userIdStr));
+                req.setPersonFee(0);
 				// 新增
-				personalOrderDao.addPersonalOrder(id, userIdStr, userWeight, 0, userSubtotal,
-						PaymentStatus.UNPAID.name());
+				personalOrderService.addPersonalOrder(req);
 			}
 		}
 		// 手動結單完查詢所屬活動的跟團者做自動生產addPersonOrder資料
