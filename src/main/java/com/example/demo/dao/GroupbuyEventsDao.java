@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entity.GroupbuyEvents;
+import com.example.demo.entity.GroupsSearchView;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.OrdersSearchView;
 import com.example.demo.projection.GroupbuyEventsProjection;
@@ -87,10 +88,8 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 //	@Query(value = "select * from groups_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
 //	public List<GroupsSearchView> getEventsByEventsId(int id);
 
-	@Query(value = "SELECT e.*, CASE WHEN e.is_deleted = 0 THEN false ELSE true END AS deleted, "
-			+ "e.temp_menu AS tempMenuList, e.recommend AS recommendList, u.nickname AS nickname "
-			+ "FROM groupbuy_events e JOIN user u ON e.host_id = u.id " + "WHERE e.id = ?1 ", nativeQuery = true)
-	public List<GroupbuyEventsProjection> getEventsByEventsId(int id);
+	@Query(value = "select * from groups_search_view where event_id = ?1 ", nativeQuery = true)
+	public List<GroupsSearchView> getEventsByEventsId(int eventId);
 
 //		@Query(value = "SELECT * FROM groupbuy_events  WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
 //		public List<GroupbuyEvents> getEventsByEventsId1(int id);

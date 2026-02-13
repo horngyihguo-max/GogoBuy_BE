@@ -465,7 +465,7 @@ public class GroupbuyEventsService {
 
 	// 回傳eventsId的活動
 	public GroupbuyEventsRes getEventsByEventsId(int id) {
-		List<GroupbuyEventsProjection> list = groupbuyEventsDao.getEventsByEventsId(id);
+		List<GroupsSearchView> list = groupbuyEventsDao.getEventsByEventsId(id);
 		if (CollectionUtils.isEmpty(list)) {
 			return new GroupbuyEventsRes(404, "查無此資料");
 		}
