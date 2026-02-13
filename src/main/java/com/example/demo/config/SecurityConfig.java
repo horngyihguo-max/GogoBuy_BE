@@ -117,6 +117,7 @@ public class SecurityConfig {
 					// 登出成功後同樣跳回前端首頁
 					logout.logoutSuccessUrl("http://localhost:4200");
 					// 順便清除 Session 和 Cookie，確保登出乾淨
+					// JSESSIONID : Java Web 容器在使用者第一次訪問時自動產生的 Cookie
 					logout.invalidateHttpSession(true);
 					logout.deleteCookies("JSESSIONID");
 				});
