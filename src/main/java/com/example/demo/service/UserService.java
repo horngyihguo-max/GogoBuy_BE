@@ -485,4 +485,34 @@ public class UserService {
 		}
 		return false;
 	}
+
+	// 重新發送開通驗證信
+	public BasicRes resendActivationEmail(String email) {
+		User user = userDao.getUserByEmail(email);
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
+		}
+
+		// 檢查狀態是否為待開通
+		if (!UserStatusEnum.PENDING_ACTIVE.name().equalsIgnoreCase(user.getStatus())) {
+			return new BasicRes(ResMessage.VERIFICATION_ERROR.getCode(), "帳號已開通或狀態異常，無需重新發送。");
+		}
+
+		// 重新發送驗證信
+		sendActivationEmail(email, user.getId());
+
+		return new BasicRes(ResMessage.SUCCESS.getCode(), "驗證信已重新發送，請檢查您的信箱。");
+	}
+
+	// 管理員恢復帳號
+	public BasicRes activeUserAdmin(String id) {
+		User user = userDao.getUserById(id);
+		if (user == null) {
+			return new BasicRes(ResMessage.USER_NOT_FOUND.getCode(), ResMessage.USER_NOT_FOUND.getMessage());
+		}
+
+		userDao.updateStatus(id, "active");
+
+		return new BasicRes(ResMessage.SUCCESS.getCode(), "帳號已成功恢復為活躍狀態。");
+	}
 }

@@ -123,9 +123,9 @@ public class UserController {
 	 */
 	@PostMapping("gogobuy/user/logout")
 	public BasicRes logout(HttpSession session) {
-//		讓session 失效
-//		一個 session 的有效時間為 30 分
-//		在有效時間內做任何操作，都會再延長30分
+		// 讓session 失效
+		// 一個 session 的有效時間為 30 分
+		// 在有效時間內做任何操作，都會再延長30分
 		session.invalidate();
 		return new BasicRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage());
@@ -174,6 +174,14 @@ public class UserController {
 	}
 
 	/*
+	 * 重新發送開通驗證信
+	 */
+	@GetMapping("gogobuy/user/resend-active-account")
+	public BasicRes resendActiveAccount(@RequestParam("email") String email) {
+		return userService.resendActivationEmail(email);
+	}
+
+	/*
 	 * 用戶點擊「停用帳戶」
 	 */
 	@PostMapping("gogobuy/user/suspend")
@@ -185,9 +193,17 @@ public class UserController {
 	/*
 	 * 停權用戶 API
 	 */
-	@PostMapping("gogobuy/ban-user/{id}")
+	@PostMapping("gogobuy/ban-user")
 	public BasicRes banUser(@RequestParam("id") String id) {
 		return userService.adminBan(id);
 
+	}
+
+	/*
+	 * 恢復用戶帳號 API
+	 */
+	@PostMapping("gogobuy/active-user")
+	public BasicRes activeUser(@RequestParam("id") String id) {
+		return userService.activeUserAdmin(id);
 	}
 }

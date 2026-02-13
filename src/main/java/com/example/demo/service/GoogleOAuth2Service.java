@@ -59,11 +59,11 @@ public class GoogleOAuth2Service extends DefaultOAuth2UserService {
 			String status = user.getStatus();
 			if ("banned".equalsIgnoreCase(status)) {
 				throw new OAuth2AuthenticationException(new OAuth2Error(
-						"account_banned", "Your account has been banned.", null));
+						"account_banned", "您的帳號已遭禁用", null));
 			}
 			if ("self_suspended".equalsIgnoreCase(status)) {
 				throw new OAuth2AuthenticationException(new OAuth2Error(
-						"account_suspended", "Your account is suspended.", null));
+						"account_suspended", "您的帳號已停用，請聯絡管理員開通", null));
 			}
 			if ("pending_active".equalsIgnoreCase(status)) {
 				throw new OAuth2AuthenticationException(new OAuth2Error(
