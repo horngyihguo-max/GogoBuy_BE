@@ -83,9 +83,11 @@ public class SalesStatsService {
     public SalesStatsRes getTop10SalesBystore(Integer storeId, SalesStatsType type) {
         try {
             // 將 Enum 轉為 String 以符合 nativeQuery 參數
-            String typeStr = (type != null) ? type.name() : SalesStatsType.ALL.name();
+//            String typeStr = (type != null) ? type.name() : SalesStatsType.ALL.name();
+            SalesStatsType targetType = (type != null) ? type : SalesStatsType.ALL;
+            LocalDate targetDate = calculateTargetDate(targetType);
             
-            List<SalesLeaderboardProjection> details = salesStatsRepository.findTop10WithDetails(storeId, typeStr);
+            List<SalesLeaderboardProjection> details = salesStatsRepository.findTop10WithDetails(storeId, targetType.name(), targetDate);
             if (CollectionUtils.isEmpty(details)) {
             	return new SalesStatsRes(404,"目前該店沒有銷售紀錄喵!快去買喵!");
             }
@@ -99,8 +101,10 @@ public class SalesStatsService {
     
     public SalesStatsRes getTop10(SalesStatsType type) {
         try {
-            String typeStr = (type != null) ? type.name() : SalesStatsType.ALL.name();
-            List<SalesLeaderboardProjection> list = salesStatsRepository.findGlobalTop10(typeStr);
+//            String typeStr = (type != null) ? type.name() : SalesStatsType.ALL.name();
+            SalesStatsType targetType = (type != null) ? type : SalesStatsType.ALL;
+            LocalDate targetDate = calculateTargetDate(targetType);
+            List<SalesLeaderboardProjection> list = salesStatsRepository.findGlobalTop10(targetType.name(), targetDate);
             if (CollectionUtils.isEmpty(list)) {
             	return new SalesStatsRes(404,"任何店都沒有銷售紀錄喵!快去買喵!");
             }
@@ -110,6 +114,18 @@ public class SalesStatsService {
         } catch (Exception e) {
             return new SalesStatsRes(500, "獲取全平台排行失敗喵：" + e.getMessage());
         }
-    }
-
+        }
+    
+    
+    private LocalDate calculateTargetDate(SalesStatsType type) {
+        LocalDate today = LocalDate.now();
+        switch (type) {
+            case DAILY:   return today;
+            case WEEKLY:  return today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+            case MONTHLY: return today.with(TemporalAdjusters.firstDayOfMonth());
+            case YEAR:    return today.with(TemporalAdjusters.firstDayOfYear());
+            case ALL:     return null;
+            default:      return null;
+        }
+}
 }

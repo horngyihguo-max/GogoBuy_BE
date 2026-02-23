@@ -44,10 +44,12 @@ public interface SalesStatsRepository extends JpaRepository<SalesStats, Long> {
             "FROM sales_stats s " +
             "JOIN menu m ON s.menu_id = m.id " +
             "WHERE s.store_id = :storeId AND s.stats_type = :type " +
+            "AND (:date IS NULL OR s.stats_date = :date) " +
             "ORDER BY s.sales_volume DESC LIMIT 10", nativeQuery = true)
 List<SalesLeaderboardProjection> findTop10WithDetails(
      @Param("storeId") Integer storeId, 
-     @Param("type") String type);
+     @Param("type") String type,
+    @Param("date") LocalDate date);
     
     /**
      * 全平台熱銷排行榜 (跨店家)
@@ -63,7 +65,10 @@ List<SalesLeaderboardProjection> findTop10WithDetails(
            "INNER JOIN menu m ON s.menu_id = m.id " +
            "INNER JOIN stores st ON m.stores_id = st.id " + // 串接店家資訊
            "WHERE s.stats_type = :type " +
+           "AND (:date IS NULL OR s.stats_date = :date) " +
            "ORDER BY s.sales_volume DESC " +
            "LIMIT 10", nativeQuery = true)
-    List<SalesLeaderboardProjection> findGlobalTop10(@Param("type") String type);
+    List<SalesLeaderboardProjection> findGlobalTop10(//
+    		@Param("type") String type,//
+    		@Param("date") LocalDate date);
 }
