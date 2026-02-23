@@ -79,7 +79,7 @@ public interface StoresSearchDao extends JpaRepository<Stores, Integer> {
             "WHERE s.id IN :storeIds " +
             "AND s.is_deleted = 0 " +
             "AND h.week = :dayOfWeek " +
-            "AND h.is_closed = 0 " + // 修正點：改為 h.is_closed = 0
+            "AND h.is_closed = 0 " + 
             "AND (" +
             "  CASE " +
             "    WHEN h.open_time < h.close_time THEN :now BETWEEN h.open_time AND h.close_time " +
@@ -92,4 +92,7 @@ List<Map<String, Object>> findOperatingStoresByIds(
  @Param("dayOfWeek") int dayOfWeek
 );
 	
+	//	查詢多個店家是否存在
+	@Query(value="select id from stores where stores.id in :storesId", nativeQuery = true)
+	List<Integer> exsitStores(@Param("storesId") List<Integer>storesId) ;
 }

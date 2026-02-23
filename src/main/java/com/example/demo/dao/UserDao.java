@@ -95,4 +95,13 @@ public interface UserDao extends JpaRepository<User, String> {
 	@Query(value = "UPDATE user SET status = ?2 where id = ?1", nativeQuery = true)
 	public int updateStatus(String id, String status);
 
+	//更新最愛店家	
+	@Transactional
+	@Modifying
+	@Query(value = "update user set favorite_store = ?2 where id = ?1", nativeQuery = true)
+	public int updateFavoriteStores(@Param("userId")String userId, @Param("storesArray") String storesArray);
+	
+	//	查詢最愛店家
+	@Query(value = "Select favorite_store from user where id = ?", nativeQuery = true)
+	public String getFavoriteStoresById(@Param("id") String id);
 }
