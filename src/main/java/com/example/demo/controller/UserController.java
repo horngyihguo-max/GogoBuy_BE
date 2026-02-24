@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -206,4 +207,21 @@ public class UserController {
 	public BasicRes activeUser(@RequestParam("id") String id) {
 		return userService.activeUserAdmin(id);
 	}
+	
+	/*
+	 * 更新最愛店家
+	 *(傳最終結果陣列就好 不論是新增修改刪除)
+	 */
+	@PostMapping("gogobuy/updateFavoriteStore")
+	public BasicRes updateFavoriteStore(@RequestParam("id") String id,@RequestParam(value = "storesList",required = false) List<Integer> storesList) {
+		return userService.updateFavoriteStores(id, storesList);
+	}
+	
+//	/*
+//	 *查詢最愛店家 
+//	 */
+//	@GetMapping("gogobuy/getFavoriteStore")
+//	public FavoriteRes getFavoriteStore(@RequestParam("id") String id) {
+//	return userService.getFavoriteStores(id);
+//	}
 }

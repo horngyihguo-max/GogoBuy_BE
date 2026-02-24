@@ -2,8 +2,13 @@ package com.example.demo.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -16,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.constants.UserStatusEnum;
+import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.dto.UserInfoDto;
 import com.example.demo.dto.UserPasswordDto;
@@ -35,7 +41,10 @@ public class UserService {
 
 	@Autowired
 	private UserDao userDao;
-
+	
+	@Autowired
+	private StoresSearchDao storesSrerchDao;
+	
 	@Autowired
 	private JavaMailSender mailSender;
 
@@ -181,12 +190,15 @@ public class UserService {
 			return new GetUserInfoRes(ResMessage.USER_NOT_FOUND.getCode(), //
 					ResMessage.USER_NOT_FOUND.getMessage());
 		}
+		List<Integer>favoriteStores = getFavoriteStores(id);
+		
 		return new GetUserInfoRes(ResMessage.SUCCESS.getCode(), //
 				ResMessage.SUCCESS.getMessage(), user.getId(), //
 				user.getNickname(), user.getEmail(), //
 				user.getPhone(), user.getAvatarUrl(), //
-				user.getCarrier(), user.getExp(), user.getRole(), //
-				user.getTimesRemaining(), user.getProvider());
+				user.getRole(), user.getCarrier(), user.getExp(), //
+				user.getTimesRemaining(), user.getProvider(),
+				favoriteStores);
 	}
 
 	/*
@@ -514,5 +526,80 @@ public class UserService {
 		userDao.updateStatus(id, "active");
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), "帳號已成功恢復為活躍狀態。");
+	}
+	
+//	private void favoriteStoresCheck(int storesId) throws Exception{
+//		if (storesSrerchDao.getStoreById(storesId)!=null) {
+//			throw new Exception("查無此店家喵");
+//		}
+//		return;
+//	}
+	
+	//更新最愛店家	
+	@Transactional(rollbackOn = Exception.class)
+	public BasicRes updateFavoriteStores(String id, List<Integer> storesIdList) {
+		List<Integer> newList = (storesIdList == null) ? new ArrayList<>()//
+				: storesIdList.stream().distinct().collect(Collectors.toList());//去重
+		List<Integer> finalToSave;
+//		List<Integer> validStores= newlist.isEmpty() ? new ArrayList<>() : storesSrerchDao.exsitStores(newlist);
+		//	單數字>> 沒有>>新增 有>>刪除
+		if (newList.size()==1) {
+			Integer sId = newList.get(0);//sId為物件而引索
+			List<Integer> oldList = new ArrayList<>(getFavoriteStores(id));
+			List<Integer> validTarget = storesSrerchDao.exsitStores(Collections.singletonList(sId));
+			if (!validTarget.isEmpty()) {
+	            if (oldList.contains(sId)) {
+	            	oldList.remove(sId); // 存在則刪除（取消收藏）
+	            } else {
+	            	oldList.add(sId);    // 不存在則新增（加入收藏）
+	            }
+	        }
+	        finalToSave = oldList;
+		}
+		//陣列>>直接蓋
+		else {
+			finalToSave = newList.isEmpty() ? new ArrayList<>() 
+                    : storesSrerchDao.exsitStores(newList);
+		}
+
+		//		Collections.sort(validStores);
+		String storesString = finalToSave.stream()
+				.sorted()//排序
+                .map(String::valueOf)
+                .collect(Collectors.joining(",","[","]"));
+		try {
+			int done = userDao.updateFavoriteStores(id, storesString);
+			if (done>0) {
+				return new BasicRes(200,"成功更新最愛店家喵");
+			}
+			else {
+				return new BasicRes(404,"使用者不存在喵");
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("資料更新失敗喵", e);
+		}
+}
+
+	//查詢最愛店家
+	public List<Integer> getFavoriteStores(String id){
+//		List<Integer> favoriteStoresList = new ArrayList<>();
+		String listStr = "";
+		try {
+			listStr = userDao.getFavoriteStoresById(id);			
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("好像沒有這個使用者喵!", e);
+		}
+		if (StringUtils.hasText(listStr) && !listStr.equals("[]")) {
+			return Arrays.stream(listStr.replace("[", "").replace("]", "").split(","))
+			.map(String::trim)		//去空格
+			.filter(s -> !s.isEmpty())  //去空字串
+			.map(Integer::parseInt)  //轉數字
+			.collect(Collectors.toCollection(ArrayList::new));	//	變成List
+		}
+		return new ArrayList<>();
 	}
 }

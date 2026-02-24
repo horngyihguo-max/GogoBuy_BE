@@ -12,19 +12,26 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.example.demo.constants.PaymentStatus;
 import com.example.demo.constants.PickupStatusEnum;
 import com.example.demo.constants.ResMessage;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.OrdersDao;
+import com.example.demo.dao.PersonalOrderDao;
 import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
+import com.example.demo.dto.OrderHistoryDTO;
 import com.example.demo.dto.OrdersDTO;
 import com.example.demo.entity.GroupbuyEvents;
 import com.example.demo.entity.Menu;
 import com.example.demo.entity.Orders;
+import com.example.demo.entity.PersonalOrder;
+import com.example.demo.entity.Stores;
+import com.example.demo.entity.User;
 import com.example.demo.request.OredersReq;
 import com.example.demo.response.BasicRes;
 import com.example.demo.response.GroupbuyEventsRes;
+import com.example.demo.response.OrderHistoryRes;
 import com.example.demo.response.OrdersRes;
 import com.example.demo.vo.OrderMenuVo;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -45,6 +52,9 @@ public class OrdersService {
 
 	@Autowired
 	private StoresSearchDao storesSearchDao;
+
+	@Autowired
+	private PersonalOrderDao personalOrderDao;
 
 	ObjectMapper mapper = new ObjectMapper();
 
@@ -144,8 +154,8 @@ public class OrdersService {
 
 			int basePrice = menu.getBasePrice();
 			int specPrice = 0;
-			
-	        String menuName = menu.getName();
+
+			String menuName = menu.getName();
 
 			// 解析規格價格 (unusual 欄位)
 			String unusualJson = menu.getUnusual();
@@ -179,9 +189,9 @@ public class OrdersService {
 			int unitPrice = basePrice + specPrice + totalExtraPrice;
 			int subtotal = unitPrice * item.getQuantity();
 			OrdersRes res = new OrdersRes(200, "計算成功", subtotal);
-			res.setMenuName(menuName); 
-	        res.setBasePrice(basePrice);
-	        res.setSpecPrice(specPrice);
+			res.setMenuName(menuName);
+			res.setBasePrice(basePrice);
+			res.setSpecPrice(specPrice);
 			return res;
 		} catch (Exception e) {
 			return new OrdersRes(500, "商品 " + item.getMenuId() + " 金額計算失敗: " + e.getMessage(), 0);
@@ -197,8 +207,8 @@ public class OrdersService {
 		}
 		try {
 			if (ordersDao.existsByUserIdAndEventsId(req.getUserId(), req.getEventsId())) {
-	            ordersDao.hardDelete(req.getUserId(), req.getEventsId());
-	        }
+				ordersDao.hardDelete(req.getUserId(), req.getEventsId());
+			}
 			for (OrderMenuVo item : req.getMenuList()) {
 				Orders orders = new Orders();
 				// 金額計算
@@ -207,11 +217,11 @@ public class OrdersService {
 					throw new RuntimeException("商品 " + item.getMenuId() + " 金額計算失敗");
 				}
 
-				//	快照欄位
-				orders.setMenuName(subtotalRes.getMenuName()); 
-	            orders.setBasePrice(subtotalRes.getBasePrice());
-	            orders.setSpecPrice(subtotalRes.getSpecPrice());
-				
+				// 快照欄位
+				orders.setMenuName(subtotalRes.getMenuName());
+				orders.setBasePrice(subtotalRes.getBasePrice());
+				orders.setSpecPrice(subtotalRes.getSpecPrice());
+
 				// 基礎欄位賦值
 				orders.setSubtotal(subtotalRes.getSubtotal());
 				orders.setEventsId(req.getEventsId());
@@ -235,7 +245,7 @@ public class OrdersService {
 		}
 	}
 
-	//更新
+	// 更新
 	@Transactional
 	public BasicRes updateOrders(OredersReq req) {
 		BasicRes checkResult = checkEvent(req);
@@ -288,69 +298,70 @@ public class OrdersService {
 
 	// 查詢跟團者有的開團
 	public GroupbuyEventsRes getOrdersByUserId(String userId) {
-    try {
-        List<Orders> ordersList = ordersDao.getOrdersByUserId(userId);
+		try {
+			List<Orders> ordersList = ordersDao.getOrdersByUserId(userId);
 
-        if (CollectionUtils.isEmpty(ordersList)) {
-            return new GroupbuyEventsRes(404, "找不到訂單資料");
-        }
+			if (CollectionUtils.isEmpty(ordersList)) {
+				return new GroupbuyEventsRes(404, "找不到訂單資料");
+			}
 
-        // 用 Map 來當「分類櫃」，Key 是 Integet (eventsId)，Value 是對應的 DTO
-        //
-        Map<Integer, OrdersDTO> groupMap = new HashMap<>();
-        for (Orders order : ordersList) {
-            int currentEventId = order.getEventsId();
-            // 檢查 eventsId 是不是第一次遇到
-            // ! 代表「不」，所以這整句是：「如果還沒有 currentEventId 號的櫃子」。
-            if (!groupMap.containsKey(currentEventId)) {
-                // 初始化新的
-                OrdersDTO newDto = new OrdersDTO();
-                // 設定這團的「共用資訊」
-                newDto.setEventsId(order.getEventsId());
-                newDto.setUserId(order.getUserId());
-                newDto.setPersonalMemo(order.getPersonalMemo());
-                // 初始化這團的商品箱子，避免後續 add 報錯
-                newDto.setMenuList(new ArrayList<>());
-                // 將這個新建立的 DTO 箱子放進 Map 分類櫃中，以 currentEventId 為標籤
-                groupMap.put(currentEventId, newDto);
-            }
-            // 無論是新箱子還是舊箱子，我們都根據 currentEventId 把對應的 DTO 拿出來
-            OrdersDTO currentDto = groupMap.get(currentEventId);
-            // 處理商品資訊 (VO)，存放這筆訂單點了什麼
-            OrderMenuVo item = new OrderMenuVo();
-            item.setMenuId(order.getMenuId());
-            item.setQuantity(order.getQuantity());
-            item.setSpecName(order.getSpecName());
-            item.setMenuName(order.getMenuName());
-            // 解析 JSON 選項
-            String jsonStr = order.getSelectedOption();
-            if (StringUtils.hasText(jsonStr)) {
-                try {
-                	// 將 JSON 字串轉為 Java 的 List<Map> 結構
-                    List<Map<String, Object>> options = mapper.readValue(
-                        jsonStr, new TypeReference<List<Map<String, Object>>>() {});
-                    item.setSelectedOptionList(options);
-                } catch (Exception e) {
-                    System.err.println("JSON 解析失敗: " + e.getMessage());
-                }
-            }
-         // 將處理好的商品細項，塞進該活動箱子的商品清單中
-            currentDto.getMenuList().add(item);
-        }
-        // 最後把 Map 裡所有的 DTO 拿出來，變成一個 List 回傳
-        List<OrdersDTO> resultList = new ArrayList<>(groupMap.values());
-        return new GroupbuyEventsRes(200, "成功找到", resultList, null, null, null, null, null);
-    } catch (Exception e) {
-        return new GroupbuyEventsRes(500, "系統錯誤: " + e.getMessage());
-    }
-}
+			// 用 Map 來當「分類櫃」，Key 是 Integet (eventsId)，Value 是對應的 DTO
+			//
+			Map<Integer, OrdersDTO> groupMap = new HashMap<>();
+			for (Orders order : ordersList) {
+				int currentEventId = order.getEventsId();
+				// 檢查 eventsId 是不是第一次遇到
+				// ! 代表「不」，所以這整句是：「如果還沒有 currentEventId 號的櫃子」。
+				if (!groupMap.containsKey(currentEventId)) {
+					// 初始化新的
+					OrdersDTO newDto = new OrdersDTO();
+					// 設定這團的「共用資訊」
+					newDto.setEventsId(order.getEventsId());
+					newDto.setUserId(order.getUserId());
+					newDto.setPersonalMemo(order.getPersonalMemo());
+					// 初始化這團的商品箱子，避免後續 add 報錯
+					newDto.setMenuList(new ArrayList<>());
+					// 將這個新建立的 DTO 箱子放進 Map 分類櫃中，以 currentEventId 為標籤
+					groupMap.put(currentEventId, newDto);
+				}
+				// 無論是新箱子還是舊箱子，我們都根據 currentEventId 把對應的 DTO 拿出來
+				OrdersDTO currentDto = groupMap.get(currentEventId);
+				// 處理商品資訊 (VO)，存放這筆訂單點了什麼
+				OrderMenuVo item = new OrderMenuVo();
+				item.setMenuId(order.getMenuId());
+				item.setQuantity(order.getQuantity());
+				item.setSpecName(order.getSpecName());
+				item.setMenuName(order.getMenuName());
+				// 解析 JSON 選項
+				String jsonStr = order.getSelectedOption();
+				if (StringUtils.hasText(jsonStr)) {
+					try {
+						// 將 JSON 字串轉為 Java 的 List<Map> 結構
+						List<Map<String, Object>> options = mapper.readValue(
+								jsonStr, new TypeReference<List<Map<String, Object>>>() {
+								});
+						item.setSelectedOptionList(options);
+					} catch (Exception e) {
+						System.err.println("JSON 解析失敗: " + e.getMessage());
+					}
+				}
+				// 將處理好的商品細項，塞進該活動箱子的商品清單中
+				currentDto.getMenuList().add(item);
+			}
+			// 最後把 Map 裡所有的 DTO 拿出來，變成一個 List 回傳
+			List<OrdersDTO> resultList = new ArrayList<>(groupMap.values());
+			return new GroupbuyEventsRes(200, "成功找到", resultList, null, null, null, null, null);
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "系統錯誤: " + e.getMessage());
+		}
+	}
 
 	// 查詢跟團者的特定訂單
 	public GroupbuyEventsRes getEventIdByUserId(String userId, int eventsId) {
 		try {
 			List<Orders> ordersList = ordersDao.getOrderByEventIdAndUserId(userId, eventsId);
 
-			if (CollectionUtils.isEmpty(ordersList)) { 
+			if (CollectionUtils.isEmpty(ordersList)) {
 				System.out.println(ordersList);
 				return new GroupbuyEventsRes(404, "找不到訂單資料");
 			}
@@ -363,35 +374,39 @@ public class OrdersService {
 			responseDto.setWeight(orderInfo.getWeight());
 
 			List<OrderMenuVo> menuList = new ArrayList<>();
-            for (Orders order : ordersList) {
-                OrderMenuVo item = new OrderMenuVo();
-                item.setMenuId(order.getMenuId());
-                item.setQuantity(order.getQuantity());
-                item.setSpecName(order.getSpecName());
-                item.setMenuName(order.getMenuName());
-                String jsonStr = order.getSelectedOption();
-                if (StringUtils.hasText(jsonStr)) {
-                    try {
-                    	/* jsonStr：這是包裹外殼，裡面裝著拆散的零件（字串）。
-                  * mapper.readValue：這是你的「組裝說明書」。
-                  * new TypeReference<...>() {}：這是包裹上的「內容物標籤」，告訴說明書要把零件組裝成什麼。*/
-                        List<Map<String, Object>> options = mapper.readValue( jsonStr, new TypeReference<List<Map<String, Object>>>() {});
-                        item.setSelectedOptionList(options);
-                    } catch (Exception e) {
-                    	e.printStackTrace();
-                    	return new GroupbuyEventsRes(500,e.getMessage());
-                    }
-                }
-                menuList.add(item);
-            } 
-            responseDto.setMenuList(menuList);
+			for (Orders order : ordersList) {
+				OrderMenuVo item = new OrderMenuVo();
+				item.setMenuId(order.getMenuId());
+				item.setQuantity(order.getQuantity());
+				item.setSpecName(order.getSpecName());
+				item.setMenuName(order.getMenuName());
+				String jsonStr = order.getSelectedOption();
+				if (StringUtils.hasText(jsonStr)) {
+					try {
+						/*
+						 * jsonStr：這是包裹外殼，裡面裝著拆散的零件（字串）。
+						 * mapper.readValue：這是你的「組裝說明書」。
+						 * new TypeReference<...>() {}：這是包裹上的「內容物標籤」，告訴說明書要把零件組裝成什麼。
+						 */
+						List<Map<String, Object>> options = mapper.readValue(jsonStr,
+								new TypeReference<List<Map<String, Object>>>() {
+								});
+						item.setSelectedOptionList(options);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return new GroupbuyEventsRes(500, e.getMessage());
+					}
+				}
+				menuList.add(item);
+			}
+			responseDto.setMenuList(menuList);
 
-            return new GroupbuyEventsRes(200, "成功找到", responseDto);
-        } catch (Exception e) {
-            return new GroupbuyEventsRes(500, "系統錯誤: " + e.getMessage());
-        }
+			return new GroupbuyEventsRes(200, "成功找到", responseDto);
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "系統錯誤: " + e.getMessage());
+		}
 	}
-	
+
 	public BasicRes deleteCartByOrderId(int orderId) {
 		int deletedCount = ordersDao.deleteOrderById(orderId);
 
@@ -401,6 +416,110 @@ public class OrdersService {
 		} else {
 			// 如果一筆都沒改到，表示傳入的 ID 在資料庫都找不到（或是已被刪除）
 			return new BasicRes(ResMessage.ORDER_ERROR.getCode(), ResMessage.ORDER_ERROR.getMessage());
+		}
+	}
+
+	public OrderHistoryRes getHistoryOrdersByUserId(String userId) {
+		try {
+			if (!StringUtils.hasText(userId)) {
+				return new OrderHistoryRes(400, "User ID is required");
+			}
+
+			List<Orders> ordersList = ordersDao.getOrdersByUserId(userId);
+			if (CollectionUtils.isEmpty(ordersList)) {
+				return new OrderHistoryRes(404, "No orders found for this user");
+			}
+
+			Map<Integer, OrderHistoryDTO> historyMap = new HashMap<>();
+
+			for (Orders order : ordersList) {
+				int eventId = order.getEventsId();
+
+				if (!historyMap.containsKey(eventId)) {
+					OrderHistoryDTO dto = new OrderHistoryDTO();
+					dto.setEventsId(eventId);
+					dto.setOrderCode("訂單編號： # " + eventId); // Simple code generation, could be improved
+					dto.setCreatedAt(order.getOrderTime());
+
+					GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
+					if (event != null) {
+						dto.setEventName(event.getEventName());
+						dto.setEventStatus(event.getStatus());
+						dto.setStatusLabel(event.getStatus() != null ? event.getStatus().name() : "UNKNOWN");
+
+						Stores store = storesSearchDao.getStoreById(event.getStoresId());
+						if (store != null) {
+							dto.setStoreName(store.getName());
+						}
+
+						User host = userDao.getUserById(event.getHostId());
+						if (host != null) {
+							dto.setHostName(host.getNickname());
+						}
+					}
+
+					User receiver = userDao.getUserById(userId);
+					if (receiver != null) {
+						dto.setReceiverName(receiver.getNickname());
+						dto.setPhone(receiver.getPhone());
+					}
+
+					PersonalOrder personalOrder = personalOrderDao.findByEventsIdAndUserId(eventId, userId);
+					if (personalOrder != null) {
+						dto.setTotalAmount(personalOrder.getTotalSum());
+						dto.setPaymentStatus(personalOrder.getPaymentStatus());
+					} else {
+						// Calculate subtotal from individual items if personal order doesn't exist yet
+						dto.setTotalAmount(0);
+						dto.setPaymentStatus(PaymentStatus.UNPAID);
+					}
+
+					dto.setPickupStatus(
+							order.getPickupStatus() != null ? order.getPickupStatus().name() : "NOT_PICKED_UP");
+					dto.setPickupTime(order.getPickupTime());
+					dto.setPickLocation(event != null ? event.getPickLocation() : null);
+
+					dto.setItems(new ArrayList<>());
+					historyMap.put(eventId, dto);
+				}
+
+				OrderHistoryDTO currentDto = historyMap.get(eventId);
+
+				// Update total amount if relying on sum of subtotals and no personal_order
+				// found
+				PersonalOrder personalOrder = personalOrderDao.findByEventsIdAndUserId(eventId, userId);
+				if (personalOrder == null) {
+					currentDto.setTotalAmount(currentDto.getTotalAmount() + order.getSubtotal());
+				}
+
+				OrderMenuVo item = new OrderMenuVo();
+				item.setMenuId(order.getMenuId());
+				item.setMenuName(order.getMenuName());
+				item.setQuantity(order.getQuantity());
+				item.setSpecName(order.getSpecName());
+				item.setPersonalMemo(order.getPersonalMemo());
+
+				String jsonStr = order.getSelectedOption();
+				if (StringUtils.hasText(jsonStr)) {
+					try {
+						List<Map<String, Object>> options = mapper.readValue(
+								jsonStr, new TypeReference<List<Map<String, Object>>>() {
+								});
+						item.setSelectedOptionList(options);
+					} catch (Exception e) {
+						System.err.println("JSON parse fail: " + e.getMessage());
+					}
+				}
+				currentDto.getItems().add(item);
+			}
+
+			List<OrderHistoryDTO> resultList = new ArrayList<>(historyMap.values());
+			resultList.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt())); // Sort newest first
+
+			return new OrderHistoryRes(200, "Success", resultList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new OrderHistoryRes(500, "System Error: " + e.getMessage());
 		}
 	}
 }
