@@ -544,7 +544,7 @@ public class UserService {
 //		List<Integer> validStores= newlist.isEmpty() ? new ArrayList<>() : storesSrerchDao.exsitStores(newlist);
 		//	單數字>> 沒有>>新增 有>>刪除
 		if (newList.size()==1) {
-			Integer sId = newList.get(0);//sId為物件而引索
+			Integer sId = newList.get(0);//sId為物件而非引索
 			List<Integer> oldList = new ArrayList<>(getFavoriteStores(id));
 			List<Integer> validTarget = storesSrerchDao.exsitStores(Collections.singletonList(sId));
 			if (!validTarget.isEmpty()) {
