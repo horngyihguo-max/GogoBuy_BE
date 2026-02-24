@@ -31,22 +31,22 @@ public class PersonalOrderService {
 
 	@Autowired
 	private PersonalOrderDao personalOrderDao;
-	
+
 	@Autowired
 	private SalesStatsService salesStatsService;
 
 	// 結團後生成
 	public void addPersonalOrder(personalOrderReq req) {
-		List<Orders> item = ordersDao.getOrderByEventIdAndUserId(req.getUserId() ,req.getEventsId());
-		
+		List<Orders> item = ordersDao.getOrderByEventIdAndUserId(req.getUserId(), req.getEventsId());
+
 		if (CollectionUtils.isEmpty(item)) {
 			System.out.println("因為沒有訂單明細，跳過銷售統計更新");
-			return; 
+			return;
 		}
 		int store = groupbuyEventsDao.selectStoreIdByEventId(req.getEventsId());
 		for (Orders orders : item) {
 			// 從每一筆訂單物件中取出資料
-			Integer storeId = store; 
+			Integer storeId = store;
 			Integer menuId = orders.getMenuId();
 			int quantity = orders.getQuantity();
 			// 引用 service 的 addSalesVolume
@@ -80,7 +80,7 @@ public class PersonalOrderService {
 			PaymentStatus paymentStatus = req.getPaymentStatus();
 			if (paymentStatus != null) {
 				// 處理支付時間紀錄
-				if (paymentStatus == PaymentStatus.PAID) {
+				if (paymentStatus == PaymentStatus.PAID || paymentStatus == PaymentStatus.CONFIRMED) {
 					if (order.getPaymentTime() == null) {
 						order.setPaymentTime(LocalDateTime.now());
 					}
@@ -95,6 +95,46 @@ public class PersonalOrderService {
 			return new PersonalOrdersRes(200, "更新成功");
 		} catch (Exception e) {
 			return new PersonalOrdersRes(500, "更新系統異常: " + e.getMessage());
+		}
+	}
+
+	// 確認訂單
+	public PersonalOrdersRes confirmPersonalOrder(int eventsId, String userId) {
+		try {
+			PersonalOrder order = personalOrderDao.findByEventsIdAndUserId(eventsId, userId);
+
+			// 如果找不到結算單，代表活動還沒結單但團員已經要確認了 (預先確認)
+			if (order == null) {
+				order = new PersonalOrder();
+				order.setEventsId(eventsId);
+				order.setUserId(userId);
+
+				// 動態計算當前使用者的總金額與總重量
+				Integer totalSum = ordersDao.sumSubtotalByEventIdAndUserId(eventsId, userId);
+				Double totalWeight = ordersDao.sumWeightByEventIdAndUserId(eventsId, userId);
+
+				// 避免 null (如果該使用者沒有訂單)
+				if (totalSum == null)
+					totalSum = 0;
+				if (totalWeight == null)
+					totalWeight = 0.0;
+
+				order.setTotalSum(totalSum);
+				order.setTotalWeight(totalWeight);
+				order.setPersonFee(0); // 運費預設為0，結單時會再計算
+			}
+
+			// 狀態更新為已確認
+			order.setPaymentStatus(PaymentStatus.CONFIRMED);
+			order.setPaymentTime(LocalDateTime.now());
+
+			// 更新 orders 表裡的狀態
+			ordersDao.updateStatusByEventAndUser(eventsId, userId);
+
+			personalOrderDao.save(order);
+			return new PersonalOrdersRes(200, "訂單確認成功");
+		} catch (Exception e) {
+			return new PersonalOrdersRes(500, "訂單確認發生異常: " + e.getMessage());
 		}
 	}
 

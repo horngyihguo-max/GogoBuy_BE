@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.PaymentStatus;
 import com.example.demo.constants.PickupStatusEnum;
 import com.example.demo.constants.ResMessage;
@@ -445,7 +446,16 @@ public class OrdersService {
 					if (event != null) {
 						dto.setEventName(event.getEventName());
 						dto.setEventStatus(event.getStatus());
-						dto.setStatusLabel(event.getStatus() != null ? event.getStatus().name() : "UNKNOWN");
+						dto.setEventPickupTime(event.getPickupTime());
+
+						// Determine status label based on event status and pickup status
+						String statusLabel = "進行中";
+						if (order.getPickupStatus() == PickupStatusEnum.PICKED_UP) {
+							statusLabel = "已完成";
+						} else if (event.getStatus() == GroupbuyStatusEnum.FINISHED) {
+							statusLabel = "待取餐";
+						}
+						dto.setStatusLabel(statusLabel);
 
 						Stores store = storesSearchDao.getStoreById(event.getStoresId());
 						if (store != null) {
@@ -467,10 +477,11 @@ public class OrdersService {
 					PersonalOrder personalOrder = personalOrderDao.findByEventsIdAndUserId(eventId, userId);
 					if (personalOrder != null) {
 						dto.setTotalAmount(personalOrder.getTotalSum());
+						dto.setPersonFee(personalOrder.getPersonFee());
 						dto.setPaymentStatus(personalOrder.getPaymentStatus());
 					} else {
-						// Calculate subtotal from individual items if personal order doesn't exist yet
 						dto.setTotalAmount(0);
+						dto.setPersonFee(0);
 						dto.setPaymentStatus(PaymentStatus.UNPAID);
 					}
 
@@ -498,6 +509,7 @@ public class OrdersService {
 				item.setQuantity(order.getQuantity());
 				item.setSpecName(order.getSpecName());
 				item.setPersonalMemo(order.getPersonalMemo());
+				item.setSubtotal(order.getSubtotal());
 
 				String jsonStr = order.getSelectedOption();
 				if (StringUtils.hasText(jsonStr)) {
