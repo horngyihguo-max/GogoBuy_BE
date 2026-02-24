@@ -3,6 +3,7 @@ package com.example.demo.entity;
 import java.time.LocalDateTime;
 
 import com.example.demo.constants.PaymentStatus;
+import com.example.demo.constants.PickupStatusEnum;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,6 +13,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @Entity
 @Table(name = "personal_order")
@@ -21,29 +23,51 @@ public class PersonalOrder {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private int id;
-	
+
 	@Column(name = "events_id")
 	private int eventsId;
-	
+
 	@Column(name = "user_id")
 	private String userId;
-	
+
 	@Column(name = "total_weight")
 	private Double totalWeight;
-	
+
 	@Column(name = "person_fee")
 	private int personFee;
-	
+
 	@Column(name = "total_sum")
 	private int totalSum;
-	
+
 	@Column(name = "payment_status")
 	@Enumerated(EnumType.STRING)
 	private PaymentStatus paymentStatus;
-	
+
 	@Column(name = "payment_time")
 	private LocalDateTime paymentTime;
-	
+
+	@Transient
+	private String userNickname;
+
+	public String getUserNickname() {
+		return userNickname;
+	}
+
+	public void setUserNickname(String userNickname) {
+		this.userNickname = userNickname;
+	}
+
+	@Transient
+	private PickupStatusEnum pickupStatus;
+
+	public PickupStatusEnum getPickupStatus() {
+		return pickupStatus;
+	}
+
+	public void setPickupStatus(PickupStatusEnum pickupStatus) {
+		this.pickupStatus = pickupStatus;
+	}
+
 	public int getId() {
 		return id;
 	}
@@ -108,5 +132,4 @@ public class PersonalOrder {
 		this.paymentTime = paymentTime;
 	}
 
-	
 }

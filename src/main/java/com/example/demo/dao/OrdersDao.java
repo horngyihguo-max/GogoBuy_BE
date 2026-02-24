@@ -106,6 +106,13 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Query(value = "update orders set pickup_status = 'PICKED_UP',pickup_time = now() where events_id = ?1  and user_id = ?2 and is_deleted = false", nativeQuery = true)
 	public void updateStatusByEventAndUser(int eventsId, String userId);
 
+	// 彈性更新領取狀態 (可切換回 NOT_PICKED_UP)
+	@Transactional
+	@Modifying
+	@Query(value = "update orders set pickup_status = ?3, pickup_time = ?4 where events_id = ?1 and user_id = ?2 and is_deleted = false", nativeQuery = true)
+	public void updatePickupStatusByEventAndUser(int eventsId, String userId, String pickupStatus,
+			LocalDateTime pickupTime);
+
 	// 用 eventsId 查詢 subTotal總額
 	@Query(value = "select ifnull(sum(subtotal),0) from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
 	public Integer getSubTotalByEventsId(int eventsId);

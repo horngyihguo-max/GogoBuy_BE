@@ -566,8 +566,21 @@ public class GroupbuyEventsService {
 				if (isHost) {
 					// 團長拿整團 (只顯示已確認結算的團員訂單)
 					List<Orders> hostOrders = ordersDao.getConfirmedOrdersByEventId(eid);
-					if (!CollectionUtils.isEmpty(hostOrders))
+					if (!CollectionUtils.isEmpty(hostOrders)) {
 						allVisibleOrders.addAll(hostOrders);
+					}
+					// 同時也要拿團長自己的單 (避免團長還沒結算時看不見自己的商品)
+					List<Orders> myOrdersAsHost = ordersDao.getOrderByEventIdAndUserId(userId, eid);
+					if (!CollectionUtils.isEmpty(myOrdersAsHost)) {
+						for (Orders myOrder : myOrdersAsHost) {
+							// 檢查是否已在 hostOrders 中 (避免重複)
+							boolean alreadyIn = allVisibleOrders.stream()
+									.anyMatch(o -> o.getId() == myOrder.getId());
+							if (!alreadyIn) {
+								allVisibleOrders.add(myOrder);
+							}
+						}
+					}
 				} else {
 					// 團員拿自己 (getEventIdByUserId)
 					List<Orders> memberOrders = ordersDao.getOrderByEventIdAndUserId(userId, eid);
