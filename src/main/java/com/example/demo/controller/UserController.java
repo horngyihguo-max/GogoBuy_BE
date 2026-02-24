@@ -23,7 +23,6 @@ import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.FavoriteRes;
 import com.example.demo.response.GetUserInfoListRes;
 import com.example.demo.response.LoginRes;
 import com.example.demo.service.GoogleOAuth2Service;
@@ -214,15 +213,15 @@ public class UserController {
 	 *(傳最終結果陣列就好 不論是新增修改刪除)
 	 */
 	@PostMapping("gogobuy/updateFavoriteStore")
-	public BasicRes updateFavoriteStore(@RequestParam("id") String id,@RequestParam("storesList") List<Integer>storesList ) {
+	public BasicRes updateFavoriteStore(@RequestParam("id") String id,@RequestParam(value = "storesList",required = false) List<Integer> storesList) {
 		return userService.updateFavoriteStores(id, storesList);
 	}
 	
-	/*
-	 *查詢最愛店家 
-	 */
-	@GetMapping("gogobuy/getFavoriteStore")
-	public FavoriteRes getFavoriteStore(@RequestParam("id") String id) {
-	return userService.getFavoriteStores(id);
-	}
+//	/*
+//	 *查詢最愛店家 
+//	 */
+//	@GetMapping("gogobuy/getFavoriteStore")
+//	public FavoriteRes getFavoriteStore(@RequestParam("id") String id) {
+//	return userService.getFavoriteStores(id);
+//	}
 }
