@@ -2,8 +2,12 @@ package com.example.demo.service;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -16,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.constants.ResMessage;
 import com.example.demo.constants.UserStatusEnum;
+import com.example.demo.dao.StoresSearchDao;
 import com.example.demo.dao.UserDao;
 import com.example.demo.dto.UserInfoDto;
 import com.example.demo.dto.UserPasswordDto;
@@ -24,6 +29,7 @@ import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.FavoriteRes;
 import com.example.demo.response.GetUserInfoListRes;
 import com.example.demo.response.GetUserInfoRes;
 import com.example.demo.response.LoginRes;
@@ -35,7 +41,10 @@ public class UserService {
 
 	@Autowired
 	private UserDao userDao;
-
+	
+	@Autowired
+	private StoresSearchDao storesSrerchDao;
+	
 	@Autowired
 	private JavaMailSender mailSender;
 
@@ -514,5 +523,58 @@ public class UserService {
 		userDao.updateStatus(id, "active");
 
 		return new BasicRes(ResMessage.SUCCESS.getCode(), "帳號已成功恢復為活躍狀態。");
+	}
+	
+//	private void favoriteStoresCheck(int storesId) throws Exception{
+//		if (storesSrerchDao.getStoreById(storesId)!=null) {
+//			throw new Exception("查無此店家喵");
+//		}
+//		return;
+//	}
+	
+	//更新最愛店家	
+	@Transactional(rollbackOn = Exception.class)
+	public BasicRes updateFavoriteStores(String id, List<Integer> storesIdList) {
+		List<Integer> newlist = (storesIdList == null) ? new ArrayList<>()//
+				: storesIdList.stream().distinct().collect(Collectors.toList());//去重
+		List<Integer> validStores = newlist.isEmpty() ? new ArrayList<>() : storesSrerchDao.exsitStores(newlist);
+//		Collections.sort(validStores);
+		String storesString = validStores.stream()
+				.sorted()//排序
+                .map(String::valueOf)
+                .collect(Collectors.joining(",","[","]"));
+		try {
+			int done = userDao.updateFavoriteStores(id, storesString);
+			if (done>0) {
+				return new BasicRes(200,"成功更新最愛店家喵");
+			}
+			else {
+				return new BasicRes(404,"使用者不存在喵");
+			}
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("資料更新失敗喵", e);
+		}
+}
+	//查詢最愛店家
+	public FavoriteRes getFavoriteStores(String id){
+		List<Integer> favoriteStoresList = new ArrayList<>();
+		String listStr = "";
+		try {
+			listStr = userDao.getFavoriteStoresById(id);			
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("好像沒有這個使用者喵", e);
+		}
+		if (StringUtils.hasText(listStr)) {
+			favoriteStoresList = Arrays.stream(listStr.replace("[", "").replace("]", "").split(","))
+			.map(String::trim)		//去空格
+			.filter(s -> !s.isEmpty())  //去空字串
+			.map(Integer::parseInt)  //轉數字
+			.collect(Collectors.toList());	//	變成List
+		}
+		return new FavoriteRes(200, "成功查詢最愛店家喵!", favoriteStoresList);
 	}
 }

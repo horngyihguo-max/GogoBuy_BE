@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import com.example.demo.request.ResetPasswordReq;
 import com.example.demo.request.UserAddReq;
 import com.example.demo.request.UserLoginReq;
 import com.example.demo.response.BasicRes;
+import com.example.demo.response.FavoriteRes;
 import com.example.demo.response.GetUserInfoListRes;
 import com.example.demo.response.LoginRes;
 import com.example.demo.service.GoogleOAuth2Service;
@@ -205,5 +207,22 @@ public class UserController {
 	@PostMapping("gogobuy/active-user")
 	public BasicRes activeUser(@RequestParam("id") String id) {
 		return userService.activeUserAdmin(id);
+	}
+	
+	/*
+	 * 更新最愛店家
+	 *(傳最終結果陣列就好 不論是新增修改刪除)
+	 */
+	@PostMapping("gogobuy/updateFavoriteStore")
+	public BasicRes updateFavoriteStore(@RequestParam("id") String id,@RequestParam("storesList") List<Integer>storesList ) {
+		return userService.updateFavoriteStores(id, storesList);
+	}
+	
+	/*
+	 *查詢最愛店家 
+	 */
+	@GetMapping("gogobuy/getFavoriteStore")
+	public FavoriteRes getFavoriteStore(@RequestParam("id") String id) {
+	return userService.getFavoriteStores(id);
 	}
 }
