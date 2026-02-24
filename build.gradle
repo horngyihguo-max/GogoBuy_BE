@@ -75,6 +75,11 @@ dependencies {
 	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0' 
+    
+    // ZXing 核心邏輯（包含 QR Code 編碼演算法）
+    implementation 'com.google.zxing:core:3.5.3'
+    // ZXing Java SE 擴充（提供將矩陣轉為圖片檔案的工具，如 MatrixToImageWriter）
+    implementation 'com.google.zxing:javase:3.5.3'
 	
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
