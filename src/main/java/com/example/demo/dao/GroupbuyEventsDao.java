@@ -85,14 +85,16 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	public List<GroupbuyEventsProjection> getAll();
 
 	// eventsId 查詢 event
-//	@Query(value = "select * from groups_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
-//	public List<GroupsSearchView> getEventsByEventsId(int id);
+	// @Query(value = "select * from groups_search_view where event_id = ?1 and
+	// is_deleted = false", nativeQuery = true)
+	// public List<GroupsSearchView> getEventsByEventsId(int id);
 
 	@Query(value = "select * from groups_search_view where event_id = ?1 ", nativeQuery = true)
 	public List<GroupsSearchView> getEventsByEventsId(int eventId);
 
-//		@Query(value = "SELECT * FROM groupbuy_events  WHERE id = ?1 AND is_deleted = false", nativeQuery = true)
-//		public List<GroupbuyEvents> getEventsByEventsId1(int id);
+	// @Query(value = "SELECT * FROM groupbuy_events WHERE id = ?1 AND is_deleted =
+	// false", nativeQuery = true)
+	// public List<GroupbuyEvents> getEventsByEventsId1(int id);
 
 	// 用店家Id找符合的團
 	@Query(value = "select * from groupbuy_events where stores_id = ?1 and is_deleted = false ", nativeQuery = true)
@@ -119,8 +121,8 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	// 查詢orders映射表
 	@Query(value = "select * from orders_search_view where event_id = ?1 and is_deleted = false", nativeQuery = true)
 	public List<OrdersSearchView> selectOrdersAll(int eventId);
-	
-	// 查詢 event 裡面的 storeId 
+
+	// 查詢 event 裡面的 storeId
 	@Query(value = "select stores_id from groupbuy_events where id = ?1 and is_deleted = false", nativeQuery = true)
 	public int selectStoreIdByEventId(int eventId);
 }
