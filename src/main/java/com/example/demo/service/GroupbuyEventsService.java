@@ -564,8 +564,8 @@ public class GroupbuyEventsService {
 
 				// 我是團長就拿「整團單」，我是團員就拿「個人單」
 				if (isHost) {
-					// 團長拿整團 (getAllOrdersByEventId)
-					List<Orders> hostOrders = ordersDao.getAllOrdersByEventId(eid);
+					// 團長拿整團 (只顯示已確認結算的團員訂單)
+					List<Orders> hostOrders = ordersDao.getConfirmedOrdersByEventId(eid);
 					if (!CollectionUtils.isEmpty(hostOrders))
 						allVisibleOrders.addAll(hostOrders);
 				} else {
