@@ -121,10 +121,27 @@ public class OrdersService {
 				return new BasicRes(404, "商店無提供商品 ID: " + currentMenuId);
 			}
 
-			// 檢查是否在團長開放的名單內
-			String hostGiveMenuId = events.getTempMenuList();
-			if (hostGiveMenuId == null || !hostGiveMenuId.contains(currentMenuIdStr)) {
-				return new BasicRes(400, "商品 ID: " + currentMenuId + " 不在團長開放名單內");
+			// 檢查是否在團長開放的名單內 (團員才需要受限)
+			if (!events.getHostId().equals(req.getUserId())) {
+				String hostGiveMenuId = events.getTempMenuList();
+				if (StringUtils.hasText(hostGiveMenuId)) {
+					try {
+						List<Integer> allowedIds = mapper.readValue(hostGiveMenuId, new TypeReference<List<Integer>>() {
+						});
+						if (allowedIds != null && !allowedIds.isEmpty()) {
+							if (!allowedIds.contains(currentMenuId)) {
+								return new BasicRes(400, "商品 ID: " + currentMenuId + " 不在團長開放名單內");
+							}
+						}
+					} catch (Exception e) {
+						// 如果解析失敗，保守起見用字串包含檢查，但要加逗號避免 1 匹配 10
+						String checkStr = "," + currentMenuIdStr + ",";
+						String listStr = hostGiveMenuId.replace("[", ",").replace("]", ",").replace(" ", "");
+						if (!listStr.contains(checkStr)) {
+							return new BasicRes(400, "商品 ID: " + currentMenuId + " 不在團長開放名單內");
+						}
+					}
+				}
 			}
 
 			// 順便檢查該項商品的數量
@@ -439,7 +456,7 @@ public class OrdersService {
 				if (!historyMap.containsKey(eventId)) {
 					OrderHistoryDTO dto = new OrderHistoryDTO();
 					dto.setEventsId(eventId);
-					dto.setOrderCode("訂單編號： # " + eventId); // Simple code generation, could be improved
+					dto.setOrderCode("訂單編號 # " + eventId); // Simple code generation, could be improved
 					dto.setCreatedAt(order.getOrderTime());
 
 					GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
