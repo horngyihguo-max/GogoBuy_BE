@@ -123,9 +123,11 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Query(value = "select selected_option from orders where user_id =?1 and is_deleted = false ", nativeQuery = true)
 	public List<Orders> getselectedOptionByUserId(int userId);
 
-	// 團長拿整團
-	@Query(value = "select * from orders where events_id = ?1 and is_deleted = false", nativeQuery = true)
-	public List<Orders> getAllOrdersByEventId(int eventId);
+	// 團長拿整團 (不包含未確認結算的團員訂單)
+	@Query(value = "select o.* from orders o " +
+			"join personal_order p on o.events_id = p.events_id and o.user_id = p.user_id " +
+			"where o.events_id = ?1 and o.is_deleted = false and p.payment_status = 'CONFIRMED'", nativeQuery = true)
+	public List<Orders> getConfirmedOrdersByEventId(int eventId);
 
 	// 購物車 eventsId和userId 刪 orders
 
