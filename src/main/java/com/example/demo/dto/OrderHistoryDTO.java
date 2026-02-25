@@ -27,8 +27,17 @@ public class OrderHistoryDTO {
 	private LocalDateTime pickupTime; // Actual pickup time
 	private LocalDateTime eventPickupTime; // Scheduled pickup time
 	private String pickLocation;
+	private String personalMemo;
 
 	// Getters and Setters
+	public String getPersonalMemo() {
+		return personalMemo;
+	}
+
+	public void setPersonalMemo(String personalMemo) {
+		this.personalMemo = personalMemo;
+	}
+
 	public int getPersonFee() {
 		return personFee;
 	}
