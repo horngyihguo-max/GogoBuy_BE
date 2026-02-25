@@ -550,15 +550,15 @@ public class GroupbuyEventsService {
 				int eid = view.getEventId();
 				boolean isHost = userId.equals(view.getHostId());
 
-				// 如果整體活動已結束，就不顯示在「進行中」或「開團中」
-				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED) {
+				// 如果整體活動已結束，且我不是團長，就不顯示在「跟團中」 (團長需要留著管理狀態)
+				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED && !isHost) {
 					continue;
 				}
 
-				// 檢查個人結算狀態 (不論團長或團員)
+				// 檢查個人結算狀態 (團員如果已經點擊過「確認結算」，這筆單對該用戶來說參與已完成，應移至「歷史訂單」)
+				// 但團長不能因為自己確認了就消失，因為還要管理全團
 				PersonalOrder po = personalOrderDao.findByEventsIdAndUserId(eid, userId);
-				// 如果已經點擊過「確認結算」，這筆單對該用戶來說參與已完成，應移至「歷史訂單」
-				if (po != null && po.getPaymentStatus() == PaymentStatus.CONFIRMED) {
+				if (!isHost && po != null && po.getPaymentStatus() == PaymentStatus.CONFIRMED) {
 					continue;
 				}
 

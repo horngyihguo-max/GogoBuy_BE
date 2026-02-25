@@ -226,6 +226,7 @@ public class PersonalOrderService {
 					User user = userDao.getUserById(po.getUserId());
 					if (user != null) {
 						po.setUserNickname(user.getNickname());
+						po.setUserAvatar(user.getAvatarUrl());
 					}
 
 					// 取餐狀態 (從 orders 表抓取該用戶的狀態)
