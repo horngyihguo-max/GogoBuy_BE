@@ -355,8 +355,8 @@ public class OrdersService {
 				if (StringUtils.hasText(jsonStr)) {
 					try {
 						// 將 JSON 字串轉為 Java 的 List<Map> 結構
-						List<Map<String, Object>> options = mapper.readValue(
-								jsonStr, new TypeReference<List<Map<String, Object>>>() {
+						List<Map<String, Object>> options = mapper.readValue(jsonStr,
+								new TypeReference<List<Map<String, Object>>>() {
 								});
 						item.setSelectedOptionList(options);
 					} catch (Exception e) {
@@ -402,9 +402,8 @@ public class OrdersService {
 				if (StringUtils.hasText(jsonStr)) {
 					try {
 						/*
-						 * jsonStr：這是包裹外殼，裡面裝著拆散的零件（字串）。
-						 * mapper.readValue：這是你的「組裝說明書」。
-						 * new TypeReference<...>() {}：這是包裹上的「內容物標籤」，告訴說明書要把零件組裝成什麼。
+						 * jsonStr：這是包裹外殼，裡面裝著拆散的零件（字串）。 mapper.readValue：這是你的「組裝說明書」。 new
+						 * TypeReference<...>() {}：這是包裹上的「內容物標籤」，告訴說明書要把零件組裝成什麼。
 						 */
 						List<Map<String, Object>> options = mapper.readValue(jsonStr,
 								new TypeReference<List<Map<String, Object>>>() {
@@ -458,6 +457,7 @@ public class OrdersService {
 					dto.setEventsId(eventId);
 					dto.setOrderCode("訂單編號 # " + eventId); // Simple code generation, could be improved
 					dto.setCreatedAt(order.getOrderTime());
+					dto.setPersonalMemo(order.getPersonalMemo()); // 新增：整筆訂單的備註
 
 					GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
 					if (event != null) {
@@ -531,8 +531,8 @@ public class OrdersService {
 				String jsonStr = order.getSelectedOption();
 				if (StringUtils.hasText(jsonStr)) {
 					try {
-						List<Map<String, Object>> options = mapper.readValue(
-								jsonStr, new TypeReference<List<Map<String, Object>>>() {
+						List<Map<String, Object>> options = mapper.readValue(jsonStr,
+								new TypeReference<List<Map<String, Object>>>() {
 								});
 						item.setSelectedOptionList(options);
 					} catch (Exception e) {

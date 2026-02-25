@@ -144,4 +144,8 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Query(value = "update orders set is_deleted = 1 where id = ?1", nativeQuery = true)
 	public int deleteOrderById(int orderId);
 
+	// 統計該團未取餐人數 (以人頭計)
+	@Query(value = "select count(distinct user_id) from orders where events_id = ?1 and pickup_status != 'PICKED_UP' and is_deleted = false", nativeQuery = true)
+	public int countUnpickedByEventId(int eventId);
+
 }

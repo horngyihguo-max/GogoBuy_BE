@@ -550,14 +550,15 @@ public class GroupbuyEventsService {
 				int eid = view.getEventId();
 				boolean isHost = userId.equals(view.getHostId());
 
-				// 如果整體活動已結束，且我不是團長，就不顯示在「跟團中」 (團長需要留著管理狀態)
+				// 如果整體活動已結束，且我不是團長，就不顯示在「跟團中」 (團員部分：活動結案即移除)
 				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED && !isHost) {
 					continue;
 				}
 
-				// 檢查個人結算狀態 (團員如果已經點擊過「確認結算」，這筆單對該用戶來說參與已完成，應移至「歷史訂單」)
-				// 但團長不能因為自己確認了就消失，因為還要管理全團
+				// 檢查身分與處理狀態
 				PersonalOrder po = personalOrderDao.findByEventsIdAndUserId(eid, userId);
+
+				// 團員部分：如果已經點擊過「確認結算」，代表對該團員來說流程已結束
 				if (!isHost && po != null && po.getPaymentStatus() == PaymentStatus.CONFIRMED) {
 					continue;
 				}
@@ -595,6 +596,11 @@ public class GroupbuyEventsService {
 				dto.setStoreName(view.getStoreName());
 				dto.setStoreLogo(view.getStoreImage());
 				dto.setHostLogo(view.getHostAvatar());
+				// 團長部分：計算未完成的統計數據
+				if (isHost) {
+					dto.setUnpaidCount(personalOrderDao.countUnpaidByEventsId(eid));
+					dto.setUnpickedCount(ordersDao.countUnpickedByEventId(eid));
+				}
 				dto.setStatus(view.getEventStatus());
 				dto.setPickLocation(view.getPickLocation());
 				dto.setPickupTime(view.getPickupTime() != null ? view.getPickupTime().toString() : "尚未設定");
