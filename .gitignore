@@ -4,7 +4,7 @@ src/main/resources/application.properties
 .metadata
 logs/
 build/
-logs/
+src/resources/application.properties
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
