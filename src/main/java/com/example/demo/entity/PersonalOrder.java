@@ -58,6 +58,17 @@ public class PersonalOrder {
 	}
 
 	@Transient
+	private String userAvatar;
+
+	public String getUserAvatar() {
+		return userAvatar;
+	}
+
+	public void setUserAvatar(String userAvatar) {
+		this.userAvatar = userAvatar;
+	}
+
+	@Transient
 	private PickupStatusEnum pickupStatus;
 
 	public PickupStatusEnum getPickupStatus() {
