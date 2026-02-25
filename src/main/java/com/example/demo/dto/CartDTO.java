@@ -8,20 +8,40 @@ import com.example.demo.entity.Orders;
 public class CartDTO {
 
 	private int eventsId;
-    private String eventName;
-    private String storeName;
-    private String storeLogo;     
-    private String hostLogo;
-    private int totalAmount;       
-    private int totalQuantity;     
-    private String latestOrderTime; 
-    private GroupbuyStatusEnum status; // OPEN, LOCKED, FINISHED
-    private boolean canModify; // 根據 status 判斷是否還能修改
-    private String pickLocation;
-    private String pickupTime;
-    
-    // 這一團裡面點的所有商品細項
-    private List<Orders> items;
+	private String eventName;
+	private String storeName;
+	private String storeLogo;
+	private String hostLogo;
+	private int totalAmount;
+	private int totalQuantity;
+	private String latestOrderTime;
+	private GroupbuyStatusEnum status; // OPEN, LOCKED, FINISHED
+	private boolean canModify; // 根據 status 判斷是否還能修改
+	private String pickLocation;
+	private String pickupTime;
+
+	// 統計資訊 (管理用)
+	private int unpaidCount;
+	private int unpickedCount;
+
+	// 這一團裡面點的所有商品細項
+	private List<Orders> items;
+
+	public int getUnpaidCount() {
+		return unpaidCount;
+	}
+
+	public void setUnpaidCount(int unpaidCount) {
+		this.unpaidCount = unpaidCount;
+	}
+
+	public int getUnpickedCount() {
+		return unpickedCount;
+	}
+
+	public void setUnpickedCount(int unpickedCount) {
+		this.unpickedCount = unpickedCount;
+	}
 
 	public int getEventsId() {
 		return eventsId;
@@ -54,8 +74,6 @@ public class CartDTO {
 	public void setStoreLogo(String storeLogo) {
 		this.storeLogo = storeLogo;
 	}
-	
-	
 
 	public String getHostLogo() {
 		return hostLogo;
@@ -88,8 +106,6 @@ public class CartDTO {
 	public void setLatestOrderTime(String latestOrderTime) {
 		this.latestOrderTime = latestOrderTime;
 	}
-
-
 
 	public GroupbuyStatusEnum getStatus() {
 		return status;
@@ -130,7 +146,5 @@ public class CartDTO {
 	public void setPickupTime(String pickupTime) {
 		this.pickupTime = pickupTime;
 	}
-	
-    
-    
+
 }
