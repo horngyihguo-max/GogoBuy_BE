@@ -550,15 +550,16 @@ public class GroupbuyEventsService {
 				int eid = view.getEventId();
 				boolean isHost = userId.equals(view.getHostId());
 
-				// 如果整體活動已結束，就不顯示在「進行中」或「開團中」
-				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED) {
+				// 如果整體活動已結束，且我不是團長，就不顯示在「跟團中」 (團員部分：活動結案即移除)
+				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED && !isHost) {
 					continue;
 				}
 
-				// 檢查個人結算狀態 (不論團長或團員)
+				// 檢查身分與處理狀態
 				PersonalOrder po = personalOrderDao.findByEventsIdAndUserId(eid, userId);
-				// 如果已經點擊過「確認結算」，這筆單對該用戶來說參與已完成，應移至「歷史訂單」
-				if (po != null && po.getPaymentStatus() == PaymentStatus.CONFIRMED) {
+
+				// 團員部分：如果已經點擊過「確認結算」，代表對該團員來說流程已結束
+				if (!isHost && po != null && po.getPaymentStatus() == PaymentStatus.CONFIRMED) {
 					continue;
 				}
 
@@ -566,8 +567,21 @@ public class GroupbuyEventsService {
 				if (isHost) {
 					// 團長拿整團 (只顯示已確認結算的團員訂單)
 					List<Orders> hostOrders = ordersDao.getConfirmedOrdersByEventId(eid);
-					if (!CollectionUtils.isEmpty(hostOrders))
+					if (!CollectionUtils.isEmpty(hostOrders)) {
 						allVisibleOrders.addAll(hostOrders);
+					}
+					// 同時也要拿團長自己的單 (避免團長還沒結算時看不見自己的商品)
+					List<Orders> myOrdersAsHost = ordersDao.getOrderByEventIdAndUserId(userId, eid);
+					if (!CollectionUtils.isEmpty(myOrdersAsHost)) {
+						for (Orders myOrder : myOrdersAsHost) {
+							// 檢查是否已在 hostOrders 中 (避免重複)
+							boolean alreadyIn = allVisibleOrders.stream()
+									.anyMatch(o -> o.getId() == myOrder.getId());
+							if (!alreadyIn) {
+								allVisibleOrders.add(myOrder);
+							}
+						}
+					}
 				} else {
 					// 團員拿自己 (getEventIdByUserId)
 					List<Orders> memberOrders = ordersDao.getOrderByEventIdAndUserId(userId, eid);
@@ -582,6 +596,11 @@ public class GroupbuyEventsService {
 				dto.setStoreName(view.getStoreName());
 				dto.setStoreLogo(view.getStoreImage());
 				dto.setHostLogo(view.getHostAvatar());
+				// 團長部分：計算未完成的統計數據
+				if (isHost) {
+					dto.setUnpaidCount(personalOrderDao.countUnpaidByEventsId(eid));
+					dto.setUnpickedCount(ordersDao.countUnpickedByEventId(eid));
+				}
 				dto.setStatus(view.getEventStatus());
 				dto.setPickLocation(view.getPickLocation());
 				dto.setPickupTime(view.getPickupTime() != null ? view.getPickupTime().toString() : "尚未設定");

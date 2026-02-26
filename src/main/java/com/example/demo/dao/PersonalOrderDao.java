@@ -38,4 +38,8 @@ public interface PersonalOrderDao extends JpaRepository<PersonalOrder, Integer> 
 	@Query(value = "select * from personal_order where events_id = ?1", nativeQuery = true)
 	public List<PersonalOrder> findUserIdByEventsId(int eventsId);
 
+	// 統計該團未付款人數 (排除已收訖或已付款)
+	@Query(value = "select count(*) from personal_order where events_id = ?1 and payment_status not in ('PAID', 'CONFIRMED')", nativeQuery = true)
+	public int countUnpaidByEventsId(int eventId);
+
 }
