@@ -545,10 +545,14 @@ public class GroupbuyEventsService {
 
 			List<Orders> allVisibleOrders = new ArrayList<>();
 			Map<Integer, CartDTO> cartMap = new HashMap<>();
+			Set<Integer> hostEventIds = new java.util.HashSet<>();
 
 			for (GroupsSearchView view : relatedViews) {
 				int eid = view.getEventId();
 				boolean isHost = userId.equals(view.getHostId());
+				if (isHost) {
+					hostEventIds.add(eid);
+				}
 
 				// 如果整體活動已結束，且我不是團長，就不顯示在「跟團中」 (團員部分：活動結案即移除)
 				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED && !isHost) {
@@ -600,6 +604,8 @@ public class GroupbuyEventsService {
 				if (isHost) {
 					dto.setUnpaidCount(personalOrderDao.countUnpaidByEventsId(eid));
 					dto.setUnpickedCount(ordersDao.countUnpickedByEventId(eid));
+					// 修正：主揪直接拿全團總額，避免因為狀態切換導致總額跳動
+					dto.setTotalAmount(ordersDao.sumSubtotalByEventId(eid));
 				}
 				dto.setStatus(view.getEventStatus());
 				dto.setPickLocation(view.getPickLocation());
@@ -618,7 +624,10 @@ public class GroupbuyEventsService {
 				CartDTO current = cartMap.get(order.getEventsId());
 				if (current != null) {
 					current.getItems().add(order);
-					current.setTotalAmount(current.getTotalAmount() + order.getSubtotal());
+					// 只有團員單才需要在此累加；團長單在構造 DTO 時已經拿過總額了
+					if (!hostEventIds.contains(order.getEventsId())) {
+						current.setTotalAmount(current.getTotalAmount() + order.getSubtotal());
+					}
 					current.setTotalQuantity(current.getItems().size());
 
 					// 時間紀錄
