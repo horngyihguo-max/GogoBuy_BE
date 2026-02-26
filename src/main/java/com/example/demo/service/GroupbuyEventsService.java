@@ -598,22 +598,10 @@ public class GroupbuyEventsService {
 
 				// 我是團長就拿「整團單」，我是團員就拿「個人單」
 				if (isHost) {
-					// 團長拿整團 (只顯示已確認結算的團員訂單)
-					List<Orders> hostOrders = ordersDao.getConfirmedOrdersByEventId(eid);
+					// 團長拿整團 (拿該活動所有品項以同步統計資訊)
+					List<Orders> hostOrders = ordersDao.getUserAllByEventsId(eid);
 					if (!CollectionUtils.isEmpty(hostOrders)) {
 						allVisibleOrders.addAll(hostOrders);
-					}
-					// 同時也要拿團長自己的單 (避免團長還沒結算時看不見自己的商品)
-					List<Orders> myOrdersAsHost = ordersDao.getOrderByEventIdAndUserId(userId, eid);
-					if (!CollectionUtils.isEmpty(myOrdersAsHost)) {
-						for (Orders myOrder : myOrdersAsHost) {
-							// 檢查是否已在 hostOrders 中 (避免重複)
-							boolean alreadyIn = allVisibleOrders.stream()
-									.anyMatch(o -> o.getId() == myOrder.getId());
-							if (!alreadyIn) {
-								allVisibleOrders.add(myOrder);
-							}
-						}
 					}
 				} else {
 					// 團員拿自己 (getEventIdByUserId)
@@ -660,9 +648,12 @@ public class GroupbuyEventsService {
 					current.setTotalQuantity(current.getItems().size());
 
 					// 時間紀錄
-					if (current.getLatestOrderTime() == null
-							|| order.getOrderTime().toString().compareTo(current.getLatestOrderTime()) > 0) {
-						current.setLatestOrderTime(order.getOrderTime().toString());
+					if (order.getOrderTime() != null) {
+						String orderTimeStr = order.getOrderTime().toString();
+						if (current.getLatestOrderTime() == null
+								|| orderTimeStr.compareTo(current.getLatestOrderTime()) > 0) {
+							current.setLatestOrderTime(orderTimeStr);
+						}
 					}
 				}
 			}
