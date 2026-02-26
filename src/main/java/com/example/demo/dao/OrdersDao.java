@@ -19,7 +19,7 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Modifying
 	@Query(value = "insert into orders(events_id, user_id, menu_id, quantity, selected_option, spec_name,"
 			+ "personal_memo, order_time, pickup_status, pickup_time, subtotal, weight) "
-			+ "values(?1, ?2, ?3, ?4, ?5, ?6, CURRENT_TIMESTAMP, ?7, ?8, ?9, ?10, ?11)", nativeQuery = true)
+			+ "values(?1, ?2, ?3, ?4, ?5, ?6, ?7, CURRENT_TIMESTAMP, ?8, ?9, ?10, ?11)", nativeQuery = true)
 	public int addOrders(int eventsId, String userId, int menuId, int quantity, String selectedOption,
 			String specName, String personalMemo, String pickupStatus, LocalDateTime pickupTime, int subtotal,
 			int weight);
@@ -143,5 +143,9 @@ public interface OrdersDao extends JpaRepository<Orders, Integer> {
 	@Modifying
 	@Query(value = "update orders set is_deleted = 1 where id = ?1", nativeQuery = true)
 	public int deleteOrderById(int orderId);
+
+	// 統計該團未取餐人數 (以人頭計)
+	@Query(value = "select count(distinct user_id) from orders where events_id = ?1 and pickup_status != 'PICKED_UP' and is_deleted = false", nativeQuery = true)
+	public int countUnpickedByEventId(int eventId);
 
 }
