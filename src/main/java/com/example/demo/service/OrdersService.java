@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.PaymentStatus;
 import com.example.demo.constants.PickupStatusEnum;
 import com.example.demo.constants.ResMessage;
@@ -121,27 +120,10 @@ public class OrdersService {
 				return new BasicRes(404, "商店無提供商品 ID: " + currentMenuId);
 			}
 
-			// 檢查是否在團長開放的名單內 (團員才需要受限)
-			if (!events.getHostId().equals(req.getUserId())) {
-				String hostGiveMenuId = events.getTempMenuList();
-				if (StringUtils.hasText(hostGiveMenuId)) {
-					try {
-						List<Integer> allowedIds = mapper.readValue(hostGiveMenuId, new TypeReference<List<Integer>>() {
-						});
-						if (allowedIds != null && !allowedIds.isEmpty()) {
-							if (!allowedIds.contains(currentMenuId)) {
-								return new BasicRes(400, "商品 ID: " + currentMenuId + " 不在團長開放名單內");
-							}
-						}
-					} catch (Exception e) {
-						// 如果解析失敗，保守起見用字串包含檢查，但要加逗號避免 1 匹配 10
-						String checkStr = "," + currentMenuIdStr + ",";
-						String listStr = hostGiveMenuId.replace("[", ",").replace("]", ",").replace(" ", "");
-						if (!listStr.contains(checkStr)) {
-							return new BasicRes(400, "商品 ID: " + currentMenuId + " 不在團長開放名單內");
-						}
-					}
-				}
+			// 檢查是否在團長開放的名單內
+			String hostGiveMenuId = events.getTempMenuList();
+			if (hostGiveMenuId == null || !hostGiveMenuId.contains(currentMenuIdStr)) {
+				return new BasicRes(400, "商品 ID: " + currentMenuId + " 不在團長開放名單內");
 			}
 
 			// 順便檢查該項商品的數量
@@ -355,8 +337,8 @@ public class OrdersService {
 				if (StringUtils.hasText(jsonStr)) {
 					try {
 						// 將 JSON 字串轉為 Java 的 List<Map> 結構
-						List<Map<String, Object>> options = mapper.readValue(jsonStr,
-								new TypeReference<List<Map<String, Object>>>() {
+						List<Map<String, Object>> options = mapper.readValue(
+								jsonStr, new TypeReference<List<Map<String, Object>>>() {
 								});
 						item.setSelectedOptionList(options);
 					} catch (Exception e) {
@@ -402,8 +384,9 @@ public class OrdersService {
 				if (StringUtils.hasText(jsonStr)) {
 					try {
 						/*
-						 * jsonStr：這是包裹外殼，裡面裝著拆散的零件（字串）。 mapper.readValue：這是你的「組裝說明書」。 new
-						 * TypeReference<...>() {}：這是包裹上的「內容物標籤」，告訴說明書要把零件組裝成什麼。
+						 * jsonStr：這是包裹外殼，裡面裝著拆散的零件（字串）。
+						 * mapper.readValue：這是你的「組裝說明書」。
+						 * new TypeReference<...>() {}：這是包裹上的「內容物標籤」，告訴說明書要把零件組裝成什麼。
 						 */
 						List<Map<String, Object>> options = mapper.readValue(jsonStr,
 								new TypeReference<List<Map<String, Object>>>() {
@@ -455,24 +438,14 @@ public class OrdersService {
 				if (!historyMap.containsKey(eventId)) {
 					OrderHistoryDTO dto = new OrderHistoryDTO();
 					dto.setEventsId(eventId);
-					dto.setOrderCode("訂單編號 # " + eventId); // Simple code generation, could be improved
+					dto.setOrderCode("EVT" + eventId); // Simple code generation, could be improved
 					dto.setCreatedAt(order.getOrderTime());
-					dto.setPersonalMemo(order.getPersonalMemo()); // 新增：整筆訂單的備註
 
 					GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
 					if (event != null) {
 						dto.setEventName(event.getEventName());
 						dto.setEventStatus(event.getStatus());
-						dto.setEventPickupTime(event.getPickupTime());
-
-						// Determine status label based on event status and pickup status
-						String statusLabel = "進行中";
-						if (order.getPickupStatus() == PickupStatusEnum.PICKED_UP) {
-							statusLabel = "已完成";
-						} else if (event.getStatus() == GroupbuyStatusEnum.FINISHED) {
-							statusLabel = "待取餐";
-						}
-						dto.setStatusLabel(statusLabel);
+						dto.setStatusLabel(event.getStatus() != null ? event.getStatus().name() : "UNKNOWN");
 
 						Stores store = storesSearchDao.getStoreById(event.getStoresId());
 						if (store != null) {
@@ -494,11 +467,10 @@ public class OrdersService {
 					PersonalOrder personalOrder = personalOrderDao.findByEventsIdAndUserId(eventId, userId);
 					if (personalOrder != null) {
 						dto.setTotalAmount(personalOrder.getTotalSum());
-						dto.setPersonFee(personalOrder.getPersonFee());
 						dto.setPaymentStatus(personalOrder.getPaymentStatus());
 					} else {
+						// Calculate subtotal from individual items if personal order doesn't exist yet
 						dto.setTotalAmount(0);
-						dto.setPersonFee(0);
 						dto.setPaymentStatus(PaymentStatus.UNPAID);
 					}
 
@@ -525,14 +497,13 @@ public class OrdersService {
 				item.setMenuName(order.getMenuName());
 				item.setQuantity(order.getQuantity());
 				item.setSpecName(order.getSpecName());
-				item.setPersonalMemo(order.getPersonalMemo());
-				item.setSubtotal(order.getSubtotal());
+//				item.setPersonalMemo(order.getPersonalMemo());
 
 				String jsonStr = order.getSelectedOption();
 				if (StringUtils.hasText(jsonStr)) {
 					try {
-						List<Map<String, Object>> options = mapper.readValue(jsonStr,
-								new TypeReference<List<Map<String, Object>>>() {
+						List<Map<String, Object>> options = mapper.readValue(
+								jsonStr, new TypeReference<List<Map<String, Object>>>() {
 								});
 						item.setSelectedOptionList(options);
 					} catch (Exception e) {
