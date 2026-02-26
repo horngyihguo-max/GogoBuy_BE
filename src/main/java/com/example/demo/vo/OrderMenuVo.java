@@ -25,6 +25,16 @@ public class OrderMenuVo {
 
 	private String personalMemo;
 
+	private int subtotal;
+
+	public int getSubtotal() {
+		return subtotal;
+	}
+
+	public void setSubtotal(int subtotal) {
+		this.subtotal = subtotal;
+	}
+
 	public String getPersonalMemo() {
 		return personalMemo;
 	}

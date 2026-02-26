@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.request.personalOrderReq;
 import com.example.demo.response.BasicRes;
-import com.example.demo.response.GroupbuyEventsRes;
 import com.example.demo.response.PersonalOrdersRes;
 import com.example.demo.response.ShippingFeeRes;
 import com.example.demo.service.PersonalOrderService;
@@ -53,11 +52,5 @@ public class PersonalOrderController {
 	public ShippingFeeRes getShippingFeeByEventId(@Valid @RequestParam(name = "events_id") int eventsId,
 			@RequestParam(name = "user_id") String userId) {
 		return personalOrderService.getShippingFeeByEventId(eventsId, userId);
-	}
-
-	// 取得該團所有人的結算單
-	@GetMapping("gogobuy/event/getPersonalOrdersByEventId")
-	public GroupbuyEventsRes getPersonalOrdersByEventId(@RequestParam(name = "events_id") int eventsId) {
-		return personalOrderService.getPersonalOrdersByEventId(eventsId);
 	}
 }

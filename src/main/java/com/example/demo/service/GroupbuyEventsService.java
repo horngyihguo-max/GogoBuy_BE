@@ -64,7 +64,6 @@ public class GroupbuyEventsService {
 
 	@Autowired
 	private PersonalOrderService personalOrderService;
-	
 
 	ObjectMapper mapper = new ObjectMapper();
 
@@ -330,16 +329,6 @@ public class GroupbuyEventsService {
 	// 結單功能
 	@Transactional
 	public BasicRes closeEvent(int id, String userId) {
-		GroupbuyEvents event = groupbuyEventsDao.findById(id);
-		if (event == null) {
-	        return new BasicRes(404, "找不到該團購活動");
-	    }
-		// 判斷成團門檻 (未成團邏輯)
-		if (event.getTotalOrderAmount() < event.getLimitation()) {
-	        fakeDelete(id);
-	        groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.CANCELLED.name(), id, userId);
-	        return new BasicRes(200, "人數不足，已自動取消該團");
-	    }
 		// 更新活動狀態為 FINISHED
 		groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.FINISHED.name(), id, userId);
 		List<String> userIdList = ordersDao.getUserIdByEventsId(id);
@@ -508,26 +497,8 @@ public class GroupbuyEventsService {
 			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
 		}
 		// 軟刪除主表
-		int deletedEvent = groupbuyEventsDao.deleteEvent(eventsId);
+		int deletedEvent = groupbuyEventsDao.delete(eventsId);
 		if (deletedEvent > 0) {
-			// 順便刪除子表
-			ordersDao.deleteAllOrdersByEventId(eventsId);
-			return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
-		}
-		return new BasicRes(500, "刪除活動失敗，請稍後再試");
-	}
-	
-	// 軟刪除
-	@Transactional
-	public BasicRes fakeDelete(int eventsId) {
-		// 檢查該活動是否存在且尚未被刪除
-		GroupbuyEvents event = groupbuyEventsDao.findById(eventsId);
-		if (event == null) {
-			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
-		}
-		// 軟刪除主表
-		int fakeDelete = groupbuyEventsDao.fakeDelete(eventsId);
-		if (fakeDelete > 0) {
 			// 順便刪除子表
 			ordersDao.deleteAllOrdersByEventId(eventsId);
 			return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
@@ -574,35 +545,29 @@ public class GroupbuyEventsService {
 
 			List<Orders> allVisibleOrders = new ArrayList<>();
 			Map<Integer, CartDTO> cartMap = new HashMap<>();
-			Set<Integer> hostEventIds = new java.util.HashSet<>();
 
 			for (GroupsSearchView view : relatedViews) {
 				int eid = view.getEventId();
 				boolean isHost = userId.equals(view.getHostId());
-				if (isHost) {
-					hostEventIds.add(eid);
-				}
 
-				// 如果整體活動已結束，且我不是團長，就不顯示在「跟團中」 (團員部分：活動結案即移除)
-				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED && !isHost) {
+				// 如果整體活動已結束，就不顯示在「進行中」或「開團中」
+				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED) {
 					continue;
 				}
 
-				// 檢查身分與處理狀態
+				// 檢查個人結算狀態 (不論團長或團員)
 				PersonalOrder po = personalOrderDao.findByEventsIdAndUserId(eid, userId);
-
-				// 團員部分：如果已經點擊過「確認結算」，代表對該團員來說流程已結束
-				if (!isHost && po != null && po.getPaymentStatus() == PaymentStatus.CONFIRMED) {
+				// 如果已經點擊過「確認結算」，這筆單對該用戶來說參與已完成，應移至「歷史訂單」
+				if (po != null && po.getPaymentStatus() == PaymentStatus.CONFIRMED) {
 					continue;
 				}
 
 				// 我是團長就拿「整團單」，我是團員就拿「個人單」
 				if (isHost) {
-					// 團長拿整團 (拿該活動所有品項以同步統計資訊)
-					List<Orders> hostOrders = ordersDao.getUserAllByEventsId(eid);
-					if (!CollectionUtils.isEmpty(hostOrders)) {
+					// 團長拿整團 (getAllOrdersByEventId)
+					List<Orders> hostOrders = ordersDao.getAllOrdersByEventId(eid);
+					if (!CollectionUtils.isEmpty(hostOrders))
 						allVisibleOrders.addAll(hostOrders);
-					}
 				} else {
 					// 團員拿自己 (getEventIdByUserId)
 					List<Orders> memberOrders = ordersDao.getOrderByEventIdAndUserId(userId, eid);
@@ -617,13 +582,6 @@ public class GroupbuyEventsService {
 				dto.setStoreName(view.getStoreName());
 				dto.setStoreLogo(view.getStoreImage());
 				dto.setHostLogo(view.getHostAvatar());
-				// 團長部分：計算未完成的統計數據
-				if (isHost) {
-					dto.setUnpaidCount(personalOrderDao.countUnpaidByEventsId(eid));
-					dto.setUnpickedCount(ordersDao.countUnpickedByEventId(eid));
-					// 修正：主揪直接拿全團總額，避免因為狀態切換導致總額跳動
-					dto.setTotalAmount(ordersDao.sumSubtotalByEventId(eid));
-				}
 				dto.setStatus(view.getEventStatus());
 				dto.setPickLocation(view.getPickLocation());
 				dto.setPickupTime(view.getPickupTime() != null ? view.getPickupTime().toString() : "尚未設定");
@@ -641,19 +599,13 @@ public class GroupbuyEventsService {
 				CartDTO current = cartMap.get(order.getEventsId());
 				if (current != null) {
 					current.getItems().add(order);
-					// 只有團員單才需要在此累加；團長單在構造 DTO 時已經拿過總額了
-					if (!hostEventIds.contains(order.getEventsId())) {
-						current.setTotalAmount(current.getTotalAmount() + order.getSubtotal());
-					}
+					current.setTotalAmount(current.getTotalAmount() + order.getSubtotal());
 					current.setTotalQuantity(current.getItems().size());
 
 					// 時間紀錄
-					if (order.getOrderTime() != null) {
-						String orderTimeStr = order.getOrderTime().toString();
-						if (current.getLatestOrderTime() == null
-								|| orderTimeStr.compareTo(current.getLatestOrderTime()) > 0) {
-							current.setLatestOrderTime(orderTimeStr);
-						}
+					if (current.getLatestOrderTime() == null
+							|| order.getOrderTime().toString().compareTo(current.getLatestOrderTime()) > 0) {
+						current.setLatestOrderTime(order.getOrderTime().toString());
 					}
 				}
 			}
