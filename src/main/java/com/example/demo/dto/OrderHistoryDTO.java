@@ -3,9 +3,9 @@ package com.example.demo.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.demo.vo.OrderMenuVo;
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.PaymentStatus;
-import com.example.demo.vo.OrderMenuVo;
 
 public class OrderHistoryDTO {
 
@@ -17,43 +17,16 @@ public class OrderHistoryDTO {
 	private LocalDateTime createdAt;
 	private GroupbuyStatusEnum eventStatus;
 	private String statusLabel; // For frontend display
-	private int totalAmount; // User's personal total (items sum)
-	private int personFee; // Shipping fee share
+	private int totalAmount; // User's personal total
 	private String receiverName; // User's name
 	private String phone; // User's phone
 	private List<OrderMenuVo> items;
 	private PaymentStatus paymentStatus;
 	private String pickupStatus;
-	private LocalDateTime pickupTime; // Actual pickup time
-	private LocalDateTime eventPickupTime; // Scheduled pickup time
+	private LocalDateTime pickupTime;
 	private String pickLocation;
-	private String personalMemo;
 
 	// Getters and Setters
-	public String getPersonalMemo() {
-		return personalMemo;
-	}
-
-	public void setPersonalMemo(String personalMemo) {
-		this.personalMemo = personalMemo;
-	}
-
-	public int getPersonFee() {
-		return personFee;
-	}
-
-	public void setPersonFee(int personFee) {
-		this.personFee = personFee;
-	}
-
-	public LocalDateTime getEventPickupTime() {
-		return eventPickupTime;
-	}
-
-	public void setEventPickupTime(LocalDateTime eventPickupTime) {
-		this.eventPickupTime = eventPickupTime;
-	}
-
 	public String getOrderCode() {
 		return orderCode;
 	}
@@ -182,4 +155,5 @@ public class OrderHistoryDTO {
 		this.pickLocation = pickLocation;
 	}
 
+	
 }

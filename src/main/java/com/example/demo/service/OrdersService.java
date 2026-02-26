@@ -438,7 +438,7 @@ public class OrdersService {
 				if (!historyMap.containsKey(eventId)) {
 					OrderHistoryDTO dto = new OrderHistoryDTO();
 					dto.setEventsId(eventId);
-					dto.setOrderCode("EVT" + eventId); // Simple code generation, could be improved
+					dto.setOrderCode("訂單編號： # " + eventId); // Simple code generation, could be improved
 					dto.setCreatedAt(order.getOrderTime());
 
 					GroupbuyEvents event = groupbuyEventsDao.findById(eventId);
@@ -497,7 +497,7 @@ public class OrdersService {
 				item.setMenuName(order.getMenuName());
 				item.setQuantity(order.getQuantity());
 				item.setSpecName(order.getSpecName());
-//				item.setPersonalMemo(order.getPersonalMemo());
+				item.setPersonalMemo(order.getPersonalMemo());
 
 				String jsonStr = order.getSelectedOption();
 				if (StringUtils.hasText(jsonStr)) {
