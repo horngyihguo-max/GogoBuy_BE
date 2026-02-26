@@ -545,10 +545,14 @@ public class GroupbuyEventsService {
 
 			List<Orders> allVisibleOrders = new ArrayList<>();
 			Map<Integer, CartDTO> cartMap = new HashMap<>();
+			Set<Integer> hostEventIds = new java.util.HashSet<>();
 
 			for (GroupsSearchView view : relatedViews) {
 				int eid = view.getEventId();
 				boolean isHost = userId.equals(view.getHostId());
+				if (isHost) {
+					hostEventIds.add(eid);
+				}
 
 				// 如果整體活動已結束，且我不是團長，就不顯示在「跟團中」 (團員部分：活動結案即移除)
 				if (view.getEventStatus() == GroupbuyStatusEnum.FINISHED && !isHost) {
@@ -565,22 +569,10 @@ public class GroupbuyEventsService {
 
 				// 我是團長就拿「整團單」，我是團員就拿「個人單」
 				if (isHost) {
-					// 團長拿整團 (只顯示已確認結算的團員訂單)
-					List<Orders> hostOrders = ordersDao.getConfirmedOrdersByEventId(eid);
+					// 團長拿整團 (拿該活動所有品項以同步統計資訊)
+					List<Orders> hostOrders = ordersDao.getUserAllByEventsId(eid);
 					if (!CollectionUtils.isEmpty(hostOrders)) {
 						allVisibleOrders.addAll(hostOrders);
-					}
-					// 同時也要拿團長自己的單 (避免團長還沒結算時看不見自己的商品)
-					List<Orders> myOrdersAsHost = ordersDao.getOrderByEventIdAndUserId(userId, eid);
-					if (!CollectionUtils.isEmpty(myOrdersAsHost)) {
-						for (Orders myOrder : myOrdersAsHost) {
-							// 檢查是否已在 hostOrders 中 (避免重複)
-							boolean alreadyIn = allVisibleOrders.stream()
-									.anyMatch(o -> o.getId() == myOrder.getId());
-							if (!alreadyIn) {
-								allVisibleOrders.add(myOrder);
-							}
-						}
 					}
 				} else {
 					// 團員拿自己 (getEventIdByUserId)
@@ -600,6 +592,8 @@ public class GroupbuyEventsService {
 				if (isHost) {
 					dto.setUnpaidCount(personalOrderDao.countUnpaidByEventsId(eid));
 					dto.setUnpickedCount(ordersDao.countUnpickedByEventId(eid));
+					// 修正：主揪直接拿全團總額，避免因為狀態切換導致總額跳動
+					dto.setTotalAmount(ordersDao.sumSubtotalByEventId(eid));
 				}
 				dto.setStatus(view.getEventStatus());
 				dto.setPickLocation(view.getPickLocation());
@@ -618,13 +612,19 @@ public class GroupbuyEventsService {
 				CartDTO current = cartMap.get(order.getEventsId());
 				if (current != null) {
 					current.getItems().add(order);
-					current.setTotalAmount(current.getTotalAmount() + order.getSubtotal());
+					// 只有團員單才需要在此累加；團長單在構造 DTO 時已經拿過總額了
+					if (!hostEventIds.contains(order.getEventsId())) {
+						current.setTotalAmount(current.getTotalAmount() + order.getSubtotal());
+					}
 					current.setTotalQuantity(current.getItems().size());
 
 					// 時間紀錄
-					if (current.getLatestOrderTime() == null
-							|| order.getOrderTime().toString().compareTo(current.getLatestOrderTime()) > 0) {
-						current.setLatestOrderTime(order.getOrderTime().toString());
+					if (order.getOrderTime() != null) {
+						String orderTimeStr = order.getOrderTime().toString();
+						if (current.getLatestOrderTime() == null
+								|| orderTimeStr.compareTo(current.getLatestOrderTime()) > 0) {
+							current.setLatestOrderTime(orderTimeStr);
+						}
 					}
 				}
 			}
