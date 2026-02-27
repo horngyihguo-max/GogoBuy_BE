@@ -497,7 +497,7 @@ public class GroupbuyEventsService {
 			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
 		}
 		// 軟刪除主表
-		int deletedEvent = groupbuyEventsDao.delete(eventsId);
+		int deletedEvent = groupbuyEventsDao.fakeDelete(eventsId);
 		if (deletedEvent > 0) {
 			// 順便刪除子表
 			ordersDao.deleteAllOrdersByEventId(eventsId);
