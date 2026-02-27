@@ -10,12 +10,16 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import com.example.demo.constants.PaymentStatus;
+import com.example.demo.constants.PickupStatusEnum;
 import com.example.demo.dao.GroupbuyEventsDao;
 import com.example.demo.dao.OrdersDao;
 import com.example.demo.dao.PersonalOrderDao;
+import com.example.demo.dao.UserDao;
 import com.example.demo.entity.Orders;
 import com.example.demo.entity.PersonalOrder;
+import com.example.demo.entity.User;
 import com.example.demo.request.personalOrderReq;
+import com.example.demo.response.GroupbuyEventsRes;
 import com.example.demo.response.PersonalOrdersRes;
 import com.example.demo.response.ShippingFeeRes;
 
@@ -34,6 +38,9 @@ public class PersonalOrderService {
 
 	@Autowired
 	private SalesStatsService salesStatsService;
+
+	@Autowired
+	private UserDao userDao;
 
 	// 結團後生成
 	public void addPersonalOrder(personalOrderReq req) {
@@ -86,11 +93,17 @@ public class PersonalOrderService {
 					}
 				}
 
-				if (paymentStatus == PaymentStatus.CONFIRMED) {
-					ordersDao.updateStatusByEventAndUser(req.getEventsId(), req.getUserId());
-				}
 				order.setPaymentStatus(paymentStatus);
 			}
+
+			// 更新取餐狀態 (連動到 orders 表以同步歷史訂單)
+			PickupStatusEnum pickupStatus = req.getPickupStatus();
+			if (pickupStatus != null) {
+				LocalDateTime pickupTime = (pickupStatus == PickupStatusEnum.PICKED_UP) ? LocalDateTime.now() : null;
+				ordersDao.updatePickupStatusByEventAndUser(req.getEventsId(), req.getUserId(), pickupStatus.name(),
+						pickupTime);
+			}
+
 			personalOrderDao.save(order);
 			return new PersonalOrdersRes(200, "更新成功");
 		} catch (Exception e) {
@@ -127,9 +140,6 @@ public class PersonalOrderService {
 			// 狀態更新為已確認
 			order.setPaymentStatus(PaymentStatus.CONFIRMED);
 			order.setPaymentTime(LocalDateTime.now());
-
-			// 更新 orders 表裡的狀態
-			ordersDao.updateStatusByEventAndUser(eventsId, userId);
 
 			personalOrderDao.save(order);
 			return new PersonalOrdersRes(200, "訂單確認成功");
@@ -197,6 +207,36 @@ public class PersonalOrderService {
 			return new ShippingFeeRes(200, "運費計算與分配成功！");
 		} catch (Exception e) {
 			return new ShippingFeeRes(500, "系統計算出錯：" + e.getMessage());
+		}
+	}
+
+	// 取得該團所有人的結算單
+	public GroupbuyEventsRes getPersonalOrdersByEventId(int eventsId) {
+		try {
+			List<PersonalOrder> list = personalOrderDao.findUserIdByEventsId(eventsId);
+			if (!CollectionUtils.isEmpty(list)) {
+				for (PersonalOrder po : list) {
+					// 暱稱
+					User user = userDao.getUserById(po.getUserId());
+					if (user != null) {
+						po.setUserNickname(user.getNickname());
+						po.setUserAvatar(user.getAvatarUrl());
+					}
+
+					// 取餐狀態 (從 orders 表抓取該用戶的狀態)
+					List<Orders> userOrders = ordersDao.getOrderByEventIdAndUserId(po.getUserId(), eventsId);
+					if (!CollectionUtils.isEmpty(userOrders)) {
+						po.setPickupStatus(userOrders.get(0).getPickupStatus());
+					} else {
+						po.setPickupStatus(PickupStatusEnum.NOT_PICKED_UP);
+					}
+				}
+			}
+			GroupbuyEventsRes res = new GroupbuyEventsRes(200, "查詢成功");
+			res.setPersonalOrder(list);
+			return res;
+		} catch (Exception e) {
+			return new GroupbuyEventsRes(500, "查詢失敗: " + e.getMessage());
 		}
 	}
 }
