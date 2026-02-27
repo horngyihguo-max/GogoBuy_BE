@@ -64,20 +64,7 @@ public class SalesStatsService {
     }
 
     private void updateStatsLogic(Integer storeId, Integer menuId, SalesStatsType type, LocalDate date, int quantity) {
-        SalesStats stats = salesStatsRepository
-            .findByStoreIdAndMenuIdAndStatsTypeAndStatsDate(storeId, menuId, type, date)
-            // 有資料拿資料 沒資料建資料           
-            .orElseGet(() -> {
-                SalesStats s = new SalesStats();
-                s.setStoreId(storeId);
-                s.setMenuId(menuId);
-                s.setStatsType(type);
-                s.setStatsDate(date);
-                s.setSalesVolume(0);
-                return s;
-            });
-        stats.setSalesVolume(stats.getSalesVolume() + quantity);
-        salesStatsRepository.save(stats);
+    	salesStatsRepository.upsertSalesVolume(storeId, menuId, type.name(), date, quantity);
     }
     
     public SalesStatsRes getTop10SalesBystore(Integer storeId, SalesStatsType type) {
