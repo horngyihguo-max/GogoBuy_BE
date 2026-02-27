@@ -12,6 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import com.example.demo.constants.NotifiCategoryEnum;
+import com.example.demo.request.NotifiMesReq;
+import com.example.demo.vo.UserNotificationVo;
+import java.time.LocalDate;
 
 import com.example.demo.constants.GroupbuyStatusEnum;
 import com.example.demo.constants.PaymentStatus;
@@ -64,6 +68,10 @@ public class GroupbuyEventsService {
 
 	@Autowired
 	private PersonalOrderService personalOrderService;
+
+	@Autowired
+	private MessagesService messagesService;
+	
 
 	ObjectMapper mapper = new ObjectMapper();
 
@@ -303,6 +311,41 @@ public class GroupbuyEventsService {
 					recommendJson, //
 					req.getRecommendDescription(), //
 					req.getLimitation(), req.getPickLocation(), req.getPickupTime(), id);
+
+			// 通知所有成員 (包含站內與 email)
+			List<String> members = ordersDao.getUserIdByEventsId(id);
+			System.out.println("Processing event update notification for event " + id + ". Found members: " + (members != null ? members : "null"));
+			if (!CollectionUtils.isEmpty(members)) {
+				try {
+					List<UserNotificationVo> recipients = members.stream()
+						.filter(uid -> !uid.equals(req.getHostId()))
+						.distinct()
+						.map(uid -> {
+							UserNotificationVo vo = new UserNotificationVo();
+							vo.setUserId(uid);
+							User u = userDao.getUserById(uid);
+							if (u != null) vo.setEmail(u.getEmail());
+							return vo;
+						}).collect(Collectors.toList());
+
+					System.out.println("Sending event update notification to " + recipients.size() + " recipients (excl. host).");
+					if (!recipients.isEmpty()) {
+						NotifiMesReq notifyReq = new NotifiMesReq();
+						notifyReq.setCategory(NotifiCategoryEnum.GROUP_BUY);
+						notifyReq.setTitle("團購資訊已更新");
+						notifyReq.setContent("您參加的團購「" + req.getEventName() + "」資訊已由團長更新。內容包含截止時間、取貨地點或商品菜單可能有變動，請點擊查看詳情。");
+						notifyReq.setTargetUrl("/groupbuy-event/group-follow/" + id);
+						notifyReq.setUserId(req.getHostId()); // 發布者(團長)
+						notifyReq.setEventId(id);
+						notifyReq.setExpiredAt(LocalDate.now().plusDays(30).toString());
+						notifyReq.setUserNotificationVoList(recipients);
+						messagesService.create(notifyReq);
+					}
+				} catch (Exception ne) {
+					System.err.println("Failed to send event update notification: " + ne.getMessage());
+				}
+			}
+
 		} catch (Exception e) {
 			return new BasicRes(ResMessage.EVENT_ERROR.getCode(), ResMessage.EVENT_ERROR.getMessage());
 		}
@@ -329,6 +372,16 @@ public class GroupbuyEventsService {
 	// 結單功能
 	@Transactional
 	public BasicRes closeEvent(int id, String userId) {
+		GroupbuyEvents event = groupbuyEventsDao.findById(id);
+		if (event == null) {
+	        return new BasicRes(404, "找不到該團購活動");
+	    }
+		// 判斷成團門檻 (未成團邏輯)
+		if (event.getTotalOrderAmount() < event.getLimitation()) {
+	        fakeDelete(id);
+	        groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.CANCELLED.name(), id, userId);
+	        return new BasicRes(200, "人數不足，已自動取消該團");
+	    }
 		// 更新活動狀態為 FINISHED
 		groupbuyEventsDao.updateStatus(GroupbuyStatusEnum.FINISHED.name(), id, userId);
 		List<String> userIdList = ordersDao.getUserIdByEventsId(id);
@@ -355,6 +408,41 @@ public class GroupbuyEventsService {
 		// 此用戶的運費計算
 		ShippingFeeRes feeRes = personalOrderService.getShippingFeeByEventId(id, userId);
 		if (feeRes.getCode() == 200) {
+			// 發送通知給所有成員
+			try {
+				List<String> memberIds = ordersDao.getUserIdByEventsId(id);
+				memberIds.remove(userId); // 排除團長自己
+				
+				if (!memberIds.isEmpty()) {
+					NotifiMesReq notifyReq = new NotifiMesReq();
+					notifyReq.setCategory(NotifiCategoryEnum.GROUP_BUY);
+					notifyReq.setTitle("團購已結單！");
+					notifyReq.setContent("您參加的團購「" + event.getEventName() + "」已結單，請至我的訂單查看最終金額並進行後續動作。");
+					notifyReq.setTargetUrl("/user/orders");
+					notifyReq.setUserId(userId);
+					notifyReq.setEventId(id);
+					notifyReq.setExpiredAt(LocalDate.now().plusDays(30).toString());
+					
+					notifyReq.setUserNotificationVoList(memberIds.stream().map(mid -> {
+						UserNotificationVo vo = new UserNotificationVo();
+						vo.setUserId(mid);
+						// 這裡需要 email 嗎？ 
+						// MessagesService.create 會在發送時根據 userId 去查 email 嗎？
+						// 剛才我在 MessagesService.create 看到它是從 vo 拿 email。
+						// 所以我得先拿到 email。
+						User member = userDao.getUserById(mid);
+						if (member != null) {
+							vo.setEmail(member.getEmail());
+						}
+						return vo;
+					}).collect(Collectors.toList()));
+
+					messagesService.create(notifyReq);
+				}
+			} catch (Exception e) {
+				System.err.println("Failed to send settlement notification: " + e.getMessage());
+			}
+
 			return new BasicRes(200, "結單成功，帳單已產生並完成運費分攤");
 		} else {
 			return new BasicRes(400, "帳單已產生但運費計算出錯：" + feeRes.getMessage());
@@ -497,8 +585,26 @@ public class GroupbuyEventsService {
 			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
 		}
 		// 軟刪除主表
-		int deletedEvent = groupbuyEventsDao.delete(eventsId);
+		int deletedEvent = groupbuyEventsDao.deleteEvent(eventsId);
 		if (deletedEvent > 0) {
+			// 順便刪除子表
+			ordersDao.deleteAllOrdersByEventId(eventsId);
+			return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
+		}
+		return new BasicRes(500, "刪除活動失敗，請稍後再試");
+	}
+	
+	// 軟刪除
+	@Transactional
+	public BasicRes fakeDelete(int eventsId) {
+		// 檢查該活動是否存在且尚未被刪除
+		GroupbuyEvents event = groupbuyEventsDao.findById(eventsId);
+		if (event == null) {
+			return new BasicRes(404, "找不到該團購活動或活動已被刪除");
+		}
+		// 軟刪除主表
+		int fakeDelete = groupbuyEventsDao.fakeDeleteEvent(eventsId);
+		if (fakeDelete > 0) {
 			// 順便刪除子表
 			ordersDao.deleteAllOrdersByEventId(eventsId);
 			return new BasicRes(200, "團購活動ID: " + eventsId + "已成功刪除");
@@ -569,22 +675,10 @@ public class GroupbuyEventsService {
 
 				// 我是團長就拿「整團單」，我是團員就拿「個人單」
 				if (isHost) {
-					// 團長拿整團 (只顯示已確認結算的團員訂單)
-					List<Orders> hostOrders = ordersDao.getConfirmedOrdersByEventId(eid);
+					// 團長拿整團 (拿該活動所有品項以同步統計資訊)
+					List<Orders> hostOrders = ordersDao.getUserAllByEventsId(eid);
 					if (!CollectionUtils.isEmpty(hostOrders)) {
 						allVisibleOrders.addAll(hostOrders);
-					}
-					// 同時也要拿團長自己的單 (避免團長還沒結算時看不見自己的商品)
-					List<Orders> myOrdersAsHost = ordersDao.getOrderByEventIdAndUserId(userId, eid);
-					if (!CollectionUtils.isEmpty(myOrdersAsHost)) {
-						for (Orders myOrder : myOrdersAsHost) {
-							// 檢查是否已在 hostOrders 中 (避免重複)
-							boolean alreadyIn = allVisibleOrders.stream()
-									.anyMatch(o -> o.getId() == myOrder.getId());
-							if (!alreadyIn) {
-								allVisibleOrders.add(myOrder);
-							}
-						}
 					}
 				} else {
 					// 團員拿自己 (getEventIdByUserId)
@@ -631,9 +725,12 @@ public class GroupbuyEventsService {
 					current.setTotalQuantity(current.getItems().size());
 
 					// 時間紀錄
-					if (current.getLatestOrderTime() == null
-							|| order.getOrderTime().toString().compareTo(current.getLatestOrderTime()) > 0) {
-						current.setLatestOrderTime(order.getOrderTime().toString());
+					if (order.getOrderTime() != null) {
+						String orderTimeStr = order.getOrderTime().toString();
+						if (current.getLatestOrderTime() == null
+								|| orderTimeStr.compareTo(current.getLatestOrderTime()) > 0) {
+							current.setLatestOrderTime(orderTimeStr);
+						}
 					}
 				}
 			}

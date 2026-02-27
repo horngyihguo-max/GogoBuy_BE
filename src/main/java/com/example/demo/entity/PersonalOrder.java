@@ -69,6 +69,17 @@ public class PersonalOrder {
 	}
 
 	@Transient
+	private String userEmail;
+
+	public String getUserEmail() {
+		return userEmail;
+	}
+
+	public void setUserEmail(String userEmail) {
+		this.userEmail = userEmail;
+	}
+
+	@Transient
 	private PickupStatusEnum pickupStatus;
 
 	public PickupStatusEnum getPickupStatus() {

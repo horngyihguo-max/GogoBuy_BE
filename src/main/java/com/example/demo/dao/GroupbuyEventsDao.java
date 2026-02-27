@@ -114,6 +114,11 @@ public interface GroupbuyEventsDao extends JpaRepository<GroupbuyEvents, Integer
 	@Query(value = "delete from groupbuy_events where id = ?1", nativeQuery = true)
 	public int deleteEvent(int id);
 
+	// 軟刪除
+	@Modifying
+	@Query(value = "update is_deleted = true from groupbuy_events where id = ?1", nativeQuery = true)
+	public int fakeDeleteEvent(int id);
+	
 	// 查詢全部的映射表
 	@Query(value = "select * from groups_search_view ", nativeQuery = true)
 	public int selectAll();
