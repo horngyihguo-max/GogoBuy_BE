@@ -204,7 +204,7 @@ public class MessagesService {
 			message.setFrom("GogobuyAdmin@gmail.com");
 			message.setTo(email);
 			message.setSubject("[GoGoBuy] " + title);
-			message.setText("您好：\n\n" + content + "\n\n詳情請查看 GoGoBuy 官網。");
+			message.setText("您好：\n\n" + content + "\n\n詳情請點擊 http://localhost:4200/gogobuy/home 查看 GoGoBuy 官網 。");
 			mailSender.send(message);
 		} catch (Exception e) {
 			// 郵件發送失敗不應中斷整個流程，僅紀錄錯誤
