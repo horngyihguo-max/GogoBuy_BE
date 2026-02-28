@@ -77,18 +77,37 @@ public class LinePayController {
 //    }
     
     @PostMapping("/request/pay")
-    public ResponseEntity<?> reserve(@RequestParam("eventId") int eventId) {
+    public ResponseEntity<?> reserve(
+            @RequestParam("eventId") int eventId,
+            @RequestParam(value = "userId", required = false) String userId) {
         try {
             //  從資料庫抓取該團資料
-        	GroupsSearchView group = groupsSearchViewDao.findById(eventId);
+            GroupsSearchView group = groupsSearchViewDao.findById(eventId);
             if (group == null) {
                 return ResponseEntity.badRequest().body("找不到" + eventId + " 的活動團");
             }
 
-            // 準備支付資訊
-            int amount = group.getTotalOrderAmount();
-            String productName =group.getStoreName();
+            int amount = 0;
+            String productName = group.getStoreName();
+
+            if (userId != null && !userId.isEmpty()) {
+                // 付個人結單金額
+                PersonalOrder personal = personalOrderDao.findByEventsId(eventId, userId);
+                if (personal == null) {
+                    return ResponseEntity.badRequest().body("找不到使用者 " + userId + " 在團購 " + eventId + " 的訂單資料");
+                }
+                amount = personal.getTotalSum();
+                productName += " - 個人訂單";
+            } else {
+                // 付整團總額
+                amount = group.getTotalOrderAmount();
+                productName += " - 全團總額";
+            }
             
+            if (amount <= 0) {
+                return ResponseEntity.badRequest().body("支付金額必須大於 0");
+            }
+
             // 生成唯一的訂單編號 (建議格式：時間戳記 + 活動ID)
             String myOrderId = "ORDER_" + System.currentTimeMillis() + "_" + eventId;
 
@@ -97,9 +116,9 @@ public class LinePayController {
             
             // 判斷 LINE Pay 回傳結果
             if ("0000".equals(result.returnCode())) {
-                    return ResponseEntity.ok(result.info().paymentUrl().web());
-                }
-                return ResponseEntity.badRequest().body("LINE Pay 預約失敗：" + result.returnMessage());
+                return ResponseEntity.ok(result.info().paymentUrl().web());
+            }
+            return ResponseEntity.badRequest().body("LINE Pay 預約失敗：" + result.returnMessage());
 
         } catch (Exception e) {
             e.printStackTrace();
