@@ -61,7 +61,7 @@ public class SecurityConfig {
 				.authorizeHttpRequests(auth -> auth
 						// 繞過免google授權的
 						.requestMatchers("/", "/**", "/oauth2/**", "/login/**", "/swagger-ui/**", "/gogobuy/user/oauth",
-								"/oauth2/**")
+								"/oauth2/**","/v3/api-docs/**")
 						.permitAll())
 				// 2. OAuth2 登入配置區塊
 				.oauth2Login(oauth2 -> {
