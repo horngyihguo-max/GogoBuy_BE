@@ -21,6 +21,9 @@ public class UserStatusInterceptor implements HandlerInterceptor {
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
 			throws Exception {
 		try {
+			if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+		        return true;
+		    }
 			// 1. 從 Session 取得當前用戶 ID
 			HttpSession session = request.getSession(false);
 			if (session == null || session.getAttribute("currentUserId") == null) {

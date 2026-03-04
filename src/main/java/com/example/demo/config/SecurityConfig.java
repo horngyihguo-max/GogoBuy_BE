@@ -36,7 +36,9 @@ public class SecurityConfig {
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration config = new CorsConfiguration();
-		config.setAllowedOrigins(List.of("http://localhost:4200")); // Angular 端口
+		config.setAllowedOrigins(List.of("http://localhost:4200",
+				"https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app", "https://gogo-buy-*.vercel.app")); // Angular
+																														// 端口
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setAllowCredentials(true); // 允許攜帶 Cookie (JSESSIONID)
@@ -68,8 +70,7 @@ public class SecurityConfig {
 
 					// 登入成功後的處理: 設定 Session 並跳轉
 					oauth2.successHandler((request, response, authentication) -> {
-						OAuth2User oauthUser = (OAuth2User) authentication
-								.getPrincipal();
+						OAuth2User oauthUser = (OAuth2User) authentication.getPrincipal();
 						String email = oauthUser.getAttribute("email");
 						User user = userDao.getUserByEmail(email);
 
@@ -79,7 +80,7 @@ public class SecurityConfig {
 							request.getSession().setAttribute("account", email);
 						}
 
-						response.sendRedirect("http://localhost:4200/auth-callback");
+						response.sendRedirect("https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app/auth-callback");
 					});
 
 					// 登入失敗處理：將錯誤訊息編碼後傳回前端
@@ -88,8 +89,7 @@ public class SecurityConfig {
 
 						// 嘗試從 OAuth2AuthenticationException 取得詳細描述
 						if (exception instanceof OAuth2AuthenticationException) {
-							OAuth2Error error = ((OAuth2AuthenticationException) exception)
-									.getError();
+							OAuth2Error error = ((OAuth2AuthenticationException) exception).getError();
 							if (error != null && error.getDescription() != null) {
 								errorMessage = error.getDescription();
 							}
@@ -104,10 +104,10 @@ public class SecurityConfig {
 						if (errorMessage.contains("Account created")) {
 							String encodedMsg = URLEncoder.encode("註冊成功，已發送驗證信至您的信箱", StandardCharsets.UTF_8);
 							response.sendRedirect(
-									"http://localhost:4200/gogobuy/login?verificationSent=true&message=" + encodedMsg);
+									"https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app/gogobuy/login?verificationSent=true&message=" + encodedMsg);
 						} else {
 							String encodedMsg = URLEncoder.encode(errorMessage, StandardCharsets.UTF_8);
-							response.sendRedirect("http://localhost:4200/gogobuy/login?errorMsg=" + encodedMsg);
+							response.sendRedirect("https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app/gogobuy/login?errorMsg=" + encodedMsg);
 						}
 					});
 				})
@@ -115,7 +115,7 @@ public class SecurityConfig {
 				// 3. 登出區塊
 				.logout(logout -> {
 					// 登出成功後同樣跳回前端首頁
-					logout.logoutSuccessUrl("http://localhost:4200");
+					logout.logoutSuccessUrl("https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app");
 					// 順便清除 Session 和 Cookie，確保登出乾淨
 					// JSESSIONID : Java Web 容器在使用者第一次訪問時自動產生的 Cookie
 					logout.invalidateHttpSession(true);

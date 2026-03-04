@@ -14,7 +14,7 @@ import com.example.demo.Interceptor.UserStatusInterceptor;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
-
+	
 	@Autowired
 	private UserStatusInterceptor userStatusInterceptor;
 
@@ -35,14 +35,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
 	@Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 所有的 API 路徑
-                .allowedOrigins(
+        registry.addMapping("/**")
+                .allowedOriginPatterns(
                     "http://localhost:4200", 
-                    "https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app" // 你的 Vercel 網址
+                    "https://gogo-buy-*.vercel.app", // 使用 Pattern 支援多個 Vercel 預覽版
+                    "https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true); // 因為你在前端有寫 withCredentials: true
+                .allowCredentials(true)
+                .maxAge(3600); // 讓瀏覽器快取 CORS 結果，減少 OPTIONS 請求次數
     }
 	
 	@Bean
