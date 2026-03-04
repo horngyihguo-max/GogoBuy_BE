@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -32,6 +33,18 @@ public class WebMvcConfig implements WebMvcConfigurer {
 				);
 	}
 
+	@Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/**") // 所有的 API 路徑
+                .allowedOrigins(
+                    "http://localhost:4200", 
+                    "https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app" // 你的 Vercel 網址
+                )
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true); // 因為你在前端有寫 withCredentials: true
+    }
+	
 	@Bean
 	public CorsFilter corsFilter() {
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
