@@ -3,12 +3,12 @@ package com.example.demo.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 
 import com.example.demo.Interceptor.UserStatusInterceptor;
 
@@ -38,8 +38,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOriginPatterns(
                     "http://localhost:4200", 
-                    "https://gogo-buy-fe.vercel.app",
-                    "https://gogo-buy-*.vercel.app"
+                    "https://gogo-buy-*.vercel.app", // 使用 Pattern 支援多個 Vercel 預覽版
+                    "https://gogo-buy-8aa73bf91-horngyihguo-3517s-projects.vercel.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
@@ -48,15 +48,19 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 	
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-	    http
-	        .cors(Customizer.withDefaults()) // 這會使用你 WebMvcConfig 裡的設定
-	        .csrf(csrf -> csrf.disable())    // 如果是 API 導向，通常會關閉 CSRF
-	        .authorizeHttpRequests(auth -> auth
-	            .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll() // 允許所有 OPTIONS 請求
-	            .anyRequest().permitAll() // 視你的需求調整
-	        );
-	    return http.build();
+	public CorsFilter corsFilter() {
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", corsConfig());
+		return new CorsFilter(source);
+	}
+
+	private CorsConfiguration corsConfig() {
+		CorsConfiguration corsConfiguration = new CorsConfiguration();
+		corsConfiguration.addAllowedOriginPattern("*");
+		corsConfiguration.addAllowedHeader("*");
+		corsConfiguration.addAllowedMethod("*");
+		corsConfiguration.setAllowCredentials(true);
+		return corsConfiguration;
 	}
 
 }
